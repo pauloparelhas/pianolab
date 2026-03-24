@@ -93,8 +93,18 @@ body {
   flex-shrink: 0;
 }
 
-.header__title  { font-size: var(--md); font-weight: 700; letter-spacing: .5px; }
-.header__actions { display: flex; gap: 8px; align-items: center; }
+.header__title  {
+  font-size: var(--md);
+  font-weight: 700;
+  letter-spacing: .5px;
+  flex: 1;
+  text-align: center;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  padding: 0 4px;
+}
+.header__actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
 
 .content {
   flex: 1;
@@ -266,7 +276,12 @@ body {
 .chord-btn__name  { font-size: var(--lg);  font-weight: 800; }
 .chord-btn__label { font-size: var(--sm);  color: var(--text-soft); }
 
-/* ── 10. UTILITÁRIOS ───────────────────────────────────────── */
+/* ── 10. LANDSCAPE — permite scroll quando a tela é baixa ─── */
+@media (max-height: 500px) {
+  .content { overflow-y: auto; }
+}
+
+/* ── 11. UTILITÁRIOS ───────────────────────────────────────── */
 .text-center { text-align: center; }
 .text-soft   { color: var(--text-soft); }
 .mt-auto     { margin-top: auto; }

@@ -284,6 +284,19 @@ function createPianoKeyboard(container, options = {}) {
       Object.values(keys).forEach(k => k.classList.remove('active', 'pressed'));
     },
 
+    // Adiciona dica visual de modo fácil (borda dourada pulsando)
+    hint(noteStr) {
+      const midi = noteToMidi(noteStr);
+      const key = keys[midi];
+      if (!key) return;
+      key.classList.add('easy-hint');
+    },
+
+    // Remove todas as dicas de modo fácil
+    clearHints() {
+      Object.values(keys).forEach(k => k.classList.remove('easy-hint'));
+    },
+
     // Destaca acorde: apaga anterior, acende novas teclas
     showChord(notes) {
       this.releaseAll();
@@ -314,6 +327,8 @@ const Settings = (() => {
     setVolume:   (v) => set('volume', v),
     getLang:     () => get('lang', 'pt'),
     setLang:     (v) => set('lang', v),
+    getEasyMode: () => get('easy', 'off') === 'on',
+    setEasyMode: (v) => set('easy', v ? 'on' : 'off'),
     init() {
       document.documentElement.dataset.theme = this.getTheme();
       document.documentElement.style.setProperty('--fs', this.getFontScale());
@@ -321,7 +336,43 @@ const Settings = (() => {
   };
 })();
 
-/* ── 5. TTS (Text-to-Speech) ──────────────────────────────── */
+/* ── 5. LOCK MODE (fullscreen) ────────────────────────────── */
+
+const LockMode = (() => {
+  let locked = false;
+
+  function toggle(btnEl) {
+    if (!locked) {
+      const el = document.documentElement;
+      const req = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen;
+      if (req) req.call(el).catch(() => {});
+      locked = true;
+      if (btnEl) btnEl.textContent = '🔒';
+    } else {
+      if (document.fullscreenElement || document.webkitFullscreenElement) {
+        const exit = document.exitFullscreen || document.webkitExitFullscreen;
+        if (exit) exit.call(document).catch(() => {});
+      }
+      locked = false;
+      if (btnEl) btnEl.textContent = '🔓';
+    }
+  }
+
+  // Sincroniza o botão se o usuário sair do fullscreen manualmente (ex: tecla Esc)
+  function listenChanges(btnEl) {
+    const sync = () => {
+      const inFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+      locked = inFs;
+      if (btnEl) btnEl.textContent = inFs ? '🔒' : '🔓';
+    };
+    document.addEventListener('fullscreenchange', sync);
+    document.addEventListener('webkitfullscreenchange', sync);
+  }
+
+  return { toggle, listenChanges };
+})();
+
+/* ── 6. TTS (Text-to-Speech) ──────────────────────────────── */
 
 const TTS = (() => {
   function falar(texto, lang = null) {
@@ -337,7 +388,7 @@ const TTS = (() => {
   return { falar };
 })();
 
-/* ── 6. NAVEGAÇÃO ─────────────────────────────────────────── */
+/* ── 7. NAVEGAÇÃO ─────────────────────────────────────────── */
 
 function goToIndex() {
   window.location.href = 'index.html';
@@ -347,7 +398,7 @@ function goTo(page) {
   window.location.href = page;
 }
 
-/* ── 7. INICIALIZAÇÃO ─────────────────────────────────────── */
+/* ── 8. INICIALIZAÇÃO ─────────────────────────────────────── */
 
 document.addEventListener('DOMContentLoaded', () => {
   Settings.init();
@@ -356,4 +407,4 @@ document.addEventListener('DOMContentLoaded', () => {
 /* ── EXPORTAÇÕES (para uso nos módulos) ──────────────────── */
 // AudioEngine, createPianoKeyboard, buildChord, transpose,
 // noteToMidi, midiToNote, FORMULAS, noteCssClass,
-// Settings, TTS, goToIndex, goTo
+// Settings, LockMode, TTS, goToIndex, goTo

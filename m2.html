@@ -9,6 +9,18 @@
   <style>
     :root { --key-h: 120px; --key-bk-h: 72px; }
 
+    /* Landscape: reduz teclas para caber na tela baixa */
+    @media (max-height: 500px) {
+      :root { --key-h: 80px; --key-bk-h: 48px; }
+      .screen { padding: 4px 12px; gap: 6px; }
+      .nota-circulo { width: clamp(40px, 10vw, 52px); height: clamp(40px, 10vw, 52px); font-size: clamp(1rem, 3vw, 1.4rem); }
+      .nota-hero { gap: 4px; }
+      .nota-sequencia { gap: 4px; }
+      .quiz-prompt { gap: 4px; }
+      .quiz-nota { font-size: clamp(1.4rem, 5vw, 2rem); }
+      #btn-ouvir { min-height: 44px; }
+    }
+
     .layout {
       display: flex;
       flex-direction: column;
@@ -133,9 +145,14 @@
 <div class="layout">
 
   <header class="header">
-    <button class="btn btn--icon" onclick="goToIndex()">←</button>
-    <span class="header__title">M2 — As 5 Primeiras Notas</span>
-    <button class="btn btn--icon" id="btn-sound">🔊</button>
+    <button class="btn btn--icon" onclick="goToIndex()" aria-label="Voltar ao início">←</button>
+    <span class="header__title">As 5 Notas</span>
+    <div class="header__actions">
+      <button class="btn btn--icon" id="btn-easy"  title="Modo Fácil"  aria-label="Modo Fácil">☆</button>
+      <button class="btn btn--icon" id="btn-theme" title="Tema"        aria-label="Alternar tema">☀️</button>
+      <button class="btn btn--icon" id="btn-lock"  title="Travar tela" aria-label="Tela cheia">🔓</button>
+      <button class="btn btn--icon" id="btn-sound" title="Som"         aria-label="Som">🔊</button>
+    </div>
   </header>
 
   <main class="content">
@@ -226,7 +243,7 @@ const kbQuiz = createPianoKeyboard(document.getElementById('piano-quiz'), {
   onNoteOn: n => avaliarQuiz(n)
 });
 
-/* ── SEQUÊNCIA DE DOTS (apres) ──────────────────────────────── */
+/* ── SEQUÊNCIA DE DOTS (apres) — clicáveis ──────────────────── */
 const seqEl = document.getElementById('seq-dots');
 NOTAS.forEach((n, i) => {
   const d = document.createElement('div');
@@ -234,6 +251,14 @@ NOTAS.forEach((n, i) => {
   d.style.background = n.cor;
   d.textContent = n.nome.slice(0,2);
   d.dataset.i = i;
+  d.setAttribute('role', 'button');
+  d.setAttribute('tabindex', '0');
+  d.setAttribute('aria-label', 'Nota ' + n.nome);
+  d.style.cursor = 'pointer';
+  d.addEventListener('click', () => irParaFase(i + 1));
+  d.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); irParaFase(i + 1); }
+  });
   seqEl.appendChild(d);
 });
 
@@ -336,8 +361,12 @@ function proximaQuizNota() {
   nomeEl.textContent  = quizAtual.nome;
   nomeEl.style.color  = quizAtual.cor;
   kbQuiz.releaseAll();
+  kbQuiz.clearHints();
   document.getElementById('feedback-quiz').textContent = '';
   TTS.falar('Toque o ' + quizAtual.nome);
+  if (Settings.getEasyMode()) {
+    notasDaBase(quizAtual.base).forEach(n => kbQuiz.hint(n));
+  }
 }
 
 function avaliarQuiz(noteStr) {
@@ -356,6 +385,7 @@ function avaliarQuiz(noteStr) {
     setTimeout(proximaQuizNota, 750);
   } else {
     AudioEngine.play(noteStr, 0.4);
+    mostrarErroNaTecla(noteStr);
     feedEl.textContent = 'Tente de novo!';
     feedEl.className = 'feedback text-center feedback--neutro anim-shake';
     setTimeout(() => {
@@ -396,6 +426,20 @@ function entrarCelebracao() {
   });
 }
 
+/* ── X NA TECLA ERRADA ──────────────────────────────────────── */
+function mostrarErroNaTecla(noteStr) {
+  const container = document.getElementById('piano-quiz');
+  const key = container.querySelector(`[data-note="${noteStr}"]`);
+  if (!key) return;
+  const prev = key.querySelector('.key-error-x');
+  if (prev) prev.remove();
+  const x = document.createElement('div');
+  x.className = 'key-error-x';
+  x.textContent = '✕';
+  key.appendChild(x);
+  setTimeout(() => { if (x.parentNode) x.remove(); }, 700);
+}
+
 /* ── UTILITÁRIOS ────────────────────────────────────────────── */
 function embaralhar(arr) {
   for (let i = arr.length - 1; i > 0; i--) {
@@ -410,13 +454,42 @@ function salvarProgresso() {
     JSON.stringify({ completo: true, data: new Date().toISOString() }));
 }
 
-/* ── SOM TOGGLE ─────────────────────────────────────────────── */
+/* ── BOTÕES DO HEADER ───────────────────────────────────────── */
+
+// Som
 const btnSound = document.getElementById('btn-sound');
+btnSound.textContent = Settings.getSoundOn() ? '🔊' : '🔇';
 btnSound.addEventListener('click', () => {
   Settings.setSoundOn(!Settings.getSoundOn());
   btnSound.textContent = Settings.getSoundOn() ? '🔊' : '🔇';
 });
-btnSound.textContent = Settings.getSoundOn() ? '🔊' : '🔇';
+
+// Modo Fácil
+const btnEasy = document.getElementById('btn-easy');
+btnEasy.textContent = Settings.getEasyMode() ? '⭐' : '☆';
+btnEasy.addEventListener('click', () => {
+  const on = !Settings.getEasyMode();
+  Settings.setEasyMode(on);
+  btnEasy.textContent = on ? '⭐' : '☆';
+  if (faseAtual === 6 && quizAtual) {
+    kbQuiz.clearHints();
+    if (on) notasDaBase(quizAtual.base).forEach(n => kbQuiz.hint(n));
+  }
+});
+
+// Tema claro/escuro
+const btnTheme = document.getElementById('btn-theme');
+btnTheme.textContent = Settings.getTheme() === 'dark' ? '🌙' : '☀️';
+btnTheme.addEventListener('click', () => {
+  const dark = Settings.getTheme() !== 'dark';
+  Settings.setTheme(dark ? 'dark' : 'light');
+  btnTheme.textContent = dark ? '🌙' : '☀️';
+});
+
+// Cadeado / tela cheia
+const btnLock = document.getElementById('btn-lock');
+LockMode.listenChanges(btnLock);
+btnLock.addEventListener('click', () => LockMode.toggle(btnLock));
 
 /* ── INIT ───────────────────────────────────────────────────── */
 document.addEventListener('pointerdown', () => AudioEngine.init(), { once: true });
