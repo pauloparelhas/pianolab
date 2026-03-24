@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>PianoLab — Demo</title>
+  <link rel="stylesheet" href="base.css">
+  <link rel="stylesheet" href="piano.css">
+  <style>
+    :root { --key-h: 140px; --key-bk-h: 84px; }
+
+    .layout { display:flex; flex-direction:column; height:100dvh; max-width:480px; margin:0 auto; }
+
+    /* Chord display */
+    .chord-display { text-align:center; display:flex; flex-direction:column; gap:4px; flex-shrink:0; }
+    .chord-display__name { font-size:1.8rem; font-weight:900; line-height:1.1; min-height:2rem; transition:color .2s; }
+
+    .note-pills { display:flex; gap:5px; justify-content:center; min-height:20px; }
+    .note-pill {
+      padding:1px 9px; border-radius:20px; font-size:.7rem; font-weight:700; color:#fff;
+      opacity:0; transform:translateY(4px); transition:opacity .2s, transform .2s;
+    }
+    .note-pill.visible { opacity:1; transform:translateY(0); }
+
+    /* Botões acorde */
+    .chord-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; flex-shrink:0; }
+    .chord-btn {
+      min-height:64px; border:2px solid var(--border); border-radius:var(--rad);
+      background:var(--surface); cursor:pointer; display:flex; flex-direction:column;
+      align-items:center; justify-content:center; gap:4px;
+      transition:border-color .15s, background .15s, transform .1s; touch-action:manipulation;
+    }
+    .chord-btn:active, .chord-btn.playing { transform:scale(.95); }
+    .chord-btn.active {
+      border-color:var(--chord-color, var(--nota-sol));
+      background:color-mix(in srgb, var(--chord-color, var(--nota-sol)) 15%, var(--surface));
+    }
+    .chord-btn__name  { font-size:1.4rem; font-weight:800; }
+    .chord-btn__label { font-size:.65rem; color:var(--text-soft); }
+
+    #btn-sound { font-size:1.4rem; }
+  </style>
+</head>
+<body>
+<div class="layout">
+  <header class="header">
+    <button class="btn btn--icon" onclick="goToIndex()">←</button>
+    <span class="header__title">🎹 Piano Interativo</span>
+    <button class="btn btn--icon" id="btn-sound">🔊</button>
+  </header>
+
+  <main class="content">
+    <div class="screen active" style="padding:8px 12px; gap:8px;">
+      <div class="chord-display">
+        <div class="chord-display__name" id="chord-name">—</div>
+        <div class="note-pills" id="note-pills"></div>
+      </div>
+      <div class="chord-grid" id="chord-grid"></div>
+      <div id="piano-container"></div>
+    </div>
+  </main>
+</div>
+
+<script src="base.js"></script>
+<script>
+'use strict';
+
+const ACORDES = [
+  { id:'C',  cifra:'C',  nome:'Dó',  tipo:'maior', raiz:'C4', cor:'var(--nota-do)'  },
+  { id:'G',  cifra:'G',  nome:'Sol', tipo:'maior', raiz:'G4', cor:'var(--nota-sol)' },
+  { id:'Am', cifra:'Am', nome:'Lám', tipo:'menor', raiz:'A4', cor:'var(--nota-la)'  },
+  { id:'F',  cifra:'F',  nome:'Fá',  tipo:'maior', raiz:'F4', cor:'var(--nota-fa)'  },
+].map(a => ({ ...a, notas: buildChord(a.raiz, FORMULAS[a.tipo]) }));
+
+const NOMES_PT = { C:'Dó', D:'Ré', E:'Mi', F:'Fá', G:'Sol', A:'Lá', B:'Si' };
+const COR_MAP  = { C:'var(--nota-do)', D:'var(--nota-re)', E:'var(--nota-mi)',
+                   F:'var(--nota-fa)', G:'var(--nota-sol)', A:'var(--nota-la)', B:'var(--nota-si)' };
+function base(n) { return n.replace(/[#\d]/g,''); }
+
+const piano = createPianoKeyboard(document.getElementById('piano-container'),
+  { startNote:'C4', endNote:'B5', showLabels:true, onNoteOn: n => AudioEngine.play(n) });
+
+const grid   = document.getElementById('chord-grid');
+const nomeEl = document.getElementById('chord-name');
+const pillsEl= document.getElementById('note-pills');
+
+ACORDES.forEach(ac => {
+  const btn = document.createElement('button');
+  btn.className = 'chord-btn';
+  btn.dataset.id = ac.id;
+  btn.style.setProperty('--chord-color', ac.cor);
+  btn.innerHTML = `<span class="chord-btn__name">${ac.cifra}</span><span class="chord-btn__label">${ac.nome}</span>`;
+  btn.addEventListener('click', () => tocar(ac, btn));
+  grid.appendChild(btn);
+});
+
+function tocar(ac, btn) {
+  document.querySelectorAll('.chord-btn').forEach(b => b.classList.remove('active','playing'));
+  btn.classList.add('active','playing');
+  setTimeout(() => btn.classList.remove('playing'), 200);
+
+  nomeEl.textContent = `${ac.cifra} — ${ac.nome}`;
+  nomeEl.style.color = ac.cor;
+
+  pillsEl.innerHTML = '';
+  ac.notas.forEach((n, i) => {
+    const pill = document.createElement('span');
+    pill.className = 'note-pill';
+    pill.textContent = NOMES_PT[base(n)] || base(n);
+    pill.style.background = COR_MAP[base(n)] || '#666';
+    pillsEl.appendChild(pill);
+    setTimeout(() => pill.classList.add('visible'), i * 80);
+  });
+
+  piano.showChord(ac.notas);
+  AudioEngine.playChord(ac.notas);
+  TTS.falar(ac.nome);
+}
+
+const btnSound = document.getElementById('btn-sound');
+btnSound.addEventListener('click', () => {
+  Settings.setSoundOn(!Settings.getSoundOn());
+  btnSound.textContent = Settings.getSoundOn() ? '🔊' : '🔇';
+});
+btnSound.textContent = Settings.getSoundOn() ? '🔊' : '🔇';
+
+document.addEventListener('pointerdown', () => AudioEngine.init(), { once: true });
+
+// Estado inicial
+(() => {
+  const ac = ACORDES[0];
+  nomeEl.textContent = `${ac.cifra} — ${ac.nome}`;
+  nomeEl.style.color = ac.cor;
+  document.querySelector(`[data-id="${ac.id}"]`)?.classList.add('active');
+  piano.showChord(ac.notas);
+  ac.notas.forEach((n,i) => {
+    const pill = document.createElement('span');
+    pill.className = 'note-pill';
+    pill.textContent = NOMES_PT[base(n)] || base(n);
+    pill.style.background = COR_MAP[base(n)] || '#666';
+    pillsEl.appendChild(pill);
+    setTimeout(() => pill.classList.add('visible'), i*80+300);
+  });
+})();
+</script>
+</body>
+</html>
