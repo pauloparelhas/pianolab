@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>PianoLab — M2: As 5 Primeiras Notas</title>
+  <link rel="stylesheet" href="base.css">
+  <link rel="stylesheet" href="piano.css">
+  <style>
+    :root { --key-h: 120px; --key-bk-h: 72px; }
+
+    .layout {
+      display: flex;
+      flex-direction: column;
+      height: 100dvh;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* ── Apresentação ───────────────────────────────────────── */
+    .nota-hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .nota-circulo {
+      width: clamp(60px, 16vw, 80px);
+      height: clamp(60px, 16vw, 80px);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(1.2rem, 4vw, 2rem);
+      font-weight: 900;
+      color: #fff;
+      animation: bounce-in .35s ease-out;
+    }
+
+    .nota-sequencia {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .seq-dot {
+      width: clamp(28px, 8vw, 36px);
+      height: clamp(28px, 8vw, 36px);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .65rem;
+      font-weight: 700;
+      color: #fff;
+      opacity: .3;
+      transition: opacity .3s, transform .3s;
+    }
+    .seq-dot.ativa   { opacity: 1; transform: scale(1.2); }
+    .seq-dot.vista   { opacity: .7; }
+
+    #btn-ouvir { min-height: 52px; flex-shrink: 0; }
+
+    /* ── Quiz ───────────────────────────────────────────────── */
+    .quiz-prompt {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .quiz-instrucao {
+      font-size: var(--sm);
+      color: var(--text-soft);
+    }
+
+    .quiz-nota {
+      font-size: clamp(2rem, 8vw, 3rem);
+      font-weight: 900;
+      transition: color .2s;
+    }
+
+    .quiz-progresso {
+      display: flex;
+      gap: 6px;
+    }
+
+    .quiz-prog-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: background .2s, transform .2s;
+    }
+    .quiz-prog-dot.ok { background: var(--success); transform: scale(1.3); }
+
+    .feedback { min-height: 1.5rem; }
+
+    /* ── Celebração ─────────────────────────────────────────── */
+    .celebracao {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      text-align: center;
+    }
+    .celebracao__emoji  { font-size: 3.5rem; animation: bounce-in .5s ease-out; }
+    .celebracao__titulo { font-size: var(--xl); font-weight: 900; color: var(--nota-sol); }
+    .celebracao__notas  {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+    }
+    .celebracao__notas .seq-dot { opacity: 1; width: 40px; height: 40px; font-size: .75rem; }
+
+    /* ── Nav ────────────────────────────────────────────────── */
+    .nav-fases {
+      height: 56px;
+      padding: 0 16px;
+      flex-shrink: 0;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <header class="header">
+    <button class="btn btn--icon" onclick="goToIndex()">←</button>
+    <span class="header__title">M2 — As 5 Primeiras Notas</span>
+    <button class="btn btn--icon" id="btn-sound">🔊</button>
+  </header>
+
+  <main class="content">
+
+    <!-- Fases 1–5: Apresentação de cada nota -->
+    <div class="screen active" id="s-apres">
+      <div class="nota-hero">
+        <div class="nota-circulo" id="apres-circulo"></div>
+      </div>
+      <div class="nota-sequencia" id="seq-dots"></div>
+      <div id="piano-apres"></div>
+      <button class="btn btn--primary" id="btn-ouvir">▶ Ouvir</button>
+    </div>
+
+    <!-- Fase 6: Quiz -->
+    <div class="screen" id="s-quiz">
+      <div class="quiz-prompt">
+        <span class="quiz-instrucao">Toque no teclado:</span>
+        <div class="quiz-nota" id="quiz-nome"></div>
+        <div class="quiz-progresso" id="quiz-prog"></div>
+      </div>
+      <div class="feedback text-center" id="feedback-quiz"></div>
+      <div id="piano-quiz"></div>
+    </div>
+
+    <!-- Fase 7: Celebração -->
+    <div class="screen" id="s-celebra">
+      <div class="celebracao">
+        <div class="celebracao__emoji">⭐</div>
+        <div class="celebracao__titulo">Você conhece as 5 notas!</div>
+        <div class="celebracao__notas" id="celebra-notas"></div>
+        <p class="text-soft" style="font-size:var(--sm)">
+          Dó · Ré · Mi · Fá · Sol
+        </p>
+        <button class="btn btn--primary" onclick="goTo('m3.html')">
+          Próxima aula →
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <nav class="nav-fases">
+    <button class="nav-fases__btn" id="btn-prev" disabled>◀</button>
+    <div class="nav-fases__dots" id="nav-dots"></div>
+    <button class="nav-fases__btn" id="btn-next">▶</button>
+  </nav>
+
+</div>
+<script src="base.js"></script>
+<script>
+'use strict';
+
+/* ── DADOS ──────────────────────────────────────────────────── */
+const NOTAS = [
+  { nome:'Dó',  base:'C', cor:'var(--nota-do)',  cls:'nota-do'  },
+  { nome:'Ré',  base:'D', cor:'var(--nota-re)',  cls:'nota-re'  },
+  { nome:'Mi',  base:'E', cor:'var(--nota-mi)',  cls:'nota-mi'  },
+  { nome:'Fá',  base:'F', cor:'var(--nota-fa)',  cls:'nota-fa'  },
+  { nome:'Sol', base:'G', cor:'var(--nota-sol)', cls:'nota-sol' },
+];
+
+// Notas de cada base nas oitavas 4 e 5
+function notasDaBase(base) {
+  return ['C4','C#4','D4','D#4','E4','F4','F#4','G4','G#4','A4','A#4','B4',
+          'C5','C#5','D5','D#5','E5','F5','F#5','G5','G#5','A5','A#5','B5']
+    .filter(n => n.replace(/[#\d]/g,'') === base);
+}
+
+/* ── ESTADO ─────────────────────────────────────────────────── */
+const TOTAL_FASES  = 7; // 5 apres + 1 quiz + 1 celebra
+let faseAtual      = 1; // 1-5 = apres, 6 = quiz, 7 = celebra
+let idxApres       = 0; // qual nota estamos apresentando (0-4)
+
+// Quiz
+let quizFila       = [];
+let quizAcertos    = 0;
+let quizAtual      = null;
+
+/* ── TECLADOS ───────────────────────────────────────────────── */
+const kbApres = createPianoKeyboard(document.getElementById('piano-apres'), {
+  startNote:'C4', endNote:'B5', showLabels:true,
+  onNoteOn: n => AudioEngine.play(n)
+});
+
+const kbQuiz = createPianoKeyboard(document.getElementById('piano-quiz'), {
+  startNote:'C4', endNote:'B5', showLabels:true,
+  onNoteOn: n => avaliarQuiz(n)
+});
+
+/* ── SEQUÊNCIA DE DOTS (apres) ──────────────────────────────── */
+const seqEl = document.getElementById('seq-dots');
+NOTAS.forEach((n, i) => {
+  const d = document.createElement('div');
+  d.className = 'seq-dot';
+  d.style.background = n.cor;
+  d.textContent = n.nome.slice(0,2);
+  d.dataset.i = i;
+  seqEl.appendChild(d);
+});
+
+function atualizarSeq() {
+  document.querySelectorAll('.seq-dot').forEach(d => {
+    const i = parseInt(d.dataset.i);
+    d.classList.toggle('ativa', i === idxApres);
+    d.classList.toggle('vista', i < idxApres);
+  });
+}
+
+/* ── NAV DOTS (fases) ───────────────────────────────────────── */
+const navDotsEl = document.getElementById('nav-dots');
+for (let i = 1; i <= TOTAL_FASES; i++) {
+  const d = document.createElement('div');
+  d.className = 'nav-fases__dot' + (i === 1 ? ' active' : '');
+  d.dataset.f = i;
+  navDotsEl.appendChild(d);
+}
+
+function atualizarNavDots() {
+  document.querySelectorAll('.nav-fases__dot').forEach(d => {
+    const f = parseInt(d.dataset.f);
+    d.className = 'nav-fases__dot' +
+      (f === faseAtual ? ' active' : f < faseAtual ? ' done' : '');
+  });
+}
+
+/* ── SCREENS ────────────────────────────────────────────────── */
+const sApres   = document.getElementById('s-apres');
+const sQuiz    = document.getElementById('s-quiz');
+const sCelebra = document.getElementById('s-celebra');
+
+function mostrarScreen(fase) {
+  sApres  .classList.toggle('active', fase <= 5);
+  sQuiz   .classList.toggle('active', fase === 6);
+  sCelebra.classList.toggle('active', fase === 7);
+}
+
+/* ── NAVEGAÇÃO ──────────────────────────────────────────────── */
+const btnPrev = document.getElementById('btn-prev');
+const btnNext = document.getElementById('btn-next');
+
+function irParaFase(f) {
+  if (f < 1 || f > TOTAL_FASES) return;
+  faseAtual = f;
+  idxApres  = Math.min(f - 1, 4);
+  mostrarScreen(f);
+  atualizarNavDots();
+  btnPrev.disabled = f === 1;
+  btnNext.disabled = f === TOTAL_FASES;
+  aoEntrar(f);
+}
+
+btnPrev.addEventListener('click', () => irParaFase(faseAtual - 1));
+btnNext.addEventListener('click', () => irParaFase(faseAtual + 1));
+
+/* ── LÓGICA POR FASE ────────────────────────────────────────── */
+function aoEntrar(f) {
+  if (f >= 1 && f <= 5) entrarApresentacao(NOTAS[f - 1]);
+  if (f === 6)           entrarQuiz();
+  if (f === 7)           entrarCelebracao();
+}
+
+/* Apresentação ─────────────────────────────────────────────── */
+function entrarApresentacao(nota) {
+  const circ = document.getElementById('apres-circulo');
+  circ.textContent      = nota.nome;
+  circ.style.background = nota.cor;
+  circ.style.boxShadow  = `0 4px 20px color-mix(in srgb, ${nota.cor} 50%, transparent)`;
+
+  // Acende todas as teclas dessa nota nas duas oitavas
+  kbApres.releaseAll();
+  notasDaBase(nota.base).forEach(n => kbApres.highlight(n));
+
+  atualizarSeq();
+  AudioEngine.play(nota.base + '4', 1.0);
+  TTS.falar(nota.nome);
+}
+
+document.getElementById('btn-ouvir').addEventListener('click', () => {
+  const nota = NOTAS[idxApres];
+  AudioEngine.play(nota.base + '4', 1.0);
+  TTS.falar(nota.nome);
+});
+
+/* Quiz ─────────────────────────────────────────────────────── */
+function entrarQuiz() {
+  quizAcertos = 0;
+  quizFila    = embaralhar([...NOTAS]);
+  kbQuiz.releaseAll();
+  renderQuizProg();
+  proximaQuizNota();
+}
+
+function proximaQuizNota() {
+  if (quizFila.length === 0) { setTimeout(() => irParaFase(7), 600); return; }
+  quizAtual = quizFila.shift();
+  const nomeEl = document.getElementById('quiz-nome');
+  nomeEl.textContent  = quizAtual.nome;
+  nomeEl.style.color  = quizAtual.cor;
+  kbQuiz.releaseAll();
+  document.getElementById('feedback-quiz').textContent = '';
+  TTS.falar('Toque o ' + quizAtual.nome);
+}
+
+function avaliarQuiz(noteStr) {
+  const base = noteStr.replace(/[#\d]/g, '');
+  const feedEl = document.getElementById('feedback-quiz');
+
+  if (base === quizAtual.base) {
+    quizAcertos++;
+    AudioEngine.play(noteStr, 0.9);
+    kbQuiz.releaseAll();
+    notasDaBase(quizAtual.base).forEach(n => kbQuiz.highlight(n));
+    feedEl.textContent  = ['Isso!', 'Boa!', 'Perfeito!', 'Muito bem!', 'Incrível!']
+                            [Math.min(quizAcertos - 1, 4)];
+    feedEl.className = 'feedback text-center feedback--acerto anim-bounce';
+    renderQuizProg();
+    setTimeout(proximaQuizNota, 750);
+  } else {
+    AudioEngine.play(noteStr, 0.4);
+    feedEl.textContent = 'Tente de novo!';
+    feedEl.className = 'feedback text-center feedback--neutro anim-shake';
+    setTimeout(() => {
+      feedEl.className = 'feedback text-center';
+    }, 800);
+  }
+}
+
+function renderQuizProg() {
+  const el = document.getElementById('quiz-prog');
+  el.innerHTML = '';
+  NOTAS.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'quiz-prog-dot' + (i < quizAcertos ? ' ok' : '');
+    el.appendChild(d);
+  });
+}
+
+/* Celebração ───────────────────────────────────────────────── */
+function entrarCelebracao() {
+  AudioEngine.playChord(['C4','D4','E4','F4','G4'], 100, 1.4);
+  TTS.falar('Parabéns! Você conhece as 5 notas!');
+  salvarProgresso();
+
+  const el = document.getElementById('celebra-notas');
+  el.innerHTML = '';
+  NOTAS.forEach(n => {
+    const d = document.createElement('div');
+    d.className = 'seq-dot';
+    d.style.background = n.cor;
+    d.textContent = n.nome.slice(0, 2);
+    d.style.opacity = '1';
+    d.style.width = '40px';
+    d.style.height = '40px';
+    d.style.fontSize = '.75rem';
+    el.appendChild(d);
+    setTimeout(() => d.classList.add('anim-bounce'), NOTAS.indexOf(n) * 120);
+  });
+}
+
+/* ── UTILITÁRIOS ────────────────────────────────────────────── */
+function embaralhar(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function salvarProgresso() {
+  localStorage.setItem('piano_m2_progresso',
+    JSON.stringify({ completo: true, data: new Date().toISOString() }));
+}
+
+/* ── SOM TOGGLE ─────────────────────────────────────────────── */
+const btnSound = document.getElementById('btn-sound');
+btnSound.addEventListener('click', () => {
+  Settings.setSoundOn(!Settings.getSoundOn());
+  btnSound.textContent = Settings.getSoundOn() ? '🔊' : '🔇';
+});
+btnSound.textContent = Settings.getSoundOn() ? '🔊' : '🔇';
+
+/* ── INIT ───────────────────────────────────────────────────── */
+document.addEventListener('pointerdown', () => AudioEngine.init(), { once: true });
+irParaFase(1);
+</script>
+</body>
+</html>
