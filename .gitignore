@@ -1,5 +1,9 @@
-# Configurações locais do Claude Code (não versionar)
-.claude/settings.local.json
+# Infraestrutura interna do Claude Code
+.claude/
+
+# Documentação e memória de projeto (uso interno)
+memory/
+piano_CLAUDE.md
 
 # Sistema operacional
 .DS_Store
