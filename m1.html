@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>PianoLab — M1: O Dó Central</title>
+  <link rel="stylesheet" href="base.css">
+  <link rel="stylesheet" href="piano.css">
+  <style>
+    /* ── Layout M1 (360px) ─────────────────────────────────────
+       header 48 + nav-fases 56 + screen pad 16 + conteúdo = 100dvh
+       Teclado override: --key-h 130px para caber no mobile       */
+    :root { --key-h: 120px; --key-bk-h: 72px; }
+
+    /* Botão ouvir menor em mobile */
+    #btn-ouvir { min-height: 56px; font-size: var(--md); }
+
+    .layout {
+      display: flex;
+      flex-direction: column;
+      height: 100dvh;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* ── TELA 1 — Apresentação ─────────────────────────────── */
+    .nota-hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 0;
+    }
+
+    .nota-circulo {
+      width: clamp(56px, 15vw, 80px);
+      height: clamp(56px, 15vw, 80px);
+      border-radius: 50%;
+      background: var(--nota-do);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(1.4rem, 4vw, 2.4rem);
+      font-weight: 900;
+      color: #fff;
+      box-shadow: 0 4px 20px color-mix(in srgb, var(--nota-do) 50%, transparent);
+      animation: bounce-in .4s ease-out;
+    }
+
+    .nota-subtitulo {
+      font-size: var(--sm);
+      color: var(--text-soft);
+      text-align: center;
+    }
+
+    /* ── TELA 2 — Identificação ────────────────────────────── */
+    .pergunta {
+      text-align: center;
+      font-size: var(--lg);
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    .tentativas {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .tentativa-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: background .2s, transform .2s;
+    }
+
+    .tentativa-dot.acerto {
+      background: var(--nota-do);
+      transform: scale(1.3);
+    }
+
+    /* ── TELA 3 — Celebração ───────────────────────────────── */
+    .celebracao {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      text-align: center;
+    }
+
+    .celebracao__emoji {
+      font-size: 4rem;
+      animation: bounce-in .5s ease-out;
+    }
+
+    .celebracao__titulo {
+      font-size: var(--xl);
+      font-weight: 900;
+      color: var(--nota-do);
+    }
+
+    .celebracao__sub {
+      font-size: var(--md);
+      color: var(--text-soft);
+    }
+
+    /* ── NAV FASES (fixa no rodapé) ─────────────────────────── */
+    .nav-fases {
+      height: 56px;
+      padding: 0 16px;
+      flex-shrink: 0;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    /* ── FEEDBACK ───────────────────────────────────────────── */
+    .feedback { min-height: 1.6rem; }
+  </style>
+</head>
+<body>
+  <div class="layout">
+
+    <!-- Cabeçalho -->
+    <header class="header">
+      <button class="btn btn--icon" onclick="goToIndex()" title="Voltar">←</button>
+      <span class="header__title">M1 — O Dó Central</span>
+      <button class="btn btn--icon" id="btn-sound" title="Som">🔊</button>
+    </header>
+
+    <!-- Conteúdo (screens) -->
+    <main class="content">
+
+      <!-- Tela 1: Apresentação -->
+      <div class="screen active" id="s1">
+        <div class="nota-hero">
+          <div class="nota-circulo">Dó</div>
+          <p class="nota-subtitulo">A primeira nota do piano</p>
+        </div>
+        <div id="piano-s1"></div>
+        <button class="btn btn--primary" id="btn-ouvir" style="flex-shrink:0">
+          ▶ Ouvir o Dó
+        </button>
+      </div>
+
+      <!-- Tela 2: Identificação -->
+      <div class="screen" id="s2">
+        <p class="pergunta">Onde está o Dó?</p>
+        <div class="tentativas" id="tentativas"></div>
+        <div class="feedback text-center" id="feedback-s2"></div>
+        <div id="piano-s2"></div>
+      </div>
+
+      <!-- Tela 3: Celebração -->
+      <div class="screen" id="s3">
+        <div class="celebracao">
+          <div class="celebracao__emoji">🎉</div>
+          <div class="celebracao__titulo">Você encontrou o Dó!</div>
+          <div class="celebracao__sub">Dó é a nota vermelha.<br>Ela aparece várias vezes no piano!</div>
+          <button class="btn btn--primary" onclick="goTo('m2.html')">
+            Próxima aula →
+          </button>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Navegação entre fases -->
+    <nav class="nav-fases">
+      <button class="nav-fases__btn" id="btn-prev" disabled>◀</button>
+      <div class="nav-fases__dots" id="dots"></div>
+      <button class="nav-fases__btn" id="btn-next">▶</button>
+    </nav>
+
+  </div>
+
+  <script src="base.js"></script>
+  <script>
+    'use strict';
+
+    /* ── ESTADO ─────────────────────────────────────────────── */
+    const TOTAL_FASES = 3;
+    let faseAtual = 1;
+    let acertos   = 0;
+    const ACERTOS_PARA_AVANÇAR = 3;
+
+    /* ── TECLADOS ───────────────────────────────────────────── */
+    // Tela 1: C4 destacado, somente visualização
+    const kb1 = createPianoKeyboard(document.getElementById('piano-s1'), {
+      startNote: 'C4', endNote: 'B5',
+      showLabels: true,
+      onNoteOn(note) { AudioEngine.play(note); }
+    });
+    kb1.highlight('C4');
+
+    // Tela 2: interativo para identificação
+    const kb2 = createPianoKeyboard(document.getElementById('piano-s2'), {
+      startNote: 'C4', endNote: 'B5',
+      showLabels: true,
+      onNoteOn(note) { avaliarResposta(note); }
+    });
+
+    /* ── DOTS DE PROGRESSO ──────────────────────────────────── */
+    const dotsEl = document.getElementById('dots');
+    for (let i = 1; i <= TOTAL_FASES; i++) {
+      const d = document.createElement('div');
+      d.className = 'nav-fases__dot' + (i === 1 ? ' active' : '');
+      d.dataset.fase = i;
+      dotsEl.appendChild(d);
+    }
+
+    function atualizarDots() {
+      document.querySelectorAll('.nav-fases__dot').forEach(d => {
+        const f = parseInt(d.dataset.fase);
+        d.className = 'nav-fases__dot' +
+          (f === faseAtual ? ' active' : f < faseAtual ? ' done' : '');
+      });
+    }
+
+    /* ── NAVEGAÇÃO ──────────────────────────────────────────── */
+    const screens = [null,
+      document.getElementById('s1'),
+      document.getElementById('s2'),
+      document.getElementById('s3'),
+    ];
+    const btnPrev = document.getElementById('btn-prev');
+    const btnNext = document.getElementById('btn-next');
+
+    function irParaFase(n) {
+      if (n < 1 || n > TOTAL_FASES) return;
+      screens[faseAtual].classList.remove('active');
+      faseAtual = n;
+      screens[faseAtual].classList.add('active');
+      btnPrev.disabled = faseAtual === 1;
+      btnNext.disabled = faseAtual === TOTAL_FASES;
+      atualizarDots();
+      aoEntrarFase(faseAtual);
+    }
+
+    btnPrev.addEventListener('click', () => irParaFase(faseAtual - 1));
+    btnNext.addEventListener('click', () => irParaFase(faseAtual + 1));
+
+    /* ── LÓGICA POR FASE ─────────────────────────────────────── */
+    function aoEntrarFase(f) {
+      if (f === 1) {
+        kb1.releaseAll();
+        kb1.highlight('C4');
+        TTS.falar('Este é o Dó!');
+      }
+      if (f === 2) {
+        acertos = 0;
+        renderTentativas();
+        document.getElementById('feedback-s2').textContent = '';
+        kb2.releaseAll();
+        TTS.falar('Onde está o Dó?');
+      }
+      if (f === 3) {
+        AudioEngine.playChord(['C4', 'E4', 'G4'], 120, 1.5);
+        TTS.falar('Parabéns! Você encontrou o Dó!');
+        salvarProgresso();
+      }
+    }
+
+    /* ── TELA 2: IDENTIFICAÇÃO ───────────────────────────────── */
+    function renderTentativas() {
+      const el = document.getElementById('tentativas');
+      el.innerHTML = '';
+      for (let i = 0; i < ACERTOS_PARA_AVANÇAR; i++) {
+        const d = document.createElement('div');
+        d.className = 'tentativa-dot' + (i < acertos ? ' acerto' : '');
+        el.appendChild(d);
+      }
+    }
+
+    function avaliarResposta(noteStr) {
+      const base = noteStr.replace(/[#\d]/g, '');
+      const feedbackEl = document.getElementById('feedback-s2');
+
+      if (base === 'C') {
+        // Acertou
+        acertos++;
+        AudioEngine.play(noteStr, 0.8);
+        kb2.releaseAll();
+        kb2.highlight(noteStr);
+        feedbackEl.textContent = ['Isso!', 'Boa!', 'Muito bem!'][Math.min(acertos - 1, 2)];
+        feedbackEl.className = 'feedback text-center feedback--acerto anim-bounce';
+        TTS.falar('Isso!');
+        renderTentativas();
+
+        if (acertos >= ACERTOS_PARA_AVANÇAR) {
+          setTimeout(() => irParaFase(3), 900);
+        } else {
+          setTimeout(() => {
+            kb2.releaseAll();
+            feedbackEl.textContent = '';
+            feedbackEl.className = 'feedback text-center';
+          }, 800);
+        }
+      } else {
+        // Errou — neutro, sem punição
+        AudioEngine.play(noteStr, 0.5);
+        feedbackEl.textContent = 'Tente de novo!';
+        feedbackEl.className = 'feedback text-center feedback--neutro anim-shake';
+        setTimeout(() => {
+          feedbackEl.textContent = '';
+          feedbackEl.className = 'feedback text-center';
+        }, 900);
+      }
+    }
+
+    /* ── TELA 1: OUVIR ──────────────────────────────────────── */
+    document.getElementById('btn-ouvir').addEventListener('click', () => {
+      AudioEngine.play('C4', 1.2);
+      kb1.releaseAll();
+      kb1.highlight('C4');
+      TTS.falar('Dó');
+    });
+
+    /* ── SOM TOGGLE ─────────────────────────────────────────── */
+    const btnSound = document.getElementById('btn-sound');
+    btnSound.addEventListener('click', () => {
+      Settings.setSoundOn(!Settings.getSoundOn());
+      btnSound.textContent = Settings.getSoundOn() ? '🔊' : '🔇';
+    });
+    btnSound.textContent = Settings.getSoundOn() ? '🔊' : '🔇';
+
+    /* ── PROGRESSO ──────────────────────────────────────────── */
+    function salvarProgresso() {
+      localStorage.setItem('piano_m1_progresso', JSON.stringify({
+        completo: true, data: new Date().toISOString()
+      }));
+    }
+
+    /* ── INIT ───────────────────────────────────────────────── */
+    document.addEventListener('pointerdown', () => AudioEngine.init(), { once: true });
+    aoEntrarFase(1);
+  </script>
+</body>
+</html>

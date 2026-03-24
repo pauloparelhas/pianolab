@@ -1,0 +1,274 @@
+/* =============================================================
+   PianoLab — base.css
+   Design system: cores, tipografia, layout, componentes gerais.
+   NÃO contém estilos do teclado de piano → ver piano.css
+   ============================================================= */
+
+/* ── 1. VARIÁVEIS ──────────────────────────────────────────── */
+:root {
+  /* Paleta — 7 notas = 7 cores (associação permanente) */
+  --nota-do:   #E53935;
+  --nota-re:   #FB8C00;
+  --nota-mi:   #F9A825;
+  --nota-fa:   #43A047;
+  --nota-sol:  #1E88E5;
+  --nota-la:   #8E24AA;
+  --nota-si:   #E91E63;
+  --nota-sust: #37474F;
+
+  /* Superfícies */
+  --bg:        #FAFAFA;
+  --surface:   #FFFFFF;
+  --surface2:  #F0F0F0;
+  --border:    #E0E0E0;
+  --text:      #212121;
+  --text-soft: #757575;
+  --success:   #43A047;
+
+  /* Tipografia escalável */
+  --fs: 1;
+  --sm:  calc(1.2rem  * var(--fs));
+  --md:  calc(1.55rem * var(--fs));
+  --lg:  calc(2.1rem  * var(--fs));
+  --xl:  calc(2.7rem  * var(--fs));
+  --2xl: calc(3.4rem  * var(--fs));
+
+  /* Componentes */
+  --btn-h:  80px;
+  --rad:    18px;
+  --radlg:  26px;
+  --shadow: 0 2px 12px rgba(0,0,0,.12);
+}
+
+/* Tema escuro */
+[data-theme="dark"] {
+  --bg:        #121212;
+  --surface:   #1E1E1E;
+  --surface2:  #2A2A2A;
+  --border:    #333333;
+  --text:      #EEEEEE;
+  --text-soft: #9E9E9E;
+}
+
+/* ── 2. RESET ──────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-size: var(--md);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.4;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ── 3. LAYOUT ─────────────────────────────────────────────── */
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  height: 48px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.header__title  { font-size: var(--md); font-weight: 700; letter-spacing: .5px; }
+.header__actions { display: flex; gap: 8px; align-items: center; }
+
+.content {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── 4. TELAS ──────────────────────────────────────────────── */
+.screen {
+  display: none;
+  flex-direction: column;
+  flex: 1;
+  padding: 12px 16px;
+  gap: 12px;
+}
+
+.screen.active { display: flex; }
+
+/* ── 5. BOTÕES ─────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: var(--btn-h);
+  padding: 0 20px;
+  border: none;
+  border-radius: var(--rad);
+  font-size: var(--md);
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--surface2);
+  color: var(--text);
+  transition: transform .1s, filter .15s;
+  touch-action: manipulation;
+}
+
+.btn:active        { transform: scale(.96); }
+.btn--primary      { background: var(--nota-sol); color: #fff; box-shadow: var(--shadow); }
+.btn--success      { background: var(--success); color: #fff; }
+
+.btn--icon {
+  min-height: 40px;
+  width: 40px;
+  padding: 0;
+  border-radius: 50%;
+  background: transparent;
+  font-size: var(--lg);
+}
+
+/* ── 6. NAVEGAÇÃO ENTRE FASES ──────────────────────────────── */
+/* Barra de progresso e botões prev/next usados por todos os módulos */
+.nav-fases {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.nav-fases__btn {
+  min-height: 56px;
+  width: 56px;
+  border: none;
+  border-radius: 50%;
+  background: var(--surface2);
+  font-size: 1.4rem;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform .1s, background .15s;
+}
+
+.nav-fases__btn:active    { transform: scale(.92); }
+.nav-fases__btn:disabled  { opacity: .3; pointer-events: none; }
+
+.nav-fases__dots {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.nav-fases__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+  transition: background .2s, transform .2s;
+}
+
+.nav-fases__dot.active {
+  background: var(--nota-sol);
+  transform: scale(1.4);
+}
+
+.nav-fases__dot.done { background: var(--success); }
+
+/* ── 7. FEEDBACK VISUAL ────────────────────────────────────── */
+.feedback {
+  text-align: center;
+  font-size: var(--lg);
+  font-weight: 700;
+  min-height: 2rem;
+  transition: color .2s, opacity .2s;
+}
+
+.feedback--acerto { color: var(--success); }
+.feedback--neutro { color: var(--text-soft); }
+
+/* ── 8. ANIMAÇÕES GERAIS ───────────────────────────────────── */
+@keyframes pulse-success {
+  0%   { box-shadow: 0 0 0 0 rgba(67,160,71,.5); }
+  70%  { box-shadow: 0 0 0 16px rgba(67,160,71,0); }
+  100% { box-shadow: 0 0 0 0 rgba(67,160,71,0); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-5px); }
+  40% { transform: translateX(5px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(3px); }
+}
+
+@keyframes bounce-in {
+  0%   { transform: scale(.8); opacity: 0; }
+  60%  { transform: scale(1.06); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.anim-success { animation: pulse-success .7s ease-out; }
+.anim-shake   { animation: shake .35s ease-in-out; }
+.anim-bounce  { animation: bounce-in .3s ease-out; }
+.anim-fade    { animation: fade-in .25s ease-out; }
+
+/* ── 9. CARDS DE ACORDE / MÓDULO ───────────────────────────── */
+.chord-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.chord-btn {
+  min-height: var(--btn-h);
+  border: 2px solid var(--border);
+  border-radius: var(--rad);
+  background: var(--surface);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition: border-color .15s, background .15s, transform .1s;
+  touch-action: manipulation;
+}
+
+.chord-btn:active       { transform: scale(.95); }
+.chord-btn.active {
+  border-color: var(--chord-color, var(--nota-sol));
+  background: color-mix(in srgb, var(--chord-color, var(--nota-sol)) 15%, var(--surface));
+}
+
+.chord-btn__name  { font-size: var(--lg);  font-weight: 800; }
+.chord-btn__label { font-size: var(--sm);  color: var(--text-soft); }
+
+/* ── 10. UTILITÁRIOS ───────────────────────────────────────── */
+.text-center { text-align: center; }
+.text-soft   { color: var(--text-soft); }
+.mt-auto     { margin-top: auto; }
+.gap-8       { gap: 8px; }
+.gap-12      { gap: 12px; }
