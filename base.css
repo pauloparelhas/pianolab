@@ -1,0 +1,358 @@
+/* =============================================================
+   PianoLab — base.css
+   Design system compartilhado por todos os módulos
+   ============================================================= */
+
+/* ── 1. VARIÁVEIS ──────────────────────────────────────────── */
+:root {
+  /* Paleta: 7 notas = 7 cores (associação permanente — nunca reutilizar) */
+  --nota-do:   #E53935;
+  --nota-re:   #FB8C00;
+  --nota-mi:   #F9A825;
+  --nota-fa:   #43A047;
+  --nota-sol:  #1E88E5;
+  --nota-la:   #8E24AA;
+  --nota-si:   #E91E63;
+  --nota-sust: #37474F; /* teclas pretas / sustenidos */
+
+  /* Superfícies */
+  --bg:        #FAFAFA;
+  --surface:   #FFFFFF;
+  --surface2:  #F0F0F0;
+  --border:    #E0E0E0;
+  --text:      #212121;
+  --text-soft: #757575;
+
+  /* Tipografia escalável — var(--fs) ajustado via Settings */
+  --fs: 1;
+  --sm:  calc(1.2rem  * var(--fs));
+  --md:  calc(1.55rem * var(--fs));
+  --lg:  calc(2.1rem  * var(--fs));
+  --xl:  calc(2.7rem  * var(--fs));
+  --2xl: calc(3.4rem  * var(--fs));
+
+  /* Componentes */
+  --btn-h:   80px;
+  --rad:     18px;
+  --radlg:   26px;
+  --shadow:  0 2px 12px rgba(0,0,0,.12);
+  --shadow2: 0 4px 24px rgba(0,0,0,.18);
+
+  /* Teclado de piano */
+  --key-w:   44px;
+  --key-h:   160px;
+  --key-bk-w: 28px;  /* tecla preta: ~60% de --key-w */
+  --key-bk-h: 96px;  /* tecla preta: ~60% de --key-h */
+}
+
+/* Tema escuro */
+[data-theme="dark"] {
+  --bg:        #121212;
+  --surface:   #1E1E1E;
+  --surface2:  #2A2A2A;
+  --border:    #333333;
+  --text:      #EEEEEE;
+  --text-soft: #9E9E9E;
+}
+
+/* ── 2. RESET ──────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden; /* tudo cabe em 360px — sem scroll durante exercício */
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-size: var(--md);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.4;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ── 3. LAYOUT DE TELA ─────────────────────────────────────── */
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;   /* dynamic viewport height — mobile friendly */
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  height: 48px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.header__title {
+  font-size: var(--md);
+  font-weight: 700;
+  letter-spacing: .5px;
+}
+
+.header__actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.content {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── 4. TELAS (screens) ────────────────────────────────────── */
+.screen {
+  display: none;
+  flex-direction: column;
+  flex: 1;
+  padding: 12px 16px;
+  gap: 12px;
+}
+
+.screen.active {
+  display: flex;
+}
+
+/* ── 5. BOTÕES ─────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: var(--btn-h);
+  padding: 0 20px;
+  border: none;
+  border-radius: var(--rad);
+  font-size: var(--md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform .1s, box-shadow .1s, filter .15s;
+  background: var(--surface2);
+  color: var(--text);
+}
+
+.btn:active {
+  transform: scale(.96);
+}
+
+.btn--primary {
+  background: var(--nota-sol);
+  color: #fff;
+  box-shadow: var(--shadow);
+}
+
+.btn--icon {
+  min-height: 40px;
+  width: 40px;
+  padding: 0;
+  border-radius: 50%;
+  background: transparent;
+  font-size: var(--lg);
+}
+
+/* ── 6. TECLADO DE PIANO ───────────────────────────────────── */
+.piano-wrap {
+  position: relative;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 8px;
+  flex-shrink: 0;
+}
+
+.piano {
+  display: flex;
+  position: relative;
+  height: var(--key-h);
+}
+
+/* Tecla branca */
+.key {
+  position: relative;
+  width: var(--key-w);
+  height: var(--key-h);
+  background: #FFFFFF;
+  border: 1.5px solid #BDBDBD;
+  border-radius: 0 0 8px 8px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background .08s, transform .08s, box-shadow .08s;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 8px;
+  touch-action: manipulation;
+}
+
+.key:active,
+.key.pressed {
+  background: var(--key-active-color, #E0E0E0);
+  transform: scaleY(.97);
+  transform-origin: top center;
+  box-shadow: inset 0 -3px 6px rgba(0,0,0,.15);
+}
+
+/* Tecla preta (sustenido/bemol) */
+.key--black {
+  position: absolute;
+  width: var(--key-bk-w);
+  height: var(--key-bk-h);
+  background: var(--nota-sust);
+  border: none;
+  border-radius: 0 0 5px 5px;
+  z-index: 2;
+  top: 0;
+  transform: translateX(-50%);
+}
+
+.key--black:active,
+.key--black.pressed {
+  background: #546E7A;
+  transform: translateX(-50%) scaleY(.97);
+  transform-origin: top center;
+}
+
+/* Nota ativa com cor da paleta */
+.key.active {
+  background: var(--key-active-color, #E0E0E0);
+  box-shadow: 0 0 12px var(--key-active-color, #E0E0E0);
+}
+
+.key--black.active {
+  background: var(--key-active-color, #546E7A);
+  box-shadow: 0 0 10px var(--key-active-color, #546E7A);
+}
+
+/* Label da nota na tecla */
+.key__label {
+  font-size: .65rem;
+  font-weight: 700;
+  color: var(--text-soft);
+  pointer-events: none;
+  transition: color .08s;
+}
+
+.key.active .key__label,
+.key.pressed .key__label {
+  color: rgba(0,0,0,.5);
+}
+
+/* ── 7. ANIMAÇÕES ──────────────────────────────────────────── */
+@keyframes pulse-green {
+  0%   { box-shadow: 0 0 0 0 rgba(67,160,71,.6); }
+  70%  { box-shadow: 0 0 0 14px rgba(67,160,71,0); }
+  100% { box-shadow: 0 0 0 0 rgba(67,160,71,0); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%  { transform: translateX(-4px); }
+  40%  { transform: translateX(4px); }
+  60%  { transform: translateX(-3px); }
+  80%  { transform: translateX(3px); }
+}
+
+@keyframes bounce-in {
+  0%   { transform: scale(.8); opacity: 0; }
+  60%  { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+.anim-pulse-green { animation: pulse-green .7s ease-out; }
+.anim-shake       { animation: shake .35s ease-in-out; }
+.anim-bounce      { animation: bounce-in .3s ease-out; }
+
+/* ── 8. CORES DAS NOTAS (classes utilitárias) ──────────────── */
+.nota-do  { --key-active-color: var(--nota-do);  }
+.nota-re  { --key-active-color: var(--nota-re);  }
+.nota-mi  { --key-active-color: var(--nota-mi);  }
+.nota-fa  { --key-active-color: var(--nota-fa);  }
+.nota-sol { --key-active-color: var(--nota-sol); }
+.nota-la  { --key-active-color: var(--nota-la);  }
+.nota-si  { --key-active-color: var(--nota-si);  }
+
+/* ── 9. CARDS DE ACORDE / MÓDULO ───────────────────────────── */
+.chord-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.chord-btn {
+  min-height: var(--btn-h);
+  border: 2px solid var(--border);
+  border-radius: var(--rad);
+  background: var(--surface);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition: border-color .15s, background .15s, transform .1s;
+  touch-action: manipulation;
+}
+
+.chord-btn:active { transform: scale(.95); }
+
+.chord-btn.active {
+  border-color: var(--chord-color, var(--nota-sol));
+  background: color-mix(in srgb, var(--chord-color, var(--nota-sol)) 15%, var(--surface));
+}
+
+.chord-btn__name {
+  font-size: var(--lg);
+  font-weight: 800;
+}
+
+.chord-btn__label {
+  font-size: var(--sm);
+  color: var(--text-soft);
+}
+
+/* ── 10. UTILITÁRIOS ───────────────────────────────────────── */
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gap-8  { gap: 8px; }
+.gap-12 { gap: 12px; }
+.mt-auto { margin-top: auto; }
+
+/* Instrução / label acima do teclado */
+.chord-display {
+  text-align: center;
+  padding: 8px 0;
+}
+
+.chord-display__name {
+  font-size: var(--2xl);
+  font-weight: 900;
+  line-height: 1;
+  transition: color .2s;
+}
+
+.chord-display__notes {
+  font-size: var(--sm);
+  color: var(--text-soft);
+  margin-top: 4px;
+}

@@ -1,0 +1,10 @@
+# Configurações locais do Claude Code (não versionar)
+.claude/settings.local.json
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+*.code-workspace
