@@ -4,290 +4,428 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>PianoLab — Demo</title>
-  <link rel="stylesheet" href="base.css">
   <style>
-    /* ── Layout em 360px de altura — sem scroll ──────────────
-       360px total
-       - header:       48px
-       - screen pad:   8+8 = 16px
-       - chord-display: 68px (nome 44px + pills 20px + gap 4px)
-       - gap:           8px
-       - chord-grid:    64px
-       - gap:           8px
-       - piano-wrap:   148px (key-h 140px + padding-bottom 8px)
-       = 360px ✓
-    ──────────────────────────────────────────────────────── */
-
+    /* ── DESIGN SYSTEM ─────────────────────────────────────── */
     :root {
+      --nota-do:   #E53935;
+      --nota-re:   #FB8C00;
+      --nota-mi:   #F9A825;
+      --nota-fa:   #43A047;
+      --nota-sol:  #1E88E5;
+      --nota-la:   #8E24AA;
+      --nota-si:   #E91E63;
+      --nota-sust: #37474F;
+
+      --bg:        #FAFAFA;
+      --surface:   #FFFFFF;
+      --surface2:  #F0F0F0;
+      --border:    #E0E0E0;
+      --text:      #212121;
+      --text-soft: #757575;
+
+      --fs: 1;
+      --sm:  calc(1.2rem  * var(--fs));
+      --md:  calc(1.55rem * var(--fs));
+      --lg:  calc(2.1rem  * var(--fs));
+      --rad: 18px;
+
+      --key-w:    44px;
       --key-h:    140px;
+      --key-bk-w: 28px;
       --key-bk-h: 84px;
     }
 
+    [data-theme="dark"] {
+      --bg: #121212; --surface: #1E1E1E; --surface2: #2A2A2A;
+      --border: #333; --text: #EEE; --text-soft: #9E9E9E;
+    }
+
+    /* ── RESET ─────────────────────────────────────────────── */
+    *, *::before, *::after {
+      box-sizing: border-box; margin: 0; padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    html, body { height: 100%; overflow: hidden; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg); color: var(--text);
+      line-height: 1.4; user-select: none; -webkit-user-select: none;
+    }
+
+    /* ── LAYOUT ─────────────────────────────────────────────── */
+    .app {
+      display: flex; flex-direction: column;
+      height: 100dvh; max-width: 480px; margin: 0 auto;
+    }
+
+    .header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 16px; height: 48px;
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .header__title { font-size: var(--md); font-weight: 700; letter-spacing: .5px; }
+    .header__actions { display: flex; gap: 8px; align-items: center; }
+
+    .content { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+
+    /* ── TELA DEMO ──────────────────────────────────────────── */
+    /* Layout 360px: header 48 + pad 16 + chord-display 56 + gap 8 + chord-grid 64 + gap 8 + piano 148 = 348px ✓ */
     .screen {
-      padding: 8px 12px;
-      gap: 8px;
+      display: flex; flex-direction: column;
+      flex: 1; padding: 8px 12px; gap: 8px;
     }
 
+    /* ── CHORD DISPLAY ──────────────────────────────────────── */
     .chord-display {
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
+      text-align: center; display: flex;
+      flex-direction: column; gap: 4px;
     }
-
     .chord-display__name {
-      font-size: 1.8rem;
-      font-weight: 900;
-      line-height: 1.1;
-      min-height: 2rem;
+      font-size: 1.8rem; font-weight: 900;
+      line-height: 1.1; min-height: 2rem; transition: color .2s;
     }
-
     .note-pills {
-      display: flex;
-      gap: 5px;
-      justify-content: center;
-      min-height: 20px;
+      display: flex; gap: 5px;
+      justify-content: center; min-height: 20px;
     }
-
     .note-pill {
-      padding: 1px 9px;
-      border-radius: 20px;
-      font-size: .7rem;
-      font-weight: 700;
-      color: #fff;
-      opacity: 0;
-      transform: translateY(4px);
+      padding: 1px 9px; border-radius: 20px;
+      font-size: .7rem; font-weight: 700; color: #fff;
+      opacity: 0; transform: translateY(4px);
       transition: opacity .2s, transform .2s;
     }
+    .note-pill.visible { opacity: 1; transform: translateY(0); }
 
-    .note-pill.visible {
-      opacity: 1;
-      transform: translateY(0);
+    /* ── BOTÕES DE ACORDE ───────────────────────────────────── */
+    .chord-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
     }
-
     .chord-btn {
-      min-height: 64px;
-      position: relative;
-      overflow: hidden;
+      min-height: 64px; border: 2px solid var(--border);
+      border-radius: var(--rad); background: var(--surface);
+      cursor: pointer; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 4px;
+      transition: border-color .15s, background .15s, transform .1s;
+      touch-action: manipulation; overflow: hidden;
+    }
+    .chord-btn:active, .chord-btn.playing { transform: scale(.95); }
+    .chord-btn.active {
+      border-color: var(--chord-color, var(--nota-sol));
+      background: color-mix(in srgb, var(--chord-color, var(--nota-sol)) 15%, var(--surface));
+    }
+    .chord-btn__name { font-size: 1.4rem; font-weight: 800; }
+    .chord-btn__label { font-size: .65rem; color: var(--text-soft); }
+
+    /* ── TECLADO DE PIANO ───────────────────────────────────── */
+    .piano-wrap {
+      position: relative; overflow-x: auto; overflow-y: hidden;
+      padding-bottom: 8px; flex-shrink: 0;
+    }
+    .piano { display: flex; position: relative; height: var(--key-h); }
+
+    .key {
+      position: relative; width: var(--key-w); height: var(--key-h);
+      background: #FFF; border: 1.5px solid #BDBDBD;
+      border-radius: 0 0 8px 8px; cursor: pointer; flex-shrink: 0;
+      transition: background .08s, transform .08s, box-shadow .08s;
+      z-index: 1; display: flex; align-items: flex-end;
+      justify-content: center; padding-bottom: 8px; touch-action: manipulation;
+    }
+    .key:active, .key.pressed {
+      background: var(--key-active-color, #E0E0E0);
+      transform: scaleY(.97); transform-origin: top center;
+      box-shadow: inset 0 -3px 6px rgba(0,0,0,.15);
+    }
+    .key.active {
+      background: var(--key-active-color, #E0E0E0);
+      box-shadow: 0 0 12px var(--key-active-color, #E0E0E0);
     }
 
-    .chord-btn.playing { transform: scale(.95); }
+    .key--black {
+      position: absolute; width: var(--key-bk-w); height: var(--key-bk-h);
+      background: var(--nota-sust); border: none;
+      border-radius: 0 0 5px 5px; z-index: 2; top: 0;
+      transform: translateX(-50%);
+    }
+    .key--black:active, .key--black.pressed {
+      background: #546E7A;
+      transform: translateX(-50%) scaleY(.97); transform-origin: top center;
+    }
+    .key--black.active {
+      background: var(--key-active-color, #546E7A);
+      box-shadow: 0 0 10px var(--key-active-color, #546E7A);
+    }
 
-    .chord-btn__name  { font-size: 1.4rem; }
-    .chord-btn__label { font-size: .65rem; }
+    .key__label {
+      font-size: .6rem; font-weight: 700; color: var(--text-soft);
+      pointer-events: none; transition: color .08s;
+    }
+    .key.active .key__label, .key.pressed .key__label { color: rgba(0,0,0,.4); }
 
-    #piano-container { flex-shrink: 0; }
+    /* Cores das notas */
+    .nota-do  { --key-active-color: var(--nota-do);  }
+    .nota-re  { --key-active-color: var(--nota-re);  }
+    .nota-mi  { --key-active-color: var(--nota-mi);  }
+    .nota-fa  { --key-active-color: var(--nota-fa);  }
+    .nota-sol { --key-active-color: var(--nota-sol); }
+    .nota-la  { --key-active-color: var(--nota-la);  }
+    .nota-si  { --key-active-color: var(--nota-si);  }
 
-    #btn-sound { font-size: 1.4rem; cursor: pointer; }
+    /* Toggle de som */
+    #btn-sound {
+      min-height: 40px; width: 40px; border: none; border-radius: 50%;
+      background: transparent; font-size: 1.4rem; cursor: pointer;
+    }
   </style>
 </head>
 <body>
   <div class="app">
-
-    <!-- Cabeçalho -->
     <header class="header">
       <span class="header__title">🎹 PianoLab</span>
       <div class="header__actions">
-        <button class="btn btn--icon" id="btn-sound" title="Som on/off">🔊</button>
+        <button id="btn-sound" title="Som on/off">🔊</button>
       </div>
     </header>
-
-    <!-- Conteúdo principal -->
     <main class="content">
-      <div class="screen active" id="screen-demo">
-
-        <!-- Nome e notas do acorde selecionado -->
+      <div class="screen">
         <div class="chord-display">
           <div class="chord-display__name" id="chord-name">—</div>
           <div class="note-pills" id="note-pills"></div>
         </div>
-
-        <!-- Botões dos 4 acordes (I–V–vi–IV em Dó maior) -->
         <div class="chord-grid" id="chord-grid"></div>
-
-        <!-- Teclado de piano (inserido via JS) -->
         <div id="piano-container"></div>
-
       </div>
     </main>
-
   </div>
 
-  <script src="base.js"></script>
   <script>
-    /* ── DADOS DOS ACORDES DA DEMO ──────────────────────────── */
+    'use strict';
 
-    // Campo harmônico de Dó maior: I, V, vi, IV
-    // Construídos programaticamente usando base.js
-    const ACORDES_DEMO = [
-      {
-        id: 'C',
-        nome: 'Dó',
-        cifra: 'C',
-        tipo: 'maior',
-        raiz: 'C4',
-        cor: 'var(--nota-do)',
-        classCor: 'nota-do',
-      },
-      {
-        id: 'G',
-        nome: 'Sol',
-        cifra: 'G',
-        tipo: 'maior',
-        raiz: 'G4',
-        cor: 'var(--nota-sol)',
-        classCor: 'nota-sol',
-      },
-      {
-        id: 'Am',
-        nome: 'Lám',
-        cifra: 'Am',
-        tipo: 'menor',
-        raiz: 'A4',
-        cor: 'var(--nota-la)',
-        classCor: 'nota-la',
-      },
-      {
-        id: 'F',
-        nome: 'Fá',
-        cifra: 'F',
-        tipo: 'maior',
-        raiz: 'F4',
-        cor: 'var(--nota-fa)',
-        classCor: 'nota-fa',
-      },
-    ];
+    /* ── ÁUDIO ─────────────────────────────────────────────── */
+    const AudioEngine = (() => {
+      let ctx = null;
+      const FREQ = {
+        C:261.63,'C#':277.18,D:293.66,'D#':311.13,E:329.63,
+        F:349.23,'F#':369.99,G:392.00,'G#':415.30,A:440.00,'A#':466.16,B:493.88
+      };
 
-    // Resolve notas de cada acorde usando base.js
-    ACORDES_DEMO.forEach(a => {
-      a.notas = buildChord(a.raiz, FORMULAS[a.tipo]);
-    });
-
-    /* ── ESTADO ─────────────────────────────────────────────── */
-
-    let acordeAtivo = null;
-    let keyboard = null;
-
-    /* ── PIANO ──────────────────────────────────────────────── */
-
-    keyboard = createPianoKeyboard(
-      document.getElementById('piano-container'),
-      {
-        startNote: 'C4',
-        endNote:   'B5',
-        showLabels: true,
-        onNoteOn(noteStr) {
-          // Quando usuário toca manualmente, não altera o acorde ativo
-        }
+      function init() {
+        if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+        if (ctx.state === 'suspended') ctx.resume();
       }
-    );
 
-    /* ── BOTÕES DE ACORDE ───────────────────────────────────── */
+      function play(noteStr, dur = 0.7) {
+        if (localStorage.getItem('piano-sound') === 'off') return;
+        init();
+        const m = noteStr.match(/^([A-G]#?)(\d)$/);
+        if (!m) return;
+        const hz = FREQ[m[1]] * Math.pow(2, parseInt(m[2]) - 4);
+        const vol = parseFloat(localStorage.getItem('piano-volume') || '0.6');
+        const now = ctx.currentTime;
+        const g = ctx.createGain();
+        [hz, hz * 2].forEach((f, i) => {
+          const o = ctx.createOscillator();
+          o.type = i === 0 ? 'triangle' : 'sine';
+          o.frequency.value = f;
+          o.connect(g); o.start(now); o.stop(now + dur);
+        });
+        g.connect(ctx.destination);
+        g.gain.setValueAtTime(0, now);
+        g.gain.linearRampToValueAtTime(vol * .35, now + .012);
+        g.gain.exponentialRampToValueAtTime(vol * .18, now + .1);
+        g.gain.setValueAtTime(vol * .18, now + dur - .08);
+        g.gain.exponentialRampToValueAtTime(.001, now + dur);
+      }
 
-    const grid = document.getElementById('chord-grid');
+      function playChord(notes, delay = 90, dur = 1.8) {
+        notes.forEach((n, i) => setTimeout(() => play(n, dur), i * delay));
+      }
 
-    ACORDES_DEMO.forEach(acorde => {
+      return { play, playChord, init };
+    })();
+
+    /* ── TEORIA MUSICAL ─────────────────────────────────────── */
+    const CROMATICA = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+
+    function noteToMidi(s) {
+      const m = s.match(/^([A-G]#?)(\d)$/);
+      return m ? CROMATICA.indexOf(m[1]) + (parseInt(m[2]) + 1) * 12 : null;
+    }
+
+    function midiToNote(n) {
+      return CROMATICA[n % 12] + (Math.floor(n / 12) - 1);
+    }
+
+    function buildChord(root, intervals) {
+      const midi = noteToMidi(root);
+      return intervals.map(i => midiToNote(midi + i));
+    }
+
+    const FORMULAS = { maior: [0,4,7], menor: [0,3,7] };
+
+    const COR_MAP = {
+      C:'var(--nota-do)', D:'var(--nota-re)', E:'var(--nota-mi)',
+      F:'var(--nota-fa)', G:'var(--nota-sol)', A:'var(--nota-la)', B:'var(--nota-si)'
+    };
+    const CLASSE_COR = {
+      C:'nota-do', D:'nota-re', E:'nota-mi', F:'nota-fa',
+      G:'nota-sol', A:'nota-la', B:'nota-si'
+    };
+    const NOMES_PT = { C:'Dó', D:'Ré', E:'Mi', F:'Fá', G:'Sol', A:'Lá', B:'Si' };
+
+    function notaBase(noteStr) { return noteStr.replace(/[#\d]/g, ''); }
+
+    /* ── TECLADO ─────────────────────────────────────────────── */
+    function createPiano(container, { startNote='C4', endNote='B5' } = {}) {
+      const KEY_W = 44, BK_W = 28;
+      const start = noteToMidi(startNote), end = noteToMidi(endNote);
+
+      const wrap = document.createElement('div');
+      wrap.className = 'piano-wrap';
+      const piano = document.createElement('div');
+      piano.className = 'piano';
+      wrap.appendChild(piano);
+
+      const keys = {};
+
+      // Teclas brancas
+      for (let midi = start; midi <= end; midi++) {
+        const note = midiToNote(midi);
+        const base = notaBase(note);
+        if (note.includes('#')) continue;
+        const key = document.createElement('div');
+        key.className = 'key ' + (CLASSE_COR[base] || '');
+        key.dataset.note = note;
+        const lbl = document.createElement('span');
+        lbl.className = 'key__label';
+        lbl.textContent = base === 'C' ? note : '';
+        key.appendChild(lbl);
+        bindKey(key, note);
+        piano.appendChild(key);
+        keys[midi] = key;
+      }
+
+      // Teclas pretas
+      let wp = 0;
+      for (let midi = start; midi <= end; midi++) {
+        const note = midiToNote(midi);
+        if (!note.includes('#')) { wp++; continue; }
+        const key = document.createElement('div');
+        key.className = 'key key--black';
+        key.dataset.note = note;
+        key.style.left = (wp * KEY_W - BK_W / 2) + 'px';
+        bindKey(key, note);
+        piano.appendChild(key);
+        keys[midi] = key;
+      }
+
+      container.appendChild(wrap);
+
+      function bindKey(key, note) {
+        const on  = e => { e.preventDefault(); AudioEngine.play(note); key.classList.add('pressed'); };
+        const off = e => { e.preventDefault(); key.classList.remove('pressed'); };
+        key.addEventListener('pointerdown', on);
+        key.addEventListener('pointerup', off);
+        key.addEventListener('pointerleave', off);
+        key.addEventListener('pointercancel', off);
+      }
+
+      return {
+        showChord(notes) {
+          Object.values(keys).forEach(k => k.classList.remove('active'));
+          notes.forEach(n => { const k = keys[noteToMidi(n)]; if (k) k.classList.add('active'); });
+        }
+      };
+    }
+
+    /* ── ACORDES DA DEMO (I–V–vi–IV em Dó maior) ────────────── */
+    const ACORDES = [
+      { id:'C',  cifra:'C',  nome:'Dó',  tipo:'maior', raiz:'C4', cor:'var(--nota-do)'  },
+      { id:'G',  cifra:'G',  nome:'Sol', tipo:'maior', raiz:'G4', cor:'var(--nota-sol)' },
+      { id:'Am', cifra:'Am', nome:'Lám', tipo:'menor', raiz:'A4', cor:'var(--nota-la)'  },
+      { id:'F',  cifra:'F',  nome:'Fá',  tipo:'maior', raiz:'F4', cor:'var(--nota-fa)'  },
+    ].map(a => ({ ...a, notas: buildChord(a.raiz, FORMULAS[a.tipo]) }));
+
+    /* ── INICIALIZAÇÃO ──────────────────────────────────────── */
+    const piano = createPiano(document.getElementById('piano-container'));
+    const grid  = document.getElementById('chord-grid');
+    const nomeEl = document.getElementById('chord-name');
+    const pillsEl = document.getElementById('note-pills');
+
+    // Botões de acorde
+    ACORDES.forEach(ac => {
       const btn = document.createElement('button');
       btn.className = 'chord-btn';
-      btn.dataset.id = acorde.id;
-      btn.style.setProperty('--chord-color', acorde.cor);
-
-      btn.innerHTML = `
-        <span class="chord-btn__name">${acorde.cifra}</span>
-        <span class="chord-btn__label">${acorde.nome}</span>
-      `;
-
-      btn.addEventListener('click', () => tocarAcorde(acorde, btn));
+      btn.dataset.id = ac.id;
+      btn.style.setProperty('--chord-color', ac.cor);
+      btn.innerHTML = `<span class="chord-btn__name">${ac.cifra}</span><span class="chord-btn__label">${ac.nome}</span>`;
+      btn.addEventListener('click', () => tocar(ac, btn));
       grid.appendChild(btn);
     });
 
-    /* ── LÓGICA PRINCIPAL ───────────────────────────────────── */
-
-    function tocarAcorde(acorde, btn) {
-      // Atualiza estado visual dos botões
+    function tocar(ac, btn) {
       document.querySelectorAll('.chord-btn').forEach(b => b.classList.remove('active', 'playing'));
       btn.classList.add('active', 'playing');
       setTimeout(() => btn.classList.remove('playing'), 200);
 
-      // Exibe nome do acorde
-      const nomeEl = document.getElementById('chord-name');
-      nomeEl.textContent = `${acorde.cifra} — ${acorde.nome}`;
-      nomeEl.style.color = acorde.cor;
+      nomeEl.textContent = `${ac.cifra} — ${ac.nome}`;
+      nomeEl.style.color = ac.cor;
 
-      // Exibe pílulas das notas
-      renderNotePills(acorde);
-
-      // Destaca teclas no teclado
-      keyboard.showChord(acorde.notas);
-
-      // Toca arpejo → sustenta acorde
-      AudioEngine.playChord(acorde.notas, 90, 1.8);
-
-      // Fala o nome do acorde (TTS)
-      TTS.falar(acorde.nome);
-
-      acordeAtivo = acorde;
-    }
-
-    function renderNotePills(acorde) {
-      const container = document.getElementById('note-pills');
-      container.innerHTML = '';
-
-      acorde.notas.forEach((noteStr, i) => {
-        const noteName = noteStr.replace(/\d/, ''); // ex: 'C#' de 'C#4'
+      // Pílulas das notas
+      pillsEl.innerHTML = '';
+      ac.notas.forEach((n, i) => {
+        const base = notaBase(n);
         const pill = document.createElement('span');
-        pill.className = 'note-pill ' + noteCssClass(noteStr);
-
-        const NOMES_PT = { C:'Dó', D:'Ré', E:'Mi', F:'Fá', G:'Sol', A:'Lá', B:'Si' };
-        const noteBase = noteName.replace('#', '');
-        pill.textContent = NOMES_PT[noteBase] || noteName;
-
-        const corMap = {
-          C: 'var(--nota-do)', D: 'var(--nota-re)', E: 'var(--nota-mi)',
-          F: 'var(--nota-fa)', G: 'var(--nota-sol)', A: 'var(--nota-la)',
-          B: 'var(--nota-si)'
-        };
-        pill.style.background = corMap[noteBase] || '#666';
-
-        container.appendChild(pill);
-
-        // Animação escalonada
+        pill.className = 'note-pill';
+        pill.textContent = NOMES_PT[base] || base;
+        pill.style.background = COR_MAP[base] || '#666';
+        pillsEl.appendChild(pill);
         setTimeout(() => pill.classList.add('visible'), i * 80);
       });
+
+      piano.showChord(ac.notas);
+      AudioEngine.playChord(ac.notas);
+
+      if (window.speechSynthesis && localStorage.getItem('piano-sound') !== 'off') {
+        speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(ac.nome);
+        u.lang = 'pt-BR'; u.rate = .95; u.pitch = 1.1;
+        speechSynthesis.speak(u);
+      }
     }
 
-    /* ── TOGGLE DE SOM ──────────────────────────────────────── */
-
+    // Toggle de som
     const btnSound = document.getElementById('btn-sound');
-
-    function updateSoundBtn() {
-      btnSound.textContent = Settings.getSoundOn() ? '🔊' : '🔇';
+    function updateSound() {
+      btnSound.textContent = localStorage.getItem('piano-sound') === 'off' ? '🔇' : '🔊';
     }
-
     btnSound.addEventListener('click', () => {
-      Settings.setSoundOn(!Settings.getSoundOn());
-      updateSoundBtn();
+      const off = localStorage.getItem('piano-sound') !== 'off';
+      localStorage.setItem('piano-sound', off ? 'off' : 'on');
+      updateSound();
     });
+    updateSound();
 
-    updateSoundBtn();
+    // Init AudioContext no primeiro toque
+    document.addEventListener('pointerdown', () => AudioEngine.init(), { once: true });
 
-    /* ── INICIALIZAÇÃO ──────────────────────────────────────── */
-
-    // Toca Dó maior automaticamente ao carregar (após gesto do usuário)
-    document.addEventListener('pointerdown', () => {
-      AudioEngine.init();
-    }, { once: true });
-
-    // Acende Dó maior como estado inicial (sem tocar)
+    // Estado inicial: Dó maior aceso (sem tocar)
     (() => {
-      const acorde = ACORDES_DEMO[0];
-      const nomeEl = document.getElementById('chord-name');
-      nomeEl.textContent = `${acorde.cifra} — ${acorde.nome}`;
-      nomeEl.style.color = acorde.cor;
-      document.querySelector(`[data-id="${acorde.id}"]`)?.classList.add('active');
-      keyboard.showChord(acorde.notas);
-      renderNotePills(acorde);
-      acordeAtivo = acorde;
+      const ac = ACORDES[0];
+      nomeEl.textContent = `${ac.cifra} — ${ac.nome}`;
+      nomeEl.style.color = ac.cor;
+      document.querySelector(`[data-id="${ac.id}"]`)?.classList.add('active');
+      piano.showChord(ac.notas);
+      ac.notas.forEach((n, i) => {
+        const base = notaBase(n);
+        const pill = document.createElement('span');
+        pill.className = 'note-pill';
+        pill.textContent = NOMES_PT[base] || base;
+        pill.style.background = COR_MAP[base] || '#666';
+        pillsEl.appendChild(pill);
+        setTimeout(() => pill.classList.add('visible'), i * 80 + 300);
+      });
     })();
   </script>
 </body>

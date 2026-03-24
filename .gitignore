@@ -5,6 +5,10 @@
 memory/
 piano_CLAUDE.md
 
+# Arquivos de desenvolvimento local (embutidos no demo.html)
+base.css
+base.js
+
 # Sistema operacional
 .DS_Store
 Thumbs.db
