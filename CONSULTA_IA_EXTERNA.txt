@@ -1,0 +1,213 @@
+================================================================================
+PIANOLAB — CONSULTA PARA IA EXTERNA
+Projeto: App de ensino de piano para criança de 7–9 anos
+Stack: HTML + CSS + JS puro (sem build, sem framework, funciona offline)
+Repo: github.com/pauloparelhas/pianolab
+================================================================================
+
+## CONTEXTO DO PROJETO
+
+Estamos construindo um curso interativo de piano chamado PianoLab. Público-alvo:
+criança de 7–9 anos, usando celular ou tablet com supervisão do pai.
+
+Stack atual (Fase 1 — sem build step):
+- HTML + CSS + JS puro
+- Web Audio API (áudio sintético, triangular — ainda sem samples reais)
+- Fullscreen API, SpeechSynthesis API (TTS)
+- localStorage para progresso
+- Publicado no GitHub Pages
+
+Arquitetura atual:
+- base.js     → motor: áudio, teclado piano, teoria musical, nav, TTS, LockMode
+- piano.css   → todo visual do teclado (ponto único de controle)
+- base.css    → design system: cores, tipografia, layout
+- m1.html     → Módulo 1: O Dó Central (concluído)
+- m2.html     → Módulo 2: As 5 Primeiras Notas (concluído, com layout novo)
+- index.html  → Hub de navegação (precisa de redesign)
+
+Currículo planejado:
+1. Notas (nome + posição no teclado) ← estamos aqui
+2. Escalas (maior, menor, todas as 12 tonalidades)
+3. Intervalos
+4. Acordes e cifras
+5. Campo harmônico
+6. Progressões e padrões
+7. Transposição
+8. Frases musicais e leitura de partitura
+
+Layout atual dos módulos (M2 em diante):
+- .piano-body: corpo escuro inspirado no Yamaha P-125
+- .digital-panel: painel LCD/OLED com navegação e conteúdo
+- .piano-stage: teclado ocupa destaque, preenche 100% da largura
+- Portrait: painel cima + teclado baixo | Landscape: painel esquerda + teclado direita
+
+================================================================================
+## PERGUNTAS — RESPONDA EM FORMATO MARKDOWN ESTRUTURADO
+================================================================================
+
+### BLOCO 1 — BIBLIOTECAS E FERRAMENTAS (confirmar / descobrir alternativas)
+
+Para cada item abaixo, avalie se a biblioteca é adequada para nosso uso
+(HTML+CSS+JS puro, CDN, offline, projeto educacional infantil):
+
+A) VexFlow (notação musical em SVG)
+   - É a melhor opção para renderizar partitura sincronizada com o piano?
+   - Alternativas mais leves que mereçam consideração?
+   - Qual versão CDN é mais estável hoje?
+
+B) Tone.js (áudio)
+   - Vale substituir nosso Web Audio API sintético por Tone.js?
+   - Tem suporte a piano Salamander (samples reais) via CDN?
+   - Qual impacto no tamanho do bundle e tempo de carregamento offline?
+
+C) Tonal.js (teoria musical)
+   - Cobre: escalas, acordes, transposição, campo harmônico, enarmonia?
+   - API é simples o suficiente para uso direto no módulo HTML?
+   - Exemplo de uso: "dado C maior, retorne as notas da escala"
+
+D) Anime.js (animações)
+   - É adequado para: animar teclas sequencialmente (simular dedilhado),
+     mostrar setas de transposição, highlights que pulsam no ritmo?
+   - GSAP é superior para esse caso específico de piano?
+   - Alternativa CSS pura cobre todos esses casos sem biblioteca?
+
+E) Existe alguma biblioteca específica para **visualização de teclado de piano**
+   que faça o trabalho pesado (renderizar teclas, highlight, labels)?
+   Avaliar se vale usar ou se nosso código manual é melhor para controle total.
+
+---
+
+### BLOCO 2 — PAPERCLIP.ING (integração com Claude Code)
+
+Paperclip.ing tem um adapter "claude_local" que integra com o CLI do Claude Code.
+Queremos usar para coordenar agentes autonomamente: um agente gerente coordena
+agentes de teoria, QA, arquivista e implementação sem intervenção manual.
+
+A) Como configurar a integração Paperclip.ing + Claude Code CLI passo a passo?
+   (assumir: repo público no GitHub, Claude Code instalado localmente)
+
+B) Exemplo concreto de workflow:
+   - Paperclip cria task "construir M3 — As 7 Notas"
+   - Como os agentes são disparados em sequência?
+   - Como o resultado (arquivo HTML) é commitado e verificado?
+
+C) Limitações reais: o que Paperclip.ing NÃO consegue fazer com Claude Code CLI?
+   O que precisa de supervisão humana mesmo com a integração?
+
+D) Alternativa ao Paperclip.ing para orquestração de agentes Claude Code?
+   (ex: n8n, Zapier, GitHub Actions, script bash simples)
+
+---
+
+### BLOCO 3 — PEDAGOGIA E UX PARA 7–9 ANOS
+
+A) Quais são as melhores práticas de UI/UX comprovadas para apps educacionais
+   de música para crianças de 7–9 anos?
+   (referências: Simply Piano, Yousician, Piano Marvel, apps Montessori)
+
+B) Para uma criança de 7–9 anos aprender notas no piano:
+   - Qual a sequência ideal? (ex: C D E primeiro, ou todas as teclas brancas?)
+   - Quanto tempo por sessão? Quantas repetições até fixar uma nota?
+   - Feedback de erro: o que funciona (neutro, encorajador) vs. o que frustra?
+
+C) Leitura de partitura para crianças: por onde começar?
+   - Notas na pauta antes ou depois de conhecer o teclado?
+   - Qual cifra ou sistema de notação é mais fácil (Dó=C vs. número de grau)?
+
+D) Gamificação leve para essa faixa etária:
+   - O que funciona (estrelas, desbloqueios, progresso visual)?
+   - O que causa dependência negativa ou distrai do aprendizado?
+
+---
+
+### BLOCO 4 — DESIGN DO TECLADO VISUAL
+
+Nosso teclado atual:
+- C4 a C5 (8 teclas brancas, responsive, preenche 100% da largura)
+- Labels em português: Dó, Ré, Mi, Fá, Sol, Lá, Si
+- Cor uniforme ao pressionar (#4FC3F7)
+- Teclas pretas escuras, borda preta estilo Yamaha P-125
+
+A) Para uma criança aprender as notas: labels sempre visíveis ou aparecem ao tocar?
+   Qual é a melhor prática comprovada?
+
+B) Devo usar cores diferentes por nota (Dó=vermelho, Ré=laranja etc.) nas teclas
+   durante a fase de aprendizado inicial, e depois remover as cores?
+   Há evidência de que essa abordagem ajuda ou atrapalha?
+
+C) O range C4-C5 (uma oitava) é correto para o início?
+   Quando expandir para duas oitavas? (qual módulo/fase?)
+
+D) Animações de tecla: qual combinação de efeitos visuais é mais eficaz para
+   ensinar consciência muscular/espacial no piano?
+   (glow, bounce, seta, número do dedo, etc.)
+
+---
+
+### BLOCO 5 — ESTRUTURA DE MÓDULOS FUTUROS
+
+Nosso padrão atual de módulo (data-driven):
+```js
+const MODULE = {
+  notes: [ { nome, base, midi, cor } ],
+  keyRange: { start: 'C4', end: 'C5' },
+  pressColor: '#4FC3F7',
+  sequential: true,
+};
+// QUIZ_FASE = notes.length + 1
+// CELEBRA_FASE = notes.length + 2
+```
+
+A) Para o M3 (As 7 Notas — adicionar Lá e Si):
+   - É correto manter o range C4-C5? (Lá e Si estão nesse range)
+   - A apresentação deve ser: mostrar Lá e Si novas + revisar as 5 anteriores?
+   - O quiz deve ser das 7 notas ou só das 2 novas?
+
+B) Para o M4 (Escala de Dó — sequência C D E F G A B C):
+   - Ascendente primeiro, depois descendente, depois as duas?
+   - Como mostrar visualmente a escala como um "caminho" no teclado?
+   - Dedilhado (1 2 3 1 2 3 4 5) deve ser ensinado nesse módulo ou no futuro?
+
+C) Para o M5 (Intervalos — 2ª, 3ª, 5ª):
+   - Qual a sequência ideal para uma criança de 7–9 anos?
+   - Como demonstrar visualmente a "distância" entre as teclas?
+
+D) Para treino de mãos (futuro): sequência ideal?
+   Mão direita → mão esquerda → as duas juntas?
+   Ou intercalar desde o início?
+
+---
+
+### BLOCO 6 — ANIMAÇÃO DE TRANSPOSIÇÃO (M8)
+
+Planejamos uma mini-animação para ensinar transposição:
+- Progressão 1-6-4-5 em Dó: C Am F G
+- Transpor para Sol: G Em C D
+- Mostrar visualmente cada acorde "saltando" X semitons à direita
+
+A) Essa abordagem visual é pedagogicamente válida para 7–9 anos?
+   Ou é complexo demais para essa faixa etária?
+
+B) Como animar "o mesmo formato, posição diferente" no teclado de piano?
+   Sugestão técnica: CSS transform, SVG path, canvas?
+
+C) Existe alguma app ou recurso visual que faça isso bem hoje?
+   (referência de como deveria parecer)
+
+---
+
+### FORMATO DA RESPOSTA ESPERADA
+
+Por favor, responda em **Markdown bem estruturado**, com:
+- Seções numeradas iguais aos blocos acima
+- Recomendações claras (✅ usar / ❌ evitar / ⚠️ condicional)
+- Exemplos de código onde aplicável (HTML/CSS/JS puro)
+- CDN links confirmados e atualizados
+- Fontes ou referências quando relevante
+
+O objetivo é ter uma resposta que possa ser salva como arquivo .md
+na pasta do projeto e usada diretamente pelo time de desenvolvimento.
+
+================================================================================
+FIM DO PROMPT
+================================================================================
