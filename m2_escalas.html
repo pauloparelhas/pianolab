@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>PianoLab — M2: Escalas</title>
+  <link rel="stylesheet" href="base.css">
+  <link rel="stylesheet" href="piano.css">
+  <style>
+    html, body { height: 100%; overflow: hidden; }
+
+    .piano-body {
+      display: flex;
+      flex-direction: column;
+      height: 100dvh;
+      background: #111827;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    @media (orientation: landscape) {
+      .piano-body { flex-direction: row; }
+    }
+
+    /* ── PAINEL DIGITAL ──────────────────────────────────────── */
+    .digital-panel {
+      flex: 1;
+      min-height: 0;
+      background: #0d1117;
+      display: flex;
+      flex-direction: column;
+      border-bottom: 3px solid #000;
+      overflow: hidden;
+    }
+    @media (orientation: landscape) {
+      .digital-panel { flex: 0 0 38%; border-bottom: none; border-right: 3px solid #000; }
+    }
+
+    /* ── TOPBAR ──────────────────────────────────────────────── */
+    .panel-topbar {
+      display: flex; align-items: center;
+      padding: 5px 8px; gap: 4px;
+      background: #070d14;
+      border-bottom: 1px solid #1a2535;
+      flex-shrink: 0;
+    }
+    .panel-title {
+      flex: 1; text-align: center;
+      font-size: 0.65rem; letter-spacing: 3px;
+      color: #4FC3F7; font-weight: 700;
+      text-transform: uppercase;
+    }
+    .panel-btn {
+      width: 34px; height: 34px;
+      background: #141e2e; border: 1px solid #263045;
+      border-radius: 7px; color: #7a8fa8;
+      font-size: 0.9rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      touch-action: manipulation;
+    }
+    .panel-btn:active { background: #1e2e44; }
+    .panel-btn.active { color: #F9A825; border-color: #F9A825; }
+
+    /* ── CONTEÚDO DO PAINEL ──────────────────────────────────── */
+    .panel-content {
+      flex: 1; min-height: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 12px 16px; gap: 10px;
+      overflow: hidden;
+    }
+
+    /* ── SCREENS (conteúdo de cada fase) ─────────────────────── */
+    .screen { display: none; flex-direction: column; align-items: center;
+               gap: 8px; width: 100%; }
+    .screen.active { display: flex; }
+
+    .fase-label {
+      font-size: 0.6rem; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; color: #4a6274;
+    }
+    .fase-titulo {
+      font-size: clamp(1rem, 4vw, 1.4rem); font-weight: 900;
+      color: #e8eaed; text-align: center; line-height: 1.2;
+    }
+    .fase-texto {
+      font-size: clamp(0.75rem, 2.8vw, 0.9rem);
+      color: #7a8fa8; text-align: center; line-height: 1.5;
+    }
+
+    /* ── VISUALIZADOR DA ESCALA ──────────────────────────────── */
+    .escala-visual {
+      display: flex; gap: 4px; align-items: flex-end;
+      flex-wrap: nowrap;
+    }
+    .escala-nota {
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+    }
+    .escala-nota__circulo {
+      width: clamp(28px, 7vw, 38px);
+      height: clamp(28px, 7vw, 38px);
+      border-radius: 50%;
+      background: #1e2a3a;
+      border: 2px solid #2a3a4a;
+      display: flex; align-items: center; justify-content: center;
+      font-size: clamp(0.55rem, 1.8vw, 0.75rem);
+      font-weight: 700; color: #4a6274;
+      transition: background .2s, border-color .2s, color .2s, transform .15s;
+    }
+    .escala-nota.ativa .escala-nota__circulo {
+      background: var(--cor, #4FC3F7);
+      border-color: var(--cor, #4FC3F7);
+      color: #fff;
+      transform: scale(1.15);
+    }
+    .escala-nota__nome {
+      font-size: clamp(0.5rem, 1.5vw, 0.65rem);
+      color: #4a6274; font-weight: 600;
+    }
+    .escala-nota.ativa .escala-nota__nome { color: #e8eaed; }
+
+    /* ── PADRÃO DE PASSOS ────────────────────────────────────── */
+    .passos-visual {
+      display: flex; align-items: center; gap: 0;
+      flex-wrap: nowrap; width: 100%;
+      justify-content: center;
+    }
+    .passo-nota {
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      flex: 1;
+    }
+    .passo-circulo {
+      width: clamp(24px, 6vw, 34px);
+      height: clamp(24px, 6vw, 34px);
+      border-radius: 50%;
+      background: #1e2a3a; border: 2px solid #2a3a4a;
+      display: flex; align-items: center; justify-content: center;
+      font-size: clamp(0.5rem, 1.5vw, 0.65rem);
+      font-weight: 700; color: #4a6274;
+      transition: background .3s, color .3s;
+    }
+    .passo-nome { font-size: clamp(0.45rem, 1.3vw, 0.6rem); color: #4a6274; font-weight: 600; }
+    .passo-seta {
+      font-size: clamp(0.6rem, 1.8vw, 0.8rem);
+      color: #2a3a4a; align-self: center;
+      flex-shrink: 0;
+    }
+    .passo-seta.grande { color: #4FC3F7; }
+    .passo-seta.pequeno { color: #F9A825; }
+    .legenda-passos {
+      display: flex; gap: 12px; justify-content: center;
+      font-size: clamp(0.6rem, 1.8vw, 0.75rem);
+    }
+    .legenda-item { display: flex; align-items: center; gap: 4px; color: #7a8fa8; }
+    .legenda-cor { width: 10px; height: 10px; border-radius: 50%; }
+
+    /* ── QUIZ ────────────────────────────────────────────────── */
+    .quiz-instrucao {
+      font-size: clamp(0.85rem, 3vw, 1.1rem);
+      font-weight: 700; color: #e8eaed; text-align: center;
+    }
+    .quiz-progresso {
+      display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;
+    }
+    .quiz-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: #1e2a3a; border: 2px solid #2a3a4a;
+      transition: background .2s;
+    }
+    .quiz-dot.acerto { background: #4CAF50; border-color: #4CAF50; }
+    .quiz-dot.atual  { background: #4FC3F7; border-color: #4FC3F7; animation: pulsar .8s ease-in-out infinite; }
+
+    /* ── TRANSPOSIÇÃO ────────────────────────────────────────── */
+    .transp-comparacao {
+      display: flex; flex-direction: column; gap: 8px; width: 100%;
+    }
+    .transp-linha {
+      display: flex; align-items: center; gap: 6px;
+    }
+    .transp-label {
+      font-size: clamp(0.6rem, 1.8vw, 0.75rem);
+      font-weight: 700; color: #4a6274; width: 28px; flex-shrink: 0;
+    }
+    .transp-notas {
+      display: flex; gap: 3px; flex: 1;
+    }
+    .transp-nota {
+      flex: 1;
+      height: clamp(22px, 5vw, 30px);
+      border-radius: 6px;
+      background: #1e2a3a;
+      display: flex; align-items: center; justify-content: center;
+      font-size: clamp(0.45rem, 1.3vw, 0.6rem);
+      font-weight: 700; color: #4a6274;
+      transition: background .3s, color .3s;
+    }
+    .transp-nota.ativa {
+      background: var(--cor, #4FC3F7);
+      color: #fff;
+    }
+    .transp-nota.preta {
+      background: #111827;
+      border: 1px solid #263045;
+    }
+    .transp-nota.preta.ativa {
+      background: #F9A825;
+      color: #000;
+    }
+    .transp-seta {
+      font-size: 1.2rem; color: #4FC3F7; align-self: center; text-align: center;
+      animation: pulsar 1.5s ease-in-out infinite;
+    }
+
+    /* ── CELEBRAÇÃO ──────────────────────────────────────────── */
+    .celebra-emoji { font-size: clamp(2rem, 10vw, 3rem); }
+    .celebra-titulo {
+      font-size: clamp(1.1rem, 4vw, 1.5rem); font-weight: 900;
+      color: #fff; text-align: center;
+    }
+    .celebra-sub { font-size: clamp(0.75rem, 2.5vw, 0.9rem); color: #7a8fa8; text-align: center; }
+
+    /* ── BOTÕES DE AÇÃO ──────────────────────────────────────── */
+    .btn-ouvir {
+      padding: 10px 20px; background: #141e2e;
+      border: 1.5px solid #263045; border-radius: 10px;
+      color: #4FC3F7; font-size: clamp(0.8rem, 2.5vw, 0.95rem);
+      font-weight: 700; cursor: pointer; touch-action: manipulation;
+      transition: background .15s, border-color .15s;
+    }
+    .btn-ouvir:active { background: #1e2e44; border-color: #4FC3F7; }
+    .btn-ouvir.destaque {
+      background: #4FC3F7; color: #000; border-color: #4FC3F7;
+    }
+
+    /* ── NAV DOTS ────────────────────────────────────────────── */
+    .panel-nav {
+      display: flex; align-items: center; justify-content: center;
+      padding: 8px; gap: 6px; flex-shrink: 0;
+      background: #070d14; border-top: 1px solid #1a2535;
+    }
+    .panel-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #2a3a4a; transition: background .2s, transform .2s;
+    }
+    .panel-dot.active { background: #4FC3F7; transform: scale(1.3); }
+    .panel-dot.done   { background: #2e7d32; }
+    .nav-btn {
+      width: 30px; height: 30px; background: #141e2e;
+      border: 1px solid #263045; border-radius: 7px;
+      color: #4FC3F7; font-size: 1rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      touch-action: manipulation;
+    }
+    .nav-btn:disabled { opacity: .3; cursor: default; }
+
+    /* ── TECLADO ─────────────────────────────────────────────── */
+    .piano-stage {
+      background: #111827;
+      padding: 8px 0 12px;
+      border-top: 3px solid #000;
+      flex: 0 0 45dvh;
+      display: flex;
+      align-items: center;
+      --key-h:    clamp(150px, 40dvh, 320px);
+      --key-bk-h: clamp(  90px, 24dvh, 192px);
+    }
+    @media (orientation: landscape) {
+      .piano-stage {
+        flex: 1;
+        border-top: none;
+        border-left: 3px solid #000;
+        padding: 8px 0;
+        --key-h:    clamp(140px, 80dvh, 360px);
+        --key-bk-h: clamp(  84px, 48dvh, 216px);
+      }
+    }
+    .piano-stage .piano-wrap.responsive { overflow: visible; padding-bottom: 0; }
+    .piano-stage .piano.responsive      { width: 100%; }
+    .piano-stage .key__label {
+      font-size: clamp(0.42rem, 1.3vw, 0.62rem);
+      font-weight: 700; color: #888; letter-spacing: 0;
+    }
+    .piano-stage .key { border-color: #444; }
+
+    /* Tecla em destaque (escala / quiz) */
+    .key.escala-highlight {
+      background: var(--escala-cor, #4FC3F7) !important;
+    }
+    .key--black.escala-highlight {
+      background: var(--escala-cor, #F9A825) !important;
+    }
+
+    /* Erro no quiz */
+    .key-error-x {
+      position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+      font-size: 1.4rem; font-weight: 900; color: #ef5350;
+      pointer-events: none; z-index: 10;
+      animation: error-x-shake .5s ease forwards;
+    }
+    @keyframes error-x-shake {
+      0%   { opacity: 1; transform: translateX(-50%) scale(1.4); }
+      25%  { transform: translateX(calc(-50% - 4px)) scale(1.2); }
+      50%  { transform: translateX(calc(-50% + 4px)) scale(1.2); }
+      75%  { transform: translateX(calc(-50% - 2px)) scale(1.1); }
+      100% { opacity: 0; transform: translateX(-50%) scale(1); }
+    }
+
+    @keyframes pulsar {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: .5; }
+    }
+  </style>
+</head>
+<body>
+<div class="piano-body">
+
+  <!-- ═══ PAINEL DIGITAL ══════════════════════════════════════ -->
+  <div class="digital-panel">
+
+    <!-- Topbar -->
+    <div class="panel-topbar">
+      <button class="panel-btn" id="btn-back" title="Voltar" onclick="goTo('m1_hub.html')">←</button>
+      <span class="panel-title" id="panel-title-text">M2 · ESCALAS</span>
+      <button class="panel-btn" id="btn-easy"  title="Modo fácil"  onclick="toggleEasy()">☆</button>
+      <button class="panel-btn" id="btn-theme" title="Tema"        onclick="toggleTheme()">☀️</button>
+      <button class="panel-btn" id="btn-lock"  title="Tela cheia"  onclick="LockMode.toggle(this)">🔓</button>
+      <button class="panel-btn" id="btn-sound" title="Som"         onclick="toggleSom()">🔊</button>
+    </div>
+
+    <!-- Conteúdo das fases -->
+    <div class="panel-content">
+
+      <!-- FASE 1: Apresentação da escala de Dó -->
+      <div class="screen" id="s-apres">
+        <span class="fase-label">Aprenda</span>
+        <div class="fase-titulo">A Escala de Dó</div>
+        <div class="fase-texto">Uma escala é uma sequência de notas em ordem.<br>A de Dó usa as 8 teclas brancas!</div>
+        <div class="escala-visual" id="escala-vis"></div>
+        <button class="btn-ouvir" id="btn-ouvir-escala" onclick="tocarEscala()">▶ Ouvir escala</button>
+      </div>
+
+      <!-- FASE 2: O padrão de passos -->
+      <div class="screen" id="s-padrao">
+        <span class="fase-label">O Segredo</span>
+        <div class="fase-titulo">Passos Grandes e Pequenos</div>
+        <div class="fase-texto">Entre as notas há <strong style="color:#4FC3F7">passos grandes</strong> e <strong style="color:#F9A825">pequenos</strong>.</div>
+        <div class="passos-visual" id="passos-vis"></div>
+        <div class="legenda-passos">
+          <div class="legenda-item"><div class="legenda-cor" style="background:#4FC3F7"></div>Grande (tom)</div>
+          <div class="legenda-item"><div class="legenda-cor" style="background:#F9A825"></div>Pequeno (semitom)</div>
+        </div>
+        <button class="btn-ouvir" id="btn-ouvir-padrao" onclick="tocarPadrao()">▶ Ouvir os passos</button>
+      </div>
+
+      <!-- FASE 3: Tocar junto -->
+      <div class="screen" id="s-junto">
+        <span class="fase-label">Toque Junto</span>
+        <div class="fase-titulo">Siga a luz!</div>
+        <div class="fase-texto">Cada tecla vai acender na ordem.<br>Toque quando ela brilhar! ✨</div>
+        <div class="escala-visual" id="escala-vis-junto"></div>
+        <button class="btn-ouvir" id="btn-comecar-junto" onclick="iniciarJunto()">▶ Começar</button>
+      </div>
+
+      <!-- FASE 4: Quiz -->
+      <div class="screen" id="s-quiz">
+        <span class="fase-label">Quiz</span>
+        <div class="quiz-instrucao" id="quiz-instrucao">Toque a escala de Dó!</div>
+        <div class="fase-texto">Do Dó ao Dó, em ordem 🎵</div>
+        <div class="quiz-progresso" id="quiz-prog"></div>
+      </div>
+
+      <!-- FASE 5: Transposição -->
+      <div class="screen" id="s-transp">
+        <span class="fase-label">Magia</span>
+        <div class="fase-titulo">O mesmo segredo, outro lugar!</div>
+        <div class="fase-texto">E se começarmos do <strong style="color:#a5d6a7">Sol</strong>?<br>O padrão é igual — só muda o ponto de partida.</div>
+        <div class="transp-comparacao" id="transp-comp"></div>
+        <button class="btn-ouvir" id="btn-ouvir-transp" onclick="tocarTransposicao()">▶ Ouvir Sol maior</button>
+      </div>
+
+      <!-- FASE 6: Celebração -->
+      <div class="screen" id="s-celebra">
+        <div class="celebra-emoji">🎉</div>
+        <div class="celebra-titulo">Módulo concluído!</div>
+        <div class="celebra-sub">Você aprendeu o segredo das escalas.<br>Qualquer música usa esses mesmos passos!</div>
+        <button class="btn-ouvir destaque" onclick="goTo('m1_hub.html')">← Voltar ao curso</button>
+      </div>
+
+    </div><!-- panel-content -->
+
+    <!-- Nav dots -->
+    <div class="panel-nav">
+      <button class="nav-btn" id="btn-prev" onclick="irFase(faseAtual-1)">‹</button>
+      <div id="nav-dots" style="display:flex;gap:6px;"></div>
+      <button class="nav-btn" id="btn-next" onclick="irFase(faseAtual+1)">›</button>
+    </div>
+
+  </div><!-- digital-panel -->
+
+  <!-- ═══ TECLADO ══════════════════════════════════════════════ -->
+  <div class="piano-stage">
+    <div id="piano-escalas"></div>
+  </div>
+
+</div>
+<script src="base.js"></script>
+<script>
+'use strict';
+
+/* ══════════════════════════════════════════════════════════════
+   DEFINIÇÃO DA ESCALA
+══════════════════════════════════════════════════════════════ */
+// Escala de Dó Maior: C D E F G A B C
+const ESCALA_DO = [
+  { nome:'Dó',  midi:'C4', cor:'var(--nota-do)'  },
+  { nome:'Ré',  midi:'D4', cor:'var(--nota-re)'  },
+  { nome:'Mi',  midi:'E4', cor:'var(--nota-mi)'  },
+  { nome:'Fá',  midi:'F4', cor:'var(--nota-fa)'  },
+  { nome:'Sol', midi:'G4', cor:'var(--nota-sol)' },
+  { nome:'Lá',  midi:'A4', cor:'var(--nota-la)'  },
+  { nome:'Si',  midi:'B4', cor:'var(--nota-si)'  },
+  { nome:'Dó',  midi:'C5', cor:'var(--nota-do)'  },
+];
+
+// Padrão de passos: G=grande(tom), P=pequeno(semitom)
+// C-D G, D-E G, E-F P, F-G G, G-A G, A-B G, B-C P
+const PASSOS = ['G','G','P','G','G','G','P'];
+
+// Escala de Sol Maior: G A B C D E F# G
+const ESCALA_SOL = [
+  { nome:'Sol', midi:'G4', cor:'var(--nota-sol)', preta: false },
+  { nome:'Lá',  midi:'A4', cor:'var(--nota-la)',  preta: false },
+  { nome:'Si',  midi:'B4', cor:'var(--nota-si)',  preta: false },
+  { nome:'Dó',  midi:'C5', cor:'var(--nota-do)',  preta: false },
+  { nome:'Ré',  midi:'D5', cor:'var(--nota-re)',  preta: false },
+  { nome:'Mi',  midi:'E5', cor:'var(--nota-mi)',  preta: false },
+  { nome:'Fa#', midi:'F#5',cor:'#F9A825',         preta: true  },
+  { nome:'Sol', midi:'G5', cor:'var(--nota-sol)', preta: false },
+];
+
+const TOTAL_FASES = 6;
+let faseAtual = 1;
+let modoFacil = Settings.getEasyMode();
+let somAtivo  = true;
+let juntoIdx  = -1;
+let juntoTimer = null;
+
+// Quiz
+let quizIdx    = 0;   // quantas notas da escala o aluno já tocou
+let quizErros  = 0;
+
+/* ══════════════════════════════════════════════════════════════
+   TECLADO (C4-G5 para cobrir ambas as escalas)
+══════════════════════════════════════════════════════════════ */
+const labelMap = {
+  'C4':'Dó','D4':'Ré','E4':'Mi','F4':'Fá',
+  'G4':'Sol','A4':'Lá','B4':'Si',
+  'C5':'Dó','D5':'Ré','E5':'Mi','F5':'Fá',
+  'G5':'Sol',
+};
+
+const kb = createPianoKeyboard(document.getElementById('piano-escalas'), {
+  startNote:  'C4',
+  endNote:    'G5',
+  showLabels: true,
+  labelMap:   labelMap,
+  responsive: true,
+  pressColor: '#4FC3F7',
+  onNoteOn(noteStr) {
+    if (faseAtual === 4) avaliarQuiz(noteStr);
+    else AudioEngine.play(noteStr);
+  },
+});
+
+/* ══════════════════════════════════════════════════════════════
+   CONSTRUIR VISUALIZADORES
+══════════════════════════════════════════════════════════════ */
+function buildEscalaVis(containerId, escala) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = '';
+  escala.forEach((n, i) => {
+    const div = document.createElement('div');
+    div.className = 'escala-nota';
+    div.dataset.i = i;
+    div.style.setProperty('--cor', n.cor);
+    div.innerHTML = `
+      <div class="escala-nota__circulo">${n.nome.slice(0,2)}</div>
+      <div class="escala-nota__nome">${n.nome}</div>`;
+    el.appendChild(div);
+  });
+}
+
+function buildPassosVis() {
+  const el = document.getElementById('passos-vis');
+  el.innerHTML = '';
+  ESCALA_DO.forEach((n, i) => {
+    const nota = document.createElement('div');
+    nota.className = 'passo-nota';
+    nota.dataset.i = i;
+    nota.innerHTML = `
+      <div class="passo-circulo" style="--cor:${n.cor}">${n.nome.slice(0,2)}</div>
+      <div class="passo-nome">${n.nome}</div>`;
+    el.appendChild(nota);
+    if (i < PASSOS.length) {
+      const seta = document.createElement('div');
+      seta.className = `passo-seta ${PASSOS[i] === 'G' ? 'grande' : 'pequeno'}`;
+      seta.textContent = PASSOS[i] === 'G' ? '→' : '·';
+      seta.title = PASSOS[i] === 'G' ? 'Passo grande' : 'Passo pequeno';
+      el.appendChild(seta);
+    }
+  });
+}
+
+function buildTranspComp() {
+  const el = document.getElementById('transp-comp');
+  el.innerHTML = `
+    <div class="transp-linha">
+      <div class="transp-label" style="color:var(--nota-do)">Dó:</div>
+      <div class="transp-notas" id="transp-do"></div>
+    </div>
+    <div class="transp-seta" id="transp-seta" style="display:none">↓ mesmo padrão, outro lugar</div>
+    <div class="transp-linha">
+      <div class="transp-label" style="color:var(--nota-sol)">Sol:</div>
+      <div class="transp-notas" id="transp-sol"></div>
+    </div>`;
+
+  const doEl  = document.getElementById('transp-do');
+  const solEl = document.getElementById('transp-sol');
+
+  ESCALA_DO.forEach(n => {
+    const d = document.createElement('div');
+    d.className = 'transp-nota ativa';
+    d.style.setProperty('--cor', n.cor);
+    d.textContent = n.nome.slice(0,2);
+    doEl.appendChild(d);
+  });
+
+  ESCALA_SOL.forEach(n => {
+    const d = document.createElement('div');
+    d.className = `transp-nota${n.preta ? ' preta' : ''}`;
+    d.style.setProperty('--cor', n.cor);
+    d.textContent = n.nome.slice(0,2);
+    d.dataset.midi = n.midi;
+    solEl.appendChild(d);
+  });
+}
+
+function buildQuizProg() {
+  const el = document.getElementById('quiz-prog');
+  el.innerHTML = '';
+  ESCALA_DO.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'quiz-dot' + (i === 0 ? ' atual' : '');
+    d.dataset.i = i;
+    el.appendChild(d);
+  });
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TOCAR ESCALA ANIMADA
+══════════════════════════════════════════════════════════════ */
+let animTimer = null;
+
+function tocarEscala(callback) {
+  if (animTimer) clearTimeout(animTimer);
+  const vis = document.getElementById('escala-vis');
+  const notas = vis ? vis.querySelectorAll('.escala-nota') : [];
+
+  let i = 0;
+  function passo() {
+    // Desativa anterior
+    if (i > 0) notas[i-1]?.classList.remove('ativa');
+    if (i >= ESCALA_DO.length) {
+      kb.clearHighlights?.();
+      if (callback) callback();
+      return;
+    }
+    const n = ESCALA_DO[i];
+    notas[i]?.classList.add('ativa');
+    AudioEngine.play(n.midi);
+    kb.highlight?.(n.midi);
+    i++;
+    animTimer = setTimeout(passo, 600);
+  }
+  AudioEngine.init();
+  passo();
+}
+
+function tocarPadrao() {
+  if (animTimer) clearTimeout(animTimer);
+  const notas = document.querySelectorAll('#passos-vis .passo-nota');
+  let i = 0;
+  function passo() {
+    if (i > 0) {
+      notas[i-1]?.querySelector('.passo-circulo')?.style.removeProperty('background');
+      notas[i-1]?.querySelector('.passo-circulo')?.style.removeProperty('color');
+    }
+    if (i >= ESCALA_DO.length) { kb.clearHighlights?.(); return; }
+    const n = ESCALA_DO[i];
+    const circ = notas[i]?.querySelector('.passo-circulo');
+    if (circ) { circ.style.background = n.cor; circ.style.color = '#fff'; }
+    AudioEngine.play(n.midi);
+    kb.highlight?.(n.midi);
+    i++;
+    animTimer = setTimeout(passo, 700);
+  }
+  AudioEngine.init();
+  passo();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   MODO TOQUE JUNTO
+══════════════════════════════════════════════════════════════ */
+function iniciarJunto() {
+  document.getElementById('btn-comecar-junto').style.display = 'none';
+  juntoIdx = 0;
+  mostrarProximaJunto();
+}
+
+function mostrarProximaJunto() {
+  if (juntoTimer) clearTimeout(juntoTimer);
+  const vis = document.getElementById('escala-vis-junto');
+  const notas = vis.querySelectorAll('.escala-nota');
+  notas.forEach(n => n.classList.remove('ativa'));
+
+  if (juntoIdx >= ESCALA_DO.length) {
+    // Completou
+    kb.clearHighlights?.();
+    document.getElementById('btn-comecar-junto').style.display = '';
+    document.getElementById('btn-comecar-junto').textContent = '↻ De novo';
+    juntoIdx = -1;
+    return;
+  }
+
+  const n = ESCALA_DO[juntoIdx];
+  notas[juntoIdx]?.classList.add('ativa');
+
+  // Modo fácil: hint na tecla
+  if (modoFacil) kb.hint?.(n.midi);
+  else kb.clearHints?.();
+
+  kb.highlight?.(n.midi);
+  AudioEngine.play(n.midi);
+}
+
+// Ao tocar a tecla no modo junto
+function checarJunto(noteStr) {
+  if (juntoIdx < 0) return;
+  const esperada = ESCALA_DO[juntoIdx]?.midi;
+  if (noteStr === esperada) {
+    juntoIdx++;
+    juntoTimer = setTimeout(mostrarProximaJunto, 400);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   QUIZ — tocar a escala em ordem
+══════════════════════════════════════════════════════════════ */
+function iniciarQuiz() {
+  quizIdx   = 0;
+  quizErros = 0;
+  buildQuizProg();
+  if (modoFacil) kb.hint?.(ESCALA_DO[0].midi);
+  document.getElementById('quiz-instrucao').textContent = 'Toque a escala de Dó!';
+}
+
+function avaliarQuiz(noteStr) {
+  const esperada = ESCALA_DO[quizIdx]?.midi;
+  if (!esperada) return;
+
+  if (noteStr === esperada) {
+    // Acerto
+    const dots = document.querySelectorAll('.quiz-dot');
+    dots[quizIdx]?.classList.replace('atual', 'acerto');
+    quizIdx++;
+
+    if (quizIdx >= ESCALA_DO.length) {
+      // Concluiu!
+      kb.clearHints?.();
+      setTimeout(() => irFase(5), 800);
+    } else {
+      dots[quizIdx]?.classList.add('atual');
+      if (modoFacil) kb.hint?.(ESCALA_DO[quizIdx].midi);
+    }
+  } else {
+    // Erro
+    quizErros++;
+    mostrarErroNaTecla(noteStr);
+    AudioEngine.playError?.();
+  }
+}
+
+function mostrarErroNaTecla(noteStr) {
+  const keyEl = kb.getKeyElement?.(noteStr);
+  if (!keyEl) return;
+  const x = document.createElement('div');
+  x.className = 'key-error-x';
+  x.textContent = '✕';
+  keyEl.appendChild(x);
+  setTimeout(() => x.remove(), 600);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TRANSPOSIÇÃO — animação visual + sonora
+══════════════════════════════════════════════════════════════ */
+function tocarTransposicao() {
+  const solNotas = document.querySelectorAll('#transp-sol .transp-nota');
+  const setaEl = document.getElementById('transp-seta');
+
+  // Revela a seta
+  setaEl.style.display = '';
+  let i = 0;
+
+  // Remove ativas anteriores
+  solNotas.forEach(n => n.classList.remove('ativa'));
+
+  function passo() {
+    if (i > 0) solNotas[i-1]?.classList.remove('ativa');
+    if (i >= ESCALA_SOL.length) { kb.clearHighlights?.(); return; }
+    const n = ESCALA_SOL[i];
+    solNotas[i]?.classList.add('ativa');
+    AudioEngine.play(n.midi);
+    kb.highlight?.(n.midi);
+    i++;
+    animTimer = setTimeout(passo, 600);
+  }
+  AudioEngine.init();
+  passo();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   NAVEGAÇÃO ENTRE FASES
+══════════════════════════════════════════════════════════════ */
+function irFase(f) {
+  if (f < 1 || f > TOTAL_FASES) return;
+  if (animTimer) { clearTimeout(animTimer); animTimer = null; }
+  kb.clearHighlights?.();
+  kb.clearHints?.();
+
+  faseAtual = f;
+
+  const screens = { 1:'s-apres', 2:'s-padrao', 3:'s-junto', 4:'s-quiz', 5:'s-transp', 6:'s-celebra' };
+  Object.values(screens).forEach(id => document.getElementById(id)?.classList.remove('active'));
+  document.getElementById(screens[f])?.classList.add('active');
+
+  // Atualiza nav dots
+  document.querySelectorAll('.panel-dot').forEach(d => {
+    const n = parseInt(d.dataset.f);
+    d.className = 'panel-dot' + (n === f ? ' active' : n < f ? ' done' : '');
+  });
+  document.getElementById('btn-prev').disabled = f <= 1;
+  document.getElementById('btn-next').disabled = f >= TOTAL_FASES;
+
+  // Ações por fase
+  if (f === 1) {
+    // Highlight das teclas da escala de Dó
+    ESCALA_DO.forEach(n => kb.highlight?.(n.midi));
+  }
+  if (f === 2) {
+    ESCALA_DO.forEach(n => kb.highlight?.(n.midi));
+  }
+  if (f === 3) {
+    juntoIdx = -1;
+    document.getElementById('btn-comecar-junto').style.display = '';
+    document.getElementById('btn-comecar-junto').textContent = '▶ Começar';
+    kb.clearHighlights?.();
+  }
+  if (f === 4) iniciarQuiz();
+  if (f === 5) {
+    // Highlight Sol maior
+    ESCALA_SOL.forEach(n => kb.highlight?.(n.midi));
+    // Salva progresso
+    salvarProgresso();
+  }
+  if (f === 6) {
+    kb.clearHighlights?.();
+    AudioEngine.playCelebration?.();
+    salvarProgresso(true);
+  }
+
+  // TTS
+  const tts = {
+    1: 'A Escala de Dó',
+    2: 'O segredo da escala: passos grandes e pequenos',
+    3: 'Toque junto comigo!',
+    4: 'Sua vez! Toque a escala de Dó do início ao fim.',
+    5: 'Que tal a escala de Sol? O padrão é o mesmo!',
+    6: 'Parabéns! Você concluiu o módulo de Escalas!',
+  };
+  if (tts[f]) TTS.falar(tts[f]);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PROGRESSO / LOCALSTORAGE
+══════════════════════════════════════════════════════════════ */
+function salvarProgresso(completo = false) {
+  try {
+    const p = { fase: faseAtual, completo };
+    localStorage.setItem('piano_m2_progresso', JSON.stringify(p));
+  } catch {}
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CONTROLES DO PAINEL
+══════════════════════════════════════════════════════════════ */
+function toggleEasy() {
+  modoFacil = !modoFacil;
+  Settings.setEasyMode(modoFacil);
+  document.getElementById('btn-easy').classList.toggle('active', modoFacil);
+  document.getElementById('btn-easy').textContent = modoFacil ? '⭐' : '☆';
+  if (faseAtual === 4 && modoFacil) kb.hint?.(ESCALA_DO[quizIdx]?.midi);
+  else kb.clearHints?.();
+}
+
+function toggleSom() {
+  somAtivo = !somAtivo;
+  AudioEngine.mute?.(!somAtivo);
+  document.getElementById('btn-sound').textContent = somAtivo ? '🔊' : '🔇';
+}
+
+function toggleTheme() {
+  const dark = document.documentElement.getAttribute('data-theme') !== 'light';
+  document.documentElement.setAttribute('data-theme', dark ? 'light' : 'dark');
+  document.getElementById('btn-theme').textContent = dark ? '🌙' : '☀️';
+}
+
+/* ══════════════════════════════════════════════════════════════
+   INICIALIZAÇÃO
+══════════════════════════════════════════════════════════════ */
+// Constrói visualizadores
+buildEscalaVis('escala-vis', ESCALA_DO);
+buildEscalaVis('escala-vis-junto', ESCALA_DO);
+buildPassosVis();
+buildTranspComp();
+
+// Constrói nav dots
+const navDotsEl = document.getElementById('nav-dots');
+for (let i = 1; i <= TOTAL_FASES; i++) {
+  const d = document.createElement('div');
+  d.className = 'panel-dot' + (i === 1 ? ' active' : '');
+  d.dataset.f = i;
+  navDotsEl.appendChild(d);
+}
+
+// Inicializa AudioEngine no primeiro toque
+document.addEventListener('pointerdown', () => AudioEngine.init(), { once: true });
+
+// Estado do modo fácil
+document.getElementById('btn-easy').classList.toggle('active', modoFacil);
+document.getElementById('btn-easy').textContent = modoFacil ? '⭐' : '☆';
+
+// Reativa o teclado para o modo junto no onNoteOn
+// (sobrescreve o onNoteOn depois de construído, para checar fases)
+const origOnNoteOn = kb.onNoteOn;
+kb.onNoteOn = (noteStr) => {
+  AudioEngine.play(noteStr);
+  if (faseAtual === 3 && juntoIdx >= 0) checarJunto(noteStr);
+  if (faseAtual === 4) avaliarQuiz(noteStr);
+};
+
+// LockMode
+LockMode.listenChanges(document.getElementById('btn-lock'));
+
+// Inicia na fase 1
+irFase(1);
+</script>
+</body>
+</html>
