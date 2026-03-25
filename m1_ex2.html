@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>PianoLab — Ex 2: As 5 Notas</title>
+  <link rel="stylesheet" href="base.css">
+  <link rel="stylesheet" href="piano.css">
+  <style>
+    /* ══════════════════════════════════════════════════════════
+       PIANO BODY — inspirado no Yamaha P-125
+       Ocupa 100% da tela; corpo escuro com painel digital no topo
+       e teclado em destaque abaixo (portrait) ou à direita (landscape)
+    ══════════════════════════════════════════════════════════ */
+    html, body { height: 100%; overflow: hidden; }
+
+    .piano-body {
+      display: flex;
+      flex-direction: column;
+      height: 100dvh;
+      background: #111827;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    /* Landscape: painel digital à esquerda, teclas à direita */
+    @media (orientation: landscape) {
+      .piano-body { flex-direction: row; }
+    }
+
+    /* ── PAINEL DIGITAL ──────────────────────────────────────── */
+    .digital-panel {
+      flex: 1;
+      min-height: 0;
+      background: #0d1117;
+      display: flex;
+      flex-direction: column;
+      border-bottom: 3px solid #000;
+    }
+
+    @media (orientation: landscape) {
+      .digital-panel {
+        flex: 0 0 38%;
+        border-bottom: none;
+        border-right: 3px solid #000;
+        overflow: hidden;
+      }
+    }
+
+    /* ── TOPBAR DO PAINEL ────────────────────────────────────── */
+    .panel-topbar {
+      display: flex;
+      align-items: center;
+      padding: 5px 8px;
+      background: #070d14;
+      border-bottom: 1px solid #1a2535;
+      flex-shrink: 0;
+      gap: 4px;
+    }
+
+    .panel-title {
+      flex: 1;
+      text-align: center;
+      font-size: 0.65rem;
+      letter-spacing: 3px;
+      color: #4FC3F7;
+      font-weight: 700;
+      text-transform: uppercase;
+      pointer-events: none;
+    }
+
+    .panel-btn {
+      width: 34px;
+      height: 34px;
+      background: #141e2e;
+      border: 1px solid #263045;
+      border-radius: 7px;
+      color: #7a8fa8;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background .1s, color .1s, border-color .1s;
+      touch-action: manipulation;
+    }
+
+    .panel-btn:active        { background: #1e2d48; }
+    .panel-btn.ativo         { color: #4FC3F7; border-color: rgba(79,195,247,.5); }
+
+    /* ── CONTEÚDO DAS FASES ──────────────────────────────────── */
+    .panel-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 10px 14px 6px;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    .screen {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+      gap: 10px;
+      min-height: 0;
+    }
+
+    .screen.active { display: flex; }
+
+    /* ── NAV DO PAINEL ───────────────────────────────────────── */
+    .panel-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 5px 8px;
+      background: #070d14;
+      border-top: 1px solid #1a2535;
+      flex-shrink: 0;
+    }
+
+    .nav-btn {
+      width: 40px;
+      height: 40px;
+      background: #141e2e;
+      border: 1px solid #263045;
+      border-radius: 50%;
+      color: #7a8fa8;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: manipulation;
+      transition: background .1s;
+    }
+
+    .nav-btn:disabled { opacity: .3; pointer-events: none; }
+    .nav-btn:active   { background: #1e2d48; }
+
+    .panel-dots { display: flex; gap: 5px; align-items: center; }
+
+    .panel-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #1e2a3a;
+      transition: background .2s, transform .2s;
+    }
+
+    .panel-dot.active { background: #4FC3F7; transform: scale(1.5); }
+    .panel-dot.done   { background: #43A047; }
+
+    /* ════════════════════════════════════════════════════════════
+       TECLADO — ocupa restante vertical (portrait) ou horizontal (landscape)
+    ════════════════════════════════════════════════════════════ */
+    .piano-stage {
+      background: #111827;
+      padding: 8px 0 12px;
+      border-top: 3px solid #000;
+      flex-shrink: 0;
+      /* Altura das teclas escalada pelo container pai */
+      --key-h:    clamp(140px, 36vh,  300px);
+      --key-bk-h: clamp( 84px, 22vh,  180px);
+    }
+
+    @media (orientation: landscape) {
+      .piano-stage {
+        flex: 1;
+        border-top: none;
+        border-left: 3px solid #000;
+        padding: 8px 0;
+        display: flex;
+        align-items: center;
+        --key-h:    clamp(120px, 72vh, 320px);
+        --key-bk-h: clamp( 72px, 43vh, 192px);
+      }
+    }
+
+    /* Piano responsivo preenche 100% da stage sem margens */
+    .piano-stage .piano-wrap.responsive { overflow: visible; padding-bottom: 0; }
+    .piano-stage .piano.responsive      { width: 100%; }
+
+    /* Labels das teclas com nomes em português */
+    .piano-stage .key__label {
+      font-size: clamp(0.42rem, 1.3vw, 0.62rem);
+      font-weight: 700;
+      color: #888;
+      letter-spacing: 0;
+    }
+
+    /* Borda preta nas teclas brancas (estilo piano real) */
+    .piano-stage .key {
+      border-color: #444;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       APRESENTAÇÃO
+    ════════════════════════════════════════════════════════════ */
+    .nota-sequencia {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .seq-dot {
+      width: clamp(28px, 7vw, 38px);
+      height: clamp(28px, 7vw, 38px);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.6rem;
+      font-weight: 700;
+      color: #fff;
+      opacity: .2;
+      transition: opacity .3s, transform .3s, box-shadow .3s;
+      cursor: pointer;
+    }
+
+    .seq-dot.ativa {
+      opacity: 1;
+      transform: scale(1.2);
+      box-shadow: 0 0 14px rgba(255,255,255,.25);
+    }
+
+    .seq-dot.vista { opacity: .55; }
+
+    .nota-hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .nota-circulo {
+      width: clamp(60px, 16vw, 88px);
+      height: clamp(60px, 16vw, 88px);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(1.2rem, 4vw, 2rem);
+      font-weight: 900;
+      color: #fff;
+      animation: bounce-in .35s ease-out;
+    }
+
+    .btn-ouvir {
+      min-height: 48px;
+      flex-shrink: 0;
+      background: #141e2e;
+      border: 1px solid #263045;
+      border-radius: var(--rad);
+      color: #4FC3F7;
+      font-size: var(--sm);
+      font-weight: 600;
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: background .1s;
+      width: 100%;
+    }
+
+    .btn-ouvir:active { background: #1e2d48; }
+
+    /* ════════════════════════════════════════════════════════════
+       QUIZ
+    ════════════════════════════════════════════════════════════ */
+    .quiz-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .quiz-instrucao {
+      font-size: var(--sm);
+      color: #3a5060;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    .quiz-nota {
+      font-size: clamp(1.8rem, 7vw, 2.8rem);
+      font-weight: 900;
+      transition: color .2s;
+    }
+
+    .quiz-progresso { display: flex; gap: 6px; }
+
+    .quiz-prog-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #1a2535;
+      border: 1px solid #263045;
+      transition: background .2s, transform .2s;
+    }
+
+    .quiz-prog-dot.ok {
+      background: var(--success);
+      border-color: var(--success);
+      transform: scale(1.3);
+    }
+
+    .feedback-quiz {
+      text-align: center;
+      font-size: var(--lg);
+      font-weight: 700;
+      min-height: 2rem;
+      flex-shrink: 0;
+      color: #4FC3F7;
+    }
+
+    .feedback-quiz.acerto { color: var(--success); }
+    .feedback-quiz.erro   { color: #5a7090; }
+
+    .quiz-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: auto;
+      flex-shrink: 0;
+    }
+
+    .btn-quiz-action {
+      flex: 1;
+      min-height: 48px;
+      border-radius: var(--rad);
+      font-size: var(--sm);
+      font-weight: 700;
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: background .1s, opacity .2s;
+      border: 1px solid;
+    }
+
+    .btn-quiz-action--refazer {
+      background: #141e2e;
+      border-color: #263045;
+      color: #7a8fa8;
+    }
+
+    .btn-quiz-action--avancar {
+      background: #0f2a3a;
+      border-color: #1a4a6a;
+      color: #4FC3F7;
+    }
+
+    .btn-quiz-action:active { opacity: .7; }
+
+    /* ════════════════════════════════════════════════════════════
+       CELEBRAÇÃO
+    ════════════════════════════════════════════════════════════ */
+    .celebracao {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      text-align: center;
+    }
+
+    .celebracao__emoji  { font-size: 2.8rem; animation: bounce-in .5s ease-out; }
+    .celebracao__titulo { font-size: var(--xl); font-weight: 900; color: #4FC3F7; }
+    .celebracao__notas  { display: flex; gap: 6px; justify-content: center; }
+
+    .celebracao__btn {
+      min-height: 52px;
+      padding: 0 24px;
+      background: #0f2a3a;
+      border: 1px solid #1a4a6a;
+      border-radius: var(--rad);
+      color: #4FC3F7;
+      font-size: var(--md);
+      font-weight: 700;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    /* ── AJUSTES LANDSCAPE ───────────────────────────────────── */
+    @media (orientation: landscape) {
+      .nota-circulo {
+        width: clamp(44px, 9vw, 64px);
+        height: clamp(44px, 9vw, 64px);
+        font-size: clamp(1rem, 2.5vw, 1.5rem);
+      }
+      .quiz-nota { font-size: clamp(1.4rem, 4vw, 2rem); }
+      .panel-content { padding: 6px 12px 4px; gap: 6px; }
+      .screen { gap: 6px; }
+    }
+  </style>
+</head>
+<body>
+<div class="piano-body">
+
+  <!-- ═══ PAINEL DIGITAL ═══════════════════════════════════════ -->
+  <div class="digital-panel">
+
+    <!-- Topbar: navegação + controles -->
+    <div class="panel-topbar">
+      <button class="panel-btn" onclick="goToIndex()" aria-label="Voltar">←</button>
+      <span class="panel-title">Ex 2 - As 5 Notas</span>
+      <button class="panel-btn" id="btn-easy"  aria-label="Modo Fácil">☆</button>
+      <button class="panel-btn" id="btn-theme" aria-label="Tema">☀️</button>
+      <button class="panel-btn" id="btn-lock"  aria-label="Tela cheia">🔓</button>
+      <button class="panel-btn" id="btn-sound" aria-label="Som">🔊</button>
+    </div>
+
+    <!-- Conteúdo das fases -->
+    <div class="panel-content">
+
+      <!-- FASES 1–5: Apresentação de cada nota -->
+      <div class="screen active" id="s-apres">
+        <div class="nota-sequencia" id="seq-dots"></div>
+        <div class="nota-hero">
+          <div class="nota-circulo" id="apres-circulo"></div>
+        </div>
+        <button class="btn-ouvir" id="btn-ouvir">▶ Ouvir novamente</button>
+      </div>
+
+      <!-- FASE 6: Quiz -->
+      <div class="screen" id="s-quiz">
+        <div class="quiz-header">
+          <span class="quiz-instrucao">Toque no teclado:</span>
+          <div class="quiz-nota" id="quiz-nome"></div>
+          <div class="quiz-progresso" id="quiz-prog"></div>
+        </div>
+        <div class="feedback-quiz" id="feedback-quiz"></div>
+        <div class="quiz-actions">
+          <button class="btn-quiz-action btn-quiz-action--refazer" id="btn-refazer">↺ Refazer</button>
+          <button class="btn-quiz-action btn-quiz-action--avancar" id="btn-avancar">Avançar →</button>
+        </div>
+      </div>
+
+      <!-- FASE 7: Celebração -->
+      <div class="screen" id="s-celebra">
+        <div class="celebracao">
+          <div class="celebracao__emoji">⭐</div>
+          <div class="celebracao__titulo">Você conhece as 5 notas!</div>
+          <div class="celebracao__notas" id="celebra-notas"></div>
+          <button class="celebracao__btn" onclick="goTo('m1_hub.html')">Ver mais exercícios →</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Nav: prev/dots/next -->
+    <div class="panel-nav">
+      <button class="nav-btn" id="btn-prev" disabled>◀</button>
+      <div class="panel-dots" id="nav-dots"></div>
+      <button class="nav-btn" id="btn-next">▶</button>
+    </div>
+
+  </div>
+
+  <!-- ═══ TECLADO ═══════════════════════════════════════════════ -->
+  <div class="piano-stage">
+    <div id="piano-m2"></div>
+  </div>
+
+</div>
+<script src="base.js"></script>
+<script>
+'use strict';
+
+/* ══════════════════════════════════════════════════════════════
+   CONFIGURAÇÃO DO MÓDULO
+   Estrutura data-driven: mudar apenas este objeto para adaptar
+   o módulo a novas notas, ranges ou modos de quiz.
+══════════════════════════════════════════════════════════════ */
+const MODULE = {
+  id: 'm1_ex2',
+  notes: [
+    { nome:'Dó',  base:'C', midi:'C4', cor:'var(--nota-do)'  },
+    { nome:'Ré',  base:'D', midi:'D4', cor:'var(--nota-re)'  },
+    { nome:'Mi',  base:'E', midi:'E4', cor:'var(--nota-mi)'  },
+    { nome:'Fá',  base:'F', midi:'F4', cor:'var(--nota-fa)'  },
+    { nome:'Sol', base:'G', midi:'G4', cor:'var(--nota-sol)' },
+  ],
+  keyRange:   { start:'C4', end:'C5' },
+  pressColor: '#4FC3F7',           // cor uniforme ao pressionar qualquer tecla
+  labelMap: {                       // nome em português sob cada tecla branca
+    'C4':'Dó', 'D4':'Ré', 'E4':'Mi', 'F4':'Fá',
+    'G4':'Sol', 'A4':'Lá', 'B4':'Si', 'C5':'Dó'
+  },
+  sequential: true,                 // quiz em ordem (não aleatório) por padrão
+};
+
+/* ── Constantes derivadas ─────────────────────────────────── */
+const NOTAS        = MODULE.notes;
+const QUIZ_FASE    = NOTAS.length + 1;   // fase 6
+const CELEBRA_FASE = NOTAS.length + 2;  // fase 7
+const TOTAL_FASES  = CELEBRA_FASE;
+
+/* ── Estado ───────────────────────────────────────────────── */
+let faseAtual    = 1;
+let idxApres     = 0;
+let quizFila     = [];
+let quizAcertos  = 0;
+let quizAtual    = null;
+let quizCompleto = false;
+
+/* ══════════════════════════════════════════════════════════════
+   TECLADO RESPONSIVO
+   C4–C5 apenas, 8 teclas brancas, preenche toda a stage
+══════════════════════════════════════════════════════════════ */
+const kb = createPianoKeyboard(document.getElementById('piano-m2'), {
+  startNote:  MODULE.keyRange.start,
+  endNote:    MODULE.keyRange.end,
+  showLabels: true,
+  labelMap:   MODULE.labelMap,
+  responsive: true,
+  pressColor: MODULE.pressColor,
+  onNoteOn(noteStr) {
+    if (faseAtual <= NOTAS.length) {
+      AudioEngine.play(noteStr);
+    } else if (faseAtual === QUIZ_FASE) {
+      avaliarQuiz(noteStr);
+    }
+  },
+});
+
+/* ══════════════════════════════════════════════════════════════
+   SEQ-DOTS — círculos clicáveis (apresentação)
+══════════════════════════════════════════════════════════════ */
+const seqEl = document.getElementById('seq-dots');
+NOTAS.forEach((n, i) => {
+  const d = document.createElement('div');
+  d.className = 'seq-dot';
+  d.style.background = n.cor;
+  d.textContent = n.nome.slice(0, 2);
+  d.dataset.i = i;
+  d.setAttribute('role', 'button');
+  d.setAttribute('tabindex', '0');
+  d.setAttribute('aria-label', 'Nota ' + n.nome);
+  d.addEventListener('click', () => irParaFase(i + 1));
+  d.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); irParaFase(i + 1); }
+  });
+  seqEl.appendChild(d);
+});
+
+/* ══════════════════════════════════════════════════════════════
+   NAV DOTS — progresso de fase
+══════════════════════════════════════════════════════════════ */
+const navDotsEl = document.getElementById('nav-dots');
+for (let i = 1; i <= TOTAL_FASES; i++) {
+  const d = document.createElement('div');
+  d.className = 'panel-dot' + (i === 1 ? ' active' : '');
+  d.dataset.f = i;
+  navDotsEl.appendChild(d);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   NAVEGAÇÃO ENTRE FASES
+══════════════════════════════════════════════════════════════ */
+const btnPrev = document.getElementById('btn-prev');
+const btnNext = document.getElementById('btn-next');
+
+function irParaFase(f) {
+  if (f < 1 || f > TOTAL_FASES) return;
+  faseAtual = f;
+  idxApres  = Math.min(f - 1, NOTAS.length - 1);
+
+  // Atualiza screens
+  document.getElementById('s-apres')  .classList.toggle('active', f <= NOTAS.length);
+  document.getElementById('s-quiz')   .classList.toggle('active', f === QUIZ_FASE);
+  document.getElementById('s-celebra').classList.toggle('active', f === CELEBRA_FASE);
+
+  // Atualiza dots e botões nav
+  document.querySelectorAll('.panel-dot').forEach(d => {
+    const n = parseInt(d.dataset.f);
+    d.className = 'panel-dot' + (n === f ? ' active' : n < f ? ' done' : '');
+  });
+  btnPrev.disabled = f === 1;
+  btnNext.disabled = f === TOTAL_FASES;
+
+  aoEntrar(f);
+}
+
+btnPrev.addEventListener('click', () => irParaFase(faseAtual - 1));
+btnNext.addEventListener('click', () => irParaFase(faseAtual + 1));
+
+function atualizarSeq() {
+  document.querySelectorAll('.seq-dot').forEach(d => {
+    const i = parseInt(d.dataset.i);
+    d.classList.toggle('ativa', i === idxApres);
+    d.classList.toggle('vista', i < idxApres);
+  });
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FASE: APRESENTAÇÃO
+══════════════════════════════════════════════════════════════ */
+function entrarApresentacao(nota) {
+  const circ = document.getElementById('apres-circulo');
+  circ.textContent      = nota.nome;
+  circ.style.background = nota.cor;
+  circ.style.boxShadow  = `0 0 28px color-mix(in srgb, ${nota.cor} 45%, transparent)`;
+
+  kb.releaseAll();
+  kb.clearHints();
+  atualizarSeq();
+  animarNota(nota.midi);
+  TTS.falar(nota.nome);
+}
+
+// Animação: toca + acende tecla → apaga após duração
+function animarNota(noteStr, durMs = 900) {
+  kb.releaseAll();
+  AudioEngine.play(noteStr, durMs / 1000);
+  kb.highlight(noteStr);
+  setTimeout(() => kb.release(noteStr), durMs);
+}
+
+document.getElementById('btn-ouvir').addEventListener('click', () => {
+  animarNota(NOTAS[idxApres].midi);
+  TTS.falar(NOTAS[idxApres].nome);
+});
+
+/* ══════════════════════════════════════════════════════════════
+   FASE: QUIZ
+══════════════════════════════════════════════════════════════ */
+function entrarQuiz() {
+  quizAcertos  = 0;
+  quizCompleto = false;
+  // Sequencial por padrão; embaralhar se MODULE.sequential = false
+  quizFila = MODULE.sequential ? [...NOTAS] : embaralhar([...NOTAS]);
+  kb.releaseAll();
+  kb.clearHints();
+  renderQuizProg();
+  atualizarBotaoAvancar();
+  proximaQuizNota();
+}
+
+function proximaQuizNota() {
+  if (quizFila.length === 0) {
+    quizCompleto = true;
+    atualizarBotaoAvancar();
+    const feedEl = document.getElementById('feedback-quiz');
+    feedEl.textContent = 'Perfeito! 🎉';
+    feedEl.className = 'feedback-quiz acerto anim-bounce';
+    setTimeout(() => irParaFase(CELEBRA_FASE), 1100);
+    return;
+  }
+  quizAtual = quizFila.shift();
+  const nomeEl = document.getElementById('quiz-nome');
+  nomeEl.textContent = quizAtual.nome;
+  nomeEl.style.color = quizAtual.cor;
+  kb.releaseAll();
+  kb.clearHints();
+  document.getElementById('feedback-quiz').textContent = '';
+  document.getElementById('feedback-quiz').className   = 'feedback-quiz';
+  TTS.falar('Toque o ' + quizAtual.nome);
+  if (Settings.getEasyMode()) kb.hint(quizAtual.midi);
+}
+
+function avaliarQuiz(noteStr) {
+  const base   = noteStr.replace(/[#\d]/g, '');
+  const feedEl = document.getElementById('feedback-quiz');
+
+  if (base === quizAtual.base) {
+    quizAcertos++;
+    AudioEngine.play(noteStr, 0.9);
+    kb.releaseAll();
+    kb.clearHints();
+    kb.highlight(noteStr);
+    feedEl.textContent = ['Isso!','Boa!','Perfeito!','Muito bem!','Incrível!']
+                          [Math.min(quizAcertos - 1, 4)];
+    feedEl.className = 'feedback-quiz acerto anim-bounce';
+    renderQuizProg();
+    setTimeout(proximaQuizNota, 750);
+  } else {
+    AudioEngine.play(noteStr, 0.4);
+    mostrarErroNaTecla(noteStr);
+    feedEl.textContent = 'Tente de novo!';
+    feedEl.className   = 'feedback-quiz erro anim-shake';
+    setTimeout(() => {
+      feedEl.className = 'feedback-quiz';
+      feedEl.textContent = '';
+    }, 800);
+  }
+}
+
+function renderQuizProg() {
+  const el = document.getElementById('quiz-prog');
+  el.innerHTML = '';
+  NOTAS.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'quiz-prog-dot' + (i < quizAcertos ? ' ok' : '');
+    el.appendChild(d);
+  });
+}
+
+function atualizarBotaoAvancar() {
+  const btn = document.getElementById('btn-avancar');
+  btn.style.opacity       = quizCompleto ? '1' : '0.35';
+  btn.style.pointerEvents = quizCompleto ? 'auto' : 'none';
+}
+
+document.getElementById('btn-refazer').addEventListener('click', entrarQuiz);
+document.getElementById('btn-avancar').addEventListener('click', () => {
+  if (quizCompleto) irParaFase(CELEBRA_FASE);
+});
+
+/* ══════════════════════════════════════════════════════════════
+   FASE: CELEBRAÇÃO
+══════════════════════════════════════════════════════════════ */
+function entrarCelebracao() {
+  TTS.falar('Parabéns! Você conhece as 5 notas!');
+  salvarProgresso();
+
+  // Animação sequencial nas teclas — simula dedilhado
+  NOTAS.forEach((n, i) => {
+    setTimeout(() => {
+      kb.highlight(n.midi);
+      AudioEngine.play(n.midi, 0.5);
+    }, i * 220);
+    setTimeout(() => kb.release(n.midi), i * 220 + 450);
+  });
+  // Acorde final
+  setTimeout(() => {
+    AudioEngine.playChord(NOTAS.map(n => n.midi), 60, 1.6);
+  }, NOTAS.length * 220 + 100);
+
+  // Dots animados
+  const el = document.getElementById('celebra-notas');
+  el.innerHTML = '';
+  NOTAS.forEach((n, i) => {
+    const d = document.createElement('div');
+    d.className = 'seq-dot';
+    d.style.background = n.cor;
+    d.style.opacity    = '1';
+    d.style.width = d.style.height = '38px';
+    d.style.fontSize   = '.7rem';
+    d.style.cursor     = 'default';
+    d.textContent      = n.nome.slice(0, 2);
+    el.appendChild(d);
+    setTimeout(() => d.classList.add('anim-bounce'), i * 120);
+  });
+}
+
+/* ══════════════════════════════════════════════════════════════
+   DISPATCHER
+══════════════════════════════════════════════════════════════ */
+function aoEntrar(f) {
+  if (f >= 1 && f <= NOTAS.length) entrarApresentacao(NOTAS[f - 1]);
+  if (f === QUIZ_FASE)             entrarQuiz();
+  if (f === CELEBRA_FASE)          entrarCelebracao();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   X NA TECLA ERRADA
+══════════════════════════════════════════════════════════════ */
+function mostrarErroNaTecla(noteStr) {
+  const key = document.querySelector(`#piano-m2 [data-note="${noteStr}"]`);
+  if (!key) return;
+  const prev = key.querySelector('.key-error-x');
+  if (prev) prev.remove();
+  const x = document.createElement('div');
+  x.className   = 'key-error-x';
+  x.textContent = '✕';
+  key.appendChild(x);
+  setTimeout(() => { if (x.parentNode) x.remove(); }, 700);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   UTILITÁRIOS
+══════════════════════════════════════════════════════════════ */
+function embaralhar(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function salvarProgresso() {
+  localStorage.setItem('piano_m1_ex2_progresso',
+    JSON.stringify({ completo: true, data: new Date().toISOString() }));
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BOTÕES DO PAINEL
+══════════════════════════════════════════════════════════════ */
+// Som
+const btnSound = document.getElementById('btn-sound');
+btnSound.textContent = Settings.getSoundOn() ? '🔊' : '🔇';
+btnSound.addEventListener('click', () => {
+  Settings.setSoundOn(!Settings.getSoundOn());
+  btnSound.textContent = Settings.getSoundOn() ? '🔊' : '🔇';
+});
+
+// Modo Fácil
+const btnEasy = document.getElementById('btn-easy');
+btnEasy.textContent = Settings.getEasyMode() ? '⭐' : '☆';
+btnEasy.classList.toggle('ativo', Settings.getEasyMode());
+btnEasy.addEventListener('click', () => {
+  const on = !Settings.getEasyMode();
+  Settings.setEasyMode(on);
+  btnEasy.textContent = on ? '⭐' : '☆';
+  btnEasy.classList.toggle('ativo', on);
+  if (faseAtual === QUIZ_FASE && quizAtual) {
+    kb.clearHints();
+    if (on) kb.hint(quizAtual.midi);
+  }
+});
+
+// Tema claro/escuro
+const btnTheme = document.getElementById('btn-theme');
+btnTheme.textContent = Settings.getTheme() === 'dark' ? '🌙' : '☀️';
+btnTheme.addEventListener('click', () => {
+  const dark = Settings.getTheme() !== 'dark';
+  Settings.setTheme(dark ? 'dark' : 'light');
+  btnTheme.textContent = dark ? '🌙' : '☀️';
+});
+
+// Cadeado / tela cheia
+const btnLock = document.getElementById('btn-lock');
+LockMode.listenChanges(btnLock);
+btnLock.addEventListener('click', () => LockMode.toggle(btnLock));
+
+/* ══════════════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════════════ */
+document.addEventListener('pointerdown', () => AudioEngine.init(), { once: true });
+irParaFase(1);
+</script>
+</body>
+</html>

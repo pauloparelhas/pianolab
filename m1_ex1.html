@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>PianoLab — Ex 1: O Dó Central</title>
+  <link rel="stylesheet" href="base.css">
+  <link rel="stylesheet" href="piano.css">
+  <style>
+    /* ══════════════════════════════════════════════════════════
+       PIANO BODY — mesmo padrão de m1_ex2.html
+    ══════════════════════════════════════════════════════════ */
+    html, body { height: 100%; overflow: hidden; }
+
+    .piano-body {
+      display: flex;
+      flex-direction: column;
+      height: 100dvh;
+      background: #111827;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    @media (orientation: landscape) {
+      .piano-body { flex-direction: row; }
+    }
+
+    /* ── PAINEL DIGITAL ──────────────────────────────────────── */
+    .digital-panel {
+      flex: 1;
+      min-height: 0;
+      background: #0d1117;
+      display: flex;
+      flex-direction: column;
+      border-bottom: 3px solid #000;
+    }
+
+    @media (orientation: landscape) {
+      .digital-panel {
+        flex: 0 0 38%;
+        border-bottom: none;
+        border-right: 3px solid #000;
+        overflow: hidden;
+      }
+    }
+
+    /* ── TOPBAR DO PAINEL ────────────────────────────────────── */
+    .panel-topbar {
+      display: flex;
+      align-items: center;
+      padding: 5px 8px;
+      background: #070d14;
+      border-bottom: 1px solid #1a2535;
+      flex-shrink: 0;
+      gap: 4px;
+    }
+
+    .panel-title {
+      flex: 1;
+      text-align: center;
+      font-size: 0.65rem;
+      letter-spacing: 3px;
+      color: #4FC3F7;
+      font-weight: 700;
+      text-transform: uppercase;
+      pointer-events: none;
+    }
+
+    .panel-btn {
+      width: 34px;
+      height: 34px;
+      background: #141e2e;
+      border: 1px solid #263045;
+      border-radius: 7px;
+      color: #7a8fa8;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background .1s, color .1s, border-color .1s;
+      touch-action: manipulation;
+    }
+
+    .panel-btn:active        { background: #1e2d48; }
+    .panel-btn.ativo         { color: #4FC3F7; border-color: rgba(79,195,247,.5); }
+
+    /* ── CONTEÚDO DAS FASES ──────────────────────────────────── */
+    .panel-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 10px 14px 6px;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    .screen {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+      gap: 10px;
+      min-height: 0;
+    }
+
+    .screen.active { display: flex; }
+
+    /* ── NAV DO PAINEL ───────────────────────────────────────── */
+    .panel-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 5px 8px;
+      background: #070d14;
+      border-top: 1px solid #1a2535;
+      flex-shrink: 0;
+    }
+
+    .nav-btn {
+      width: 40px;
+      height: 40px;
+      background: #141e2e;
+      border: 1px solid #263045;
+      border-radius: 50%;
+      color: #7a8fa8;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: manipulation;
+      transition: background .1s;
+    }
+
+    .nav-btn:disabled { opacity: .3; pointer-events: none; }
+    .nav-btn:active   { background: #1e2d48; }
+
+    .panel-dots { display: flex; gap: 5px; align-items: center; }
+
+    .panel-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #1e2a3a;
+      transition: background .2s, transform .2s;
+    }
+
+    .panel-dot.active { background: #4FC3F7; transform: scale(1.5); }
+    .panel-dot.done   { background: #43A047; }
+
+    /* ════════════════════════════════════════════════════════════
+       TECLADO
+    ════════════════════════════════════════════════════════════ */
+    .piano-stage {
+      background: #111827;
+      padding: 8px 0 12px;
+      border-top: 3px solid #000;
+      flex-shrink: 0;
+      --key-h:    clamp(140px, 36vh,  300px);
+      --key-bk-h: clamp( 84px, 22vh,  180px);
+    }
+
+    @media (orientation: landscape) {
+      .piano-stage {
+        flex: 1;
+        border-top: none;
+        border-left: 3px solid #000;
+        padding: 8px 0;
+        display: flex;
+        align-items: center;
+        --key-h:    clamp(120px, 72vh, 320px);
+        --key-bk-h: clamp( 72px, 43vh, 192px);
+      }
+    }
+
+    .piano-stage .piano-wrap.responsive { overflow: visible; padding-bottom: 0; }
+    .piano-stage .piano.responsive      { width: 100%; }
+
+    .piano-stage .key__label {
+      font-size: clamp(0.42rem, 1.3vw, 0.62rem);
+      font-weight: 700;
+      color: #888;
+      letter-spacing: 0;
+    }
+
+    .piano-stage .key { border-color: #444; }
+
+    /* ════════════════════════════════════════════════════════════
+       FASE 1 — APRESENTAÇÃO
+    ════════════════════════════════════════════════════════════ */
+    .nota-hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .nota-circulo {
+      width: clamp(60px, 16vw, 88px);
+      height: clamp(60px, 16vw, 88px);
+      border-radius: 50%;
+      background: var(--nota-do);
+      box-shadow: 0 0 28px color-mix(in srgb, var(--nota-do) 45%, transparent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(1.2rem, 4vw, 2rem);
+      font-weight: 900;
+      color: #fff;
+      animation: bounce-in .35s ease-out;
+    }
+
+    .nota-subtitulo {
+      font-size: var(--sm);
+      color: #4a6070;
+      text-align: center;
+    }
+
+    .btn-ouvir {
+      min-height: 48px;
+      flex-shrink: 0;
+      background: #141e2e;
+      border: 1px solid #263045;
+      border-radius: var(--rad);
+      color: #4FC3F7;
+      font-size: var(--sm);
+      font-weight: 600;
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: background .1s;
+      width: 100%;
+    }
+
+    .btn-ouvir:active { background: #1e2d48; }
+
+    /* ════════════════════════════════════════════════════════════
+       FASE 2 — IDENTIFICAÇÃO
+    ════════════════════════════════════════════════════════════ */
+    .ident-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .pergunta {
+      text-align: center;
+      font-size: clamp(1.1rem, 4vw, 1.5rem);
+      font-weight: 800;
+      color: #c8d8e8;
+      line-height: 1.2;
+    }
+
+    .tentativas {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .tentativa-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #1a2535;
+      border: 1px solid #263045;
+      transition: background .2s, transform .2s;
+    }
+
+    .tentativa-dot.acerto {
+      background: var(--nota-do);
+      border-color: var(--nota-do);
+      transform: scale(1.3);
+    }
+
+    .feedback-ident {
+      text-align: center;
+      font-size: var(--lg);
+      font-weight: 700;
+      min-height: 2rem;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #4FC3F7;
+    }
+
+    .feedback-ident.acerto { color: var(--success); }
+    .feedback-ident.neutro { color: #5a7090; }
+
+    /* ════════════════════════════════════════════════════════════
+       FASE 3 — CELEBRAÇÃO
+    ════════════════════════════════════════════════════════════ */
+    .celebracao {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      text-align: center;
+    }
+
+    .celebracao__emoji  { font-size: 2.8rem; animation: bounce-in .5s ease-out; }
+    .celebracao__titulo { font-size: var(--xl); font-weight: 900; color: var(--nota-do); }
+    .celebracao__sub    { font-size: var(--sm); color: #4a6070; }
+
+    .celebracao__btn {
+      min-height: 52px;
+      padding: 0 24px;
+      background: #0f2a3a;
+      border: 1px solid #1a4a6a;
+      border-radius: var(--rad);
+      color: #4FC3F7;
+      font-size: var(--md);
+      font-weight: 700;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    /* ── AJUSTES LANDSCAPE ───────────────────────────────────── */
+    @media (orientation: landscape) {
+      .nota-circulo {
+        width: clamp(44px, 9vw, 64px);
+        height: clamp(44px, 9vw, 64px);
+        font-size: clamp(1rem, 2.5vw, 1.5rem);
+      }
+      .panel-content { padding: 6px 12px 4px; gap: 6px; }
+      .screen { gap: 6px; }
+    }
+  </style>
+</head>
+<body>
+<div class="piano-body">
+
+  <!-- ═══ PAINEL DIGITAL ═══════════════════════════════════════ -->
+  <div class="digital-panel">
+
+    <!-- Topbar: navegação + controles -->
+    <div class="panel-topbar">
+      <button class="panel-btn" onclick="goTo('m1_hub.html')" aria-label="Voltar">←</button>
+      <span class="panel-title">Ex 1 - O Dó Central</span>
+      <button class="panel-btn" id="btn-easy"  aria-label="Modo Fácil">☆</button>
+      <button class="panel-btn" id="btn-theme" aria-label="Tema">☀️</button>
+      <button class="panel-btn" id="btn-lock"  aria-label="Tela cheia">🔓</button>
+      <button class="panel-btn" id="btn-sound" aria-label="Som">🔊</button>
+    </div>
+
+    <!-- Conteúdo das fases -->
+    <div class="panel-content">
+
+      <!-- FASE 1: Apresentação -->
+      <div class="screen active" id="s1">
+        <div class="nota-hero">
+          <div class="nota-circulo">Dó</div>
+          <p class="nota-subtitulo">A primeira nota do piano</p>
+        </div>
+        <button class="btn-ouvir" id="btn-ouvir">▶ Ouvir o Dó</button>
+      </div>
+
+      <!-- FASE 2: Identificação -->
+      <div class="screen" id="s2">
+        <div class="ident-header">
+          <p class="pergunta">Onde está o Dó?</p>
+          <div class="tentativas" id="tentativas"></div>
+        </div>
+        <div class="feedback-ident" id="feedback-s2"></div>
+      </div>
+
+      <!-- FASE 3: Celebração -->
+      <div class="screen" id="s3">
+        <div class="celebracao">
+          <div class="celebracao__emoji">🎉</div>
+          <div class="celebracao__titulo">Você encontrou o Dó!</div>
+          <div class="celebracao__sub">Dó é a nota vermelha.<br>Ela aparece várias vezes no piano!</div>
+          <button class="celebracao__btn" onclick="goTo('m1_hub.html')">Ver mais exercícios →</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Nav: prev/dots/next -->
+    <div class="panel-nav">
+      <button class="nav-btn" id="btn-prev" disabled>◀</button>
+      <div class="panel-dots" id="nav-dots"></div>
+      <button class="nav-btn" id="btn-next">▶</button>
+    </div>
+
+  </div>
+
+  <!-- ═══ TECLADO ═══════════════════════════════════════════════ -->
+  <div class="piano-stage">
+    <div id="piano-m1ex1"></div>
+  </div>
+
+</div>
+<script src="base.js"></script>
+<script>
+'use strict';
+
+/* ══════════════════════════════════════════════════════════════
+   CONFIGURAÇÃO DO MÓDULO
+══════════════════════════════════════════════════════════════ */
+const MODULE = {
+  id:   'm1_ex1',
+  note: { nome: 'Dó', base: 'C', midi: 'C4', cor: 'var(--nota-do)' },
+  keyRange: { start: 'C4', end: 'C5' },
+  pressColor: '#4FC3F7',
+  labelMap: {
+    'C4':'Dó', 'D4':'Ré', 'E4':'Mi', 'F4':'Fá',
+    'G4':'Sol', 'A4':'Lá', 'B4':'Si', 'C5':'Dó'
+  },
+  acertosParaAvancar: 3,
+};
+
+const TOTAL_FASES = 3;
+let faseAtual = 1;
+let acertos   = 0;
+
+/* ══════════════════════════════════════════════════════════════
+   TECLADO RESPONSIVO — C4–C5, preenche toda a stage
+══════════════════════════════════════════════════════════════ */
+const kb = createPianoKeyboard(document.getElementById('piano-m1ex1'), {
+  startNote:  MODULE.keyRange.start,
+  endNote:    MODULE.keyRange.end,
+  showLabels: true,
+  labelMap:   MODULE.labelMap,
+  responsive: true,
+  pressColor: MODULE.pressColor,
+  onNoteOn(noteStr) {
+    if (faseAtual === 1) {
+      AudioEngine.play(noteStr);
+    } else if (faseAtual === 2) {
+      avaliarResposta(noteStr);
+    }
+  },
+});
+
+/* ══════════════════════════════════════════════════════════════
+   NAV DOTS — progresso de fase
+══════════════════════════════════════════════════════════════ */
+const navDotsEl = document.getElementById('nav-dots');
+for (let i = 1; i <= TOTAL_FASES; i++) {
+  const d = document.createElement('div');
+  d.className = 'panel-dot' + (i === 1 ? ' active' : '');
+  d.dataset.f = i;
+  navDotsEl.appendChild(d);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   NAVEGAÇÃO ENTRE FASES
+══════════════════════════════════════════════════════════════ */
+const btnPrev = document.getElementById('btn-prev');
+const btnNext = document.getElementById('btn-next');
+
+function irParaFase(f) {
+  if (f < 1 || f > TOTAL_FASES) return;
+  faseAtual = f;
+  document.getElementById('s1').classList.toggle('active', f === 1);
+  document.getElementById('s2').classList.toggle('active', f === 2);
+  document.getElementById('s3').classList.toggle('active', f === 3);
+  document.querySelectorAll('.panel-dot').forEach(d => {
+    const n = parseInt(d.dataset.f);
+    d.className = 'panel-dot' + (n === f ? ' active' : n < f ? ' done' : '');
+  });
+  btnPrev.disabled = f === 1;
+  btnNext.disabled = f === TOTAL_FASES;
+  aoEntrarFase(f);
+}
+
+btnPrev.addEventListener('click', () => irParaFase(faseAtual - 1));
+btnNext.addEventListener('click', () => irParaFase(faseAtual + 1));
+
+/* ══════════════════════════════════════════════════════════════
+   FASE 1: APRESENTAÇÃO
+══════════════════════════════════════════════════════════════ */
+function entrarApresentacao() {
+  kb.releaseAll();
+  kb.clearHints();
+  kb.highlight(MODULE.note.midi);
+  TTS.falar('Este é o Dó!');
+}
+
+document.getElementById('btn-ouvir').addEventListener('click', () => {
+  AudioEngine.play(MODULE.note.midi, 1.2);
+  kb.releaseAll();
+  kb.highlight(MODULE.note.midi);
+  TTS.falar(MODULE.note.nome);
+});
+
+/* ══════════════════════════════════════════════════════════════
+   FASE 2: IDENTIFICAÇÃO
+══════════════════════════════════════════════════════════════ */
+function entrarIdentificacao() {
+  acertos = 0;
+  renderTentativas();
+  const feedEl = document.getElementById('feedback-s2');
+  feedEl.textContent = '';
+  feedEl.className = 'feedback-ident';
+  kb.releaseAll();
+  kb.clearHints();
+  if (Settings.getEasyMode()) kb.hint(MODULE.note.midi);
+  TTS.falar('Onde está o Dó?');
+}
+
+function renderTentativas() {
+  const el = document.getElementById('tentativas');
+  el.innerHTML = '';
+  for (let i = 0; i < MODULE.acertosParaAvancar; i++) {
+    const d = document.createElement('div');
+    d.className = 'tentativa-dot' + (i < acertos ? ' acerto' : '');
+    el.appendChild(d);
+  }
+}
+
+function avaliarResposta(noteStr) {
+  const base   = noteStr.replace(/[#\d]/g, '');
+  const feedEl = document.getElementById('feedback-s2');
+
+  if (base === MODULE.note.base) {
+    acertos++;
+    AudioEngine.play(noteStr, 0.8);
+    kb.releaseAll();
+    kb.clearHints();
+    kb.highlight(noteStr);
+    feedEl.textContent = ['Isso!', 'Boa!', 'Muito bem!'][Math.min(acertos - 1, 2)];
+    feedEl.className = 'feedback-ident acerto anim-bounce';
+    TTS.falar('Isso!');
+    renderTentativas();
+    if (acertos >= MODULE.acertosParaAvancar) {
+      setTimeout(() => irParaFase(3), 900);
+    } else {
+      setTimeout(() => {
+        kb.releaseAll();
+        if (Settings.getEasyMode()) kb.hint(MODULE.note.midi);
+        feedEl.textContent = '';
+        feedEl.className = 'feedback-ident';
+      }, 800);
+    }
+  } else {
+    AudioEngine.play(noteStr, 0.5);
+    feedEl.textContent = 'Tente de novo!';
+    feedEl.className = 'feedback-ident neutro anim-shake';
+    setTimeout(() => {
+      feedEl.textContent = '';
+      feedEl.className = 'feedback-ident';
+    }, 900);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FASE 3: CELEBRAÇÃO
+══════════════════════════════════════════════════════════════ */
+function entrarCelebracao() {
+  AudioEngine.playChord(['C4', 'E4', 'G4'], 120, 1.5);
+  TTS.falar('Parabéns! Você encontrou o Dó!');
+  salvarProgresso();
+}
+
+function salvarProgresso() {
+  localStorage.setItem('piano_m1_ex1_progresso',
+    JSON.stringify({ completo: true, data: new Date().toISOString() }));
+}
+
+/* ══════════════════════════════════════════════════════════════
+   DISPATCHER
+══════════════════════════════════════════════════════════════ */
+function aoEntrarFase(f) {
+  if (f === 1) entrarApresentacao();
+  if (f === 2) entrarIdentificacao();
+  if (f === 3) entrarCelebracao();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BOTÕES DO PAINEL
+══════════════════════════════════════════════════════════════ */
+// Som
+const btnSound = document.getElementById('btn-sound');
+btnSound.textContent = Settings.getSoundOn() ? '🔊' : '🔇';
+btnSound.addEventListener('click', () => {
+  Settings.setSoundOn(!Settings.getSoundOn());
+  btnSound.textContent = Settings.getSoundOn() ? '🔊' : '🔇';
+});
+
+// Modo Fácil
+const btnEasy = document.getElementById('btn-easy');
+btnEasy.textContent = Settings.getEasyMode() ? '⭐' : '☆';
+btnEasy.classList.toggle('ativo', Settings.getEasyMode());
+btnEasy.addEventListener('click', () => {
+  const on = !Settings.getEasyMode();
+  Settings.setEasyMode(on);
+  btnEasy.textContent = on ? '⭐' : '☆';
+  btnEasy.classList.toggle('ativo', on);
+  if (faseAtual === 2) {
+    kb.clearHints();
+    if (on) kb.hint(MODULE.note.midi);
+  }
+});
+
+// Tema claro/escuro
+const btnTheme = document.getElementById('btn-theme');
+btnTheme.textContent = Settings.getTheme() === 'dark' ? '🌙' : '☀️';
+btnTheme.addEventListener('click', () => {
+  const dark = Settings.getTheme() !== 'dark';
+  Settings.setTheme(dark ? 'dark' : 'light');
+  btnTheme.textContent = dark ? '🌙' : '☀️';
+});
+
+// Cadeado / tela cheia
+const btnLock = document.getElementById('btn-lock');
+LockMode.listenChanges(btnLock);
+btnLock.addEventListener('click', () => LockMode.toggle(btnLock));
+
+/* ══════════════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════════════ */
+document.addEventListener('pointerdown', () => AudioEngine.init(), { once: true });
+irParaFase(1);
+</script>
+</body>
+</html>

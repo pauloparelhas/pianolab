@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>PianoLab</title>
+  <title>PianoLab — Módulo 1</title>
   <link rel="stylesheet" href="base.css">
   <style>
     /* Hub pode rolar — não é tela de exercício */
@@ -23,6 +23,23 @@
       background: var(--surface);
       border-bottom: 1px solid var(--border);
     }
+
+    .hero__back {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: var(--sm);
+      color: var(--text-soft);
+      text-decoration: none;
+      margin-bottom: 12px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0;
+    }
+
+    .hero__back:hover { color: var(--text); }
+
     .hero__logo   { font-size: 2rem; margin-bottom: 2px; }
     .hero__titulo { font-size: var(--xl); font-weight: 900; letter-spacing: -.5px; }
     .hero__sub    { font-size: var(--sm); color: var(--text-soft); margin-top: 4px; }
@@ -33,6 +50,7 @@
       align-items: center;
       gap: 10px;
     }
+
     .prog-wrap {
       flex: 1;
       height: 8px;
@@ -40,17 +58,19 @@
       border-radius: 99px;
       overflow: hidden;
     }
+
     .prog-bar {
       height: 100%;
-      background: var(--nota-fa);
+      background: var(--nota-do);
       border-radius: 99px;
       width: 0%;
       transition: width .6s ease;
     }
+
     .prog-label {
       font-size: var(--sm);
       font-weight: 700;
-      color: var(--nota-fa);
+      color: var(--nota-do);
       white-space: nowrap;
     }
 
@@ -65,7 +85,7 @@
     }
 
     /* ── Cards ─────────────────────────────────────────────── */
-    .modulos { display: flex; flex-direction: column; gap: 10px; padding: 0 16px 24px; }
+    .exercicios { display: flex; flex-direction: column; gap: 10px; padding: 0 16px 24px; }
 
     .card {
       display: flex;
@@ -80,16 +100,19 @@
       transition: border-color .15s, background .15s, transform .1s;
       touch-action: manipulation;
     }
+
     .card.disponivel { cursor: pointer; }
     .card.disponivel:active { transform: scale(.98); }
     .card.disponivel:hover  {
-      border-color: var(--cor, var(--nota-sol));
-      background: color-mix(in srgb, var(--cor, var(--nota-sol)) 8%, var(--surface));
+      border-color: var(--cor, var(--nota-do));
+      background: color-mix(in srgb, var(--cor, var(--nota-do)) 8%, var(--surface));
     }
+
     .card.concluido {
       border-color: var(--success);
       background: color-mix(in srgb, var(--success) 6%, var(--surface));
     }
+
     .card.bloqueado { opacity: .4; cursor: default; pointer-events: none; }
 
     .card__icon {
@@ -100,6 +123,7 @@
       font-size: 1.3rem; font-weight: 900; color: #fff;
       flex-shrink: 0;
     }
+
     .card.bloqueado .card__icon { background: var(--surface2); color: var(--text-soft); }
     .card.concluido .card__icon { font-size: 1.5rem; }
 
@@ -124,29 +148,18 @@
 <div class="hub">
 
   <div class="hero">
+    <button class="hero__back" onclick="goToIndex()">← PianoLab</button>
     <div class="hero__logo">🎹</div>
-    <div class="hero__titulo">PianoLab</div>
-    <div class="hero__sub">Curso interativo de piano</div>
+    <div class="hero__titulo">Módulo 1</div>
+    <div class="hero__sub">Conhecendo as Teclas</div>
     <div class="hero__progresso">
       <div class="prog-wrap"><div class="prog-bar" id="prog-bar"></div></div>
-      <span class="prog-label" id="prog-label">0 / 8</span>
+      <span class="prog-label" id="prog-label">0 / 2</span>
     </div>
   </div>
 
-  <div class="secao-titulo">Demonstração</div>
-  <div class="modulos">
-    <a href="demo.html" class="card disponivel" style="--cor: var(--nota-sol)">
-      <div class="card__icon">🎵</div>
-      <div class="card__info">
-        <div class="card__nome">Piano Interativo</div>
-        <div class="card__desc">4 acordes · exploração livre</div>
-      </div>
-      <div class="card__acao">▶</div>
-    </a>
-  </div>
-
-  <div class="secao-titulo" style="padding-top:4px">Módulos do curso</div>
-  <div class="modulos" id="lista-modulos"></div>
+  <div class="secao-titulo">Exercícios</div>
+  <div class="exercicios" id="lista-exercicios"></div>
 
   <div class="footer">PianoLab · 2026</div>
 
@@ -155,57 +168,71 @@
 <script>
 'use strict';
 
-const MODULOS = [
-  { n:1, href:'m1_hub.html', nome:'O Dó Central',       desc:'3 fases · a primeira nota',        cor:'var(--nota-do)',  key:'piano_m1_progresso' },
-  { n:2, href:'m1_hub.html', nome:'5 Primeiras Notas',  desc:'7 fases · Dó Ré Mi Fá Sol',        cor:'var(--nota-re)',  key:'piano_m2_progresso' },
-  { n:3, href:'m3.html', nome:'As 7 Notas',          desc:'em breve · + Lá e Si',             cor:'var(--nota-mi)', key:'piano_m3_progresso' },
-  { n:4, href:'m4.html', nome:'Escalas',             desc:'em breve · 12 tonalidades',        cor:'var(--nota-fa)', key:'piano_m4_progresso' },
-  { n:5, href:'m5.html', nome:'Intervalos',          desc:'em breve',                         cor:'var(--nota-sol)',key:'piano_m5_progresso' },
-  { n:6, href:'m6.html', nome:'Acordes',             desc:'em breve · maior menor 7ª',       cor:'var(--nota-la)', key:'piano_m6_progresso' },
-  { n:7, href:'m7.html', nome:'Campo Harmônico',     desc:'em breve',                         cor:'var(--nota-si)', key:'piano_m7_progresso' },
-  { n:8, href:'m8.html', nome:'Transposição',        desc:'em breve',                         cor:'var(--nota-sust)',key:'piano_m8_progresso' },
+const EXERCICIOS = [
+  {
+    n: 1, href: 'm1_ex1.html',
+    nome: 'O Dó Central',
+    desc: '3 fases · a primeira nota',
+    cor:  'var(--nota-do)',
+    key:  'piano_m1_ex1_progresso',
+  },
+  {
+    n: 2, href: 'm1_ex2.html',
+    nome: 'As 5 Primeiras Notas',
+    desc: '7 fases · Dó Ré Mi Fá Sol',
+    cor:  'var(--nota-re)',
+    key:  'piano_m1_ex2_progresso',
+  },
+  {
+    n: 3, href: 'm1_ex3.html',
+    nome: 'As 7 Notas',
+    desc: 'em breve · + Lá e Si',
+    cor:  'var(--nota-mi)',
+    key:  'piano_m1_ex3_progresso',
+  },
 ];
 
-// Módulos com arquivo real já publicado
-const PUBLICADOS = new Set([1, 2]);
+// Ex 3 bloqueado até Ex 2 concluído
+const SEMPRE_DISPONIVEIS = new Set([1, 2]);
 
 function progresso(key) {
   try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch { return null; }
 }
 
 function build() {
-  const lista = document.getElementById('lista-modulos');
+  const lista = document.getElementById('lista-exercicios');
   let concluidos = 0;
 
-  MODULOS.forEach((m, i) => {
-    const done  = progresso(m.key)?.completo === true;
-    const prevDone = i === 0 || progresso(MODULOS[i - 1].key)?.completo === true;
-    const pub   = PUBLICADOS.has(m.n);
-    const livre = pub || prevDone;
+  EXERCICIOS.forEach((ex, i) => {
+    const done     = progresso(ex.key)?.completo === true;
+    const prevDone = i === 0 || progresso(EXERCICIOS[i - 1].key)?.completo === true;
+    const livre    = SEMPRE_DISPONIVEIS.has(ex.n) || prevDone;
 
     if (done) concluidos++;
     const estado = done ? 'concluido' : livre ? 'disponivel' : 'bloqueado';
-    const icone  = done ? '✓' : livre ? m.n : '🔒';
+    const icone  = done ? '✓' : livre ? ex.n : '🔒';
     const acao   = done ? '✅' : livre ? '▶' : '🔒';
 
     const el = document.createElement(livre ? 'a' : 'div');
     el.className = `card ${estado}`;
-    el.style.setProperty('--cor', m.cor);
-    if (livre) el.href = m.href;
+    el.style.setProperty('--cor', ex.cor);
+    if (livre) el.href = ex.href;
 
     el.innerHTML = `
       <div class="card__icon">${icone}</div>
       <div class="card__info">
-        <div class="card__nome">M${m.n} · ${m.nome}</div>
-        <div class="card__desc">${m.desc}</div>
+        <div class="card__nome">Ex ${ex.n} · ${ex.nome}</div>
+        <div class="card__desc">${ex.desc}</div>
       </div>
       <div class="card__acao">${acao}</div>`;
     lista.appendChild(el);
   });
 
-  const pct = Math.round((concluidos / MODULOS.length) * 100);
+  // Conta apenas os que têm arquivo real (Ex 1 e Ex 2)
+  const total = EXERCICIOS.filter(e => SEMPRE_DISPONIVEIS.has(e.n)).length;
+  const pct   = total > 0 ? Math.round((concluidos / total) * 100) : 0;
   document.getElementById('prog-bar').style.width  = pct + '%';
-  document.getElementById('prog-label').textContent = `${concluidos} / ${MODULOS.length}`;
+  document.getElementById('prog-label').textContent = `${concluidos} / ${total}`;
 }
 
 build();
