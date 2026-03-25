@@ -162,31 +162,49 @@ const OITAVA_LAYOUT = [
 
 // Gera elemento de teclado de piano
 // container: elemento DOM onde inserir
-// options: { startNote: 'C4', endNote: 'B5', showLabels: true, onNoteOn, onNoteOff }
+// options: {
+//   startNote, endNote, showLabels, onNoteOn, onNoteOff,
+//   responsive: bool  — usa larguras percentuais (preenche container)
+//   pressColor: '#hex' — cor uniforme ao pressionar (override por-nota)
+//   labelMap: { 'C4':'Dó', 'D4':'Ré', ... } — texto dos labels por tecla
+// }
 function createPianoKeyboard(container, options = {}) {
   const {
-    startNote = 'C4',
-    endNote   = 'B5',
+    startNote  = 'C4',
+    endNote    = 'B5',
     showLabels = true,
     onNoteOn   = null,
     onNoteOff  = null,
+    responsive = false,
+    pressColor = null,
+    labelMap   = null,
   } = options;
 
   const startMidi = noteToMidi(startNote);
   const endMidi   = noteToMidi(endNote);
 
   const wrap = document.createElement('div');
-  wrap.className = 'piano-wrap';
+  wrap.className = 'piano-wrap' + (responsive ? ' responsive' : '');
   const piano = document.createElement('div');
-  piano.className = 'piano';
+  piano.className = 'piano' + (responsive ? ' responsive' : '');
   wrap.appendChild(piano);
 
   const keys = {}; // midi → element
 
+  // Conta teclas brancas no range (para percentuais)
+  let numWhiteKeys = 0;
+  for (let m = startMidi; m <= endMidi; m++) {
+    if (!midiToNote(m).includes('#')) numWhiteKeys++;
+  }
+
+  // Dimensões — fixas (px) ou responsivas (%)
+  const keyWidth   = 44;   // px — var(--key-w), usado no modo não-responsivo
+  const blackWidth = 28;   // px — var(--key-bk-w)
+  const keyWidthPct   = responsive ? (100 / numWhiteKeys) : null;
+  const blackWidthPct = responsive ? (keyWidthPct * 0.636) : null;
+
   // Posição horizontal das teclas brancas
   let whiteIndex = 0;
-  const keyWidth = 44; // px — var(--key-w)
-  const blackWidth = 28; // px — var(--key-bk-w)
 
   // Primeiro passo: criar teclas brancas (posicionamento normal)
   for (let midi = startMidi; midi <= endMidi; midi++) {
@@ -200,11 +218,17 @@ function createPianoKeyboard(container, options = {}) {
     key.dataset.midi = midi;
     key.dataset.note = noteStr;
 
+    if (responsive) key.style.width = keyWidthPct + '%';
+    if (pressColor)  key.style.setProperty('--key-active-color', pressColor);
+
     if (showLabels) {
       const label = document.createElement('span');
       label.className = 'key__label';
-      // Mostrar label apenas no C (início de oitava)
-      label.textContent = noteName === 'C' ? noteStr : '';
+      if (labelMap) {
+        label.textContent = labelMap[noteStr] || '';
+      } else {
+        label.textContent = noteName === 'C' ? noteStr : '';
+      }
       key.appendChild(label);
     }
 
@@ -228,12 +252,19 @@ function createPianoKeyboard(container, options = {}) {
     }
 
     const key = document.createElement('div');
-    key.className = 'key key--black';
+    // Modo responsivo: remove o translateX(-50%) do CSS base via classe
+    key.className = 'key key--black' + (responsive ? ' responsive' : '');
     key.dataset.midi = midi;
     key.dataset.note = noteStr;
 
-    // Posição: entre a tecla branca anterior e a próxima
-    key.style.left = (whitePos * keyWidth - blackWidth / 2) + 'px';
+    if (responsive) {
+      // Posição percentual já centra a tecla — sem translateX(-50%)
+      key.style.width = blackWidthPct + '%';
+      key.style.left  = (whitePos * keyWidthPct - blackWidthPct / 2) + '%';
+    } else {
+      key.style.left  = (whitePos * keyWidth - blackWidth / 2) + 'px';
+    }
+    if (pressColor) key.style.setProperty('--key-active-color', pressColor);
 
     attachKeyEvents(key, midi, noteStr);
     piano.appendChild(key);

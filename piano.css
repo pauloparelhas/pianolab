@@ -24,10 +24,21 @@
   flex-shrink: 0;
 }
 
+/* Modo responsivo: ocupa 100% do container pai */
+.piano-wrap.responsive {
+  width: 100%;
+  overflow: hidden;
+  padding-bottom: 0;
+}
+
 .piano {
   display: flex;
   position: relative;
   height: var(--key-h);
+}
+
+.piano.responsive {
+  width: 100%;
 }
 
 /* ── TECLA BRANCA ───────────────────────────────────────────── */
@@ -87,6 +98,29 @@
 .key--black.active {
   background: var(--key-active-color, #546E7A);
   box-shadow: 0 0 12px color-mix(in srgb, var(--key-active-color, #546E7A) 70%, transparent);
+}
+
+/* Modo responsivo: posição já centrada via JS — sem translateX */
+.key--black.responsive {
+  width: auto; /* sobrescrito via inline style */
+  transform: none;
+}
+
+.key--black.responsive:active,
+.key--black.responsive.pressed {
+  background: #546E7A;
+  transform: scaleY(.97);
+  transform-origin: top center;
+}
+
+.key--black.responsive.active {
+  background: var(--key-active-color, #546E7A);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--key-active-color, #546E7A) 70%, transparent);
+}
+
+/* Responsive: altura via --key-bk-h escalonada no container pai */
+.piano.responsive .key--black {
+  height: var(--key-bk-h);
 }
 
 /* ── LABEL DA NOTA ──────────────────────────────────────────── */
