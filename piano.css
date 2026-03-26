@@ -62,15 +62,15 @@
 
 .key:active,
 .key.pressed {
-  background: var(--key-active-color, #E8E8E8);
+  background: #29b6f6;
   transform: scaleY(.97);
   transform-origin: top center;
   box-shadow: inset 0 -4px 8px rgba(0,0,0,.12);
 }
 
 .key.active {
-  background: var(--key-active-color, #E8E8E8);
-  box-shadow: 0 0 16px color-mix(in srgb, var(--key-active-color, #E8E8E8) 70%, transparent);
+  background: #4FC3F7;
+  box-shadow: 0 0 16px rgba(79,195,247,.65);
 }
 
 /* ── TECLA PRETA ────────────────────────────────────────────── */
@@ -90,14 +90,14 @@
 
 .key--black:active,
 .key--black.pressed {
-  background: #546E7A;
+  background: #29b6f6;
   transform: translateX(-50%) scaleY(.97);
   transform-origin: top center;
 }
 
 .key--black.active {
-  background: var(--key-active-color, #546E7A);
-  box-shadow: 0 0 12px color-mix(in srgb, var(--key-active-color, #546E7A) 70%, transparent);
+  background: #4FC3F7;
+  box-shadow: 0 0 0 3px rgba(79,195,247,.7), 0 0 22px rgba(79,195,247,.9);
 }
 
 /* Modo responsivo: posição já centrada via JS — sem translateX */
@@ -108,14 +108,14 @@
 
 .key--black.responsive:active,
 .key--black.responsive.pressed {
-  background: #546E7A;
+  background: #29b6f6;
   transform: scaleY(.97);
   transform-origin: top center;
 }
 
 .key--black.responsive.active {
-  background: var(--key-active-color, #546E7A);
-  box-shadow: 0 0 12px color-mix(in srgb, var(--key-active-color, #546E7A) 70%, transparent);
+  background: #4FC3F7;
+  box-shadow: 0 0 0 3px rgba(79,195,247,.7), 0 0 22px rgba(79,195,247,.9);
 }
 
 /* Responsive: altura via --key-bk-h escalonada no container pai */
@@ -140,16 +140,14 @@
 
 /* ── ESTADO DESTAQUE (nota sendo ensinada) ──────────────────── */
 .key.highlight {
-  background: var(--key-active-color, #E8E8E8);
-  box-shadow:
-    0 0 0 3px var(--key-active-color, #E8E8E8),
-    0 0 24px color-mix(in srgb, var(--key-active-color, #E8E8E8) 60%, transparent);
+  background: #4FC3F7;
+  box-shadow: 0 0 0 3px rgba(79,195,247,.7), 0 0 24px rgba(79,195,247,.6);
   animation: key-pulse 1.4s ease-in-out infinite;
 }
 
 @keyframes key-pulse {
-  0%, 100% { box-shadow: 0 0 0 3px var(--key-active-color, #E8E8E8), 0 0 24px color-mix(in srgb, var(--key-active-color, #E8E8E8) 60%, transparent); }
-  50%       { box-shadow: 0 0 0 6px var(--key-active-color, #E8E8E8), 0 0 36px color-mix(in srgb, var(--key-active-color, #E8E8E8) 80%, transparent); }
+  0%, 100% { box-shadow: 0 0 0 3px rgba(79,195,247,.7), 0 0 24px rgba(79,195,247,.6); }
+  50%       { box-shadow: 0 0 0 6px rgba(79,195,247,.9), 0 0 36px rgba(79,195,247,.8); }
 }
 
 /* ── ANIMAÇÃO DE ACERTO ─────────────────────────────────────── */

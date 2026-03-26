@@ -211,6 +211,38 @@
       40%{transform:translateX(4px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(3px)}
     }
     .key.shake { animation: shake-tecla .35s ease-in-out; }
+
+    .chord-dot.sustenido .chord-dot__circle {
+      background: #1e2a3a; border: 1px dashed #3a4a5a;
+    }
+    .chord-dot.sustenido .chord-dot__label { color: #2a3a4a; }
+    .chord-dot.sustenido.ativo .chord-dot__circle { background: #F9A825; border-color: #F9A825; }
+    .chord-dot.sustenido.ativo .chord-dot__label  { color: #F9A825; }
+    .chord-dot.sustenido.feito .chord-dot__circle { background: #4CAF50; border-color: #4CAF50; }
+    .chord-dot.sustenido.feito .chord-dot__label  { color: #4CAF50; }
+
+    /* ── NAV PADRONIZADA ─────────────────────────────────────── */
+    .fase-nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 7px 12px; gap: 8px;
+      background: #070d14; border-top: 1px solid #1a2535; flex-shrink: 0;
+    }
+    .fase-nav-btn {
+      width: 32px; height: 32px; background: #141e2e;
+      border: 1px solid #263045; border-radius: 7px;
+      color: #4FC3F7; font-size: 1.1rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      touch-action: manipulation;
+    }
+    .fase-nav-btn:disabled { opacity: .3; cursor: default; pointer-events: none; }
+    .fase-dots-row { display: flex; gap: 5px; }
+    .fase-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: #2a3a4a; border: 1px solid #3a4a5a;
+      transition: background .2s;
+    }
+    .fase-dot.ativa { background: #4FC3F7; }
+    .fase-dot.feita { background: #4CAF50; }
   </style>
 </head>
 <body>
@@ -246,7 +278,6 @@
         <div class="fase-texto">As notas acendem em ordem, depois juntas ✨</div>
         <button class="btn-acao" id="btn-iniciar-demo" onclick="iniciarDemo()">▶ Tocar</button>
         <button class="btn-acao" id="btn-ir-junto" style="display:none" onclick="irFase('junto')">Toque Junto →</button>
-        <button class="btn-pular" onclick="irFase('junto')">pular demonstração</button>
       </div>
 
       <!-- Play-Along -->
@@ -257,7 +288,6 @@
         <div class="junto-status" id="junto-status">Pronto?</div>
         <button class="btn-acao" id="btn-comecar-junto" onclick="iniciarJunto()">▶ Começar</button>
         <button class="btn-acao" id="btn-ir-livre" style="display:none" onclick="irFase('livre')">Toque Livre →</button>
-        <button class="btn-pular" onclick="irFase('livre')">pular exercício</button>
       </div>
 
       <!-- Livre -->
@@ -279,6 +309,14 @@
       </div>
 
     </div>
+
+    <!-- Nav padronizada -->
+    <div class="fase-nav">
+      <button class="fase-nav-btn" id="btn-fase-prev" onclick="faseAnterior()">‹</button>
+      <div class="fase-dots-row" id="fase-dots-row"></div>
+      <button class="fase-nav-btn" id="btn-fase-next" onclick="faseSeguinte()">›</button>
+    </div>
+
   </div>
 
   <div class="piano-stage">
@@ -327,20 +365,22 @@ function notasAcorde(rootMidi) {
   }));
 }
 
-// 12 acordes maiores em ordem cromática
+// 12 acordes maiores: naturais na sequência, sustenidos como extras
 const ACORDES = [
-  { raiz: 'C4',  nome: 'Dó Maior',   label: 'Dó'   },
-  { raiz: 'C#4', nome: 'Dó♯ Maior',  label: 'D♯'   },
-  { raiz: 'D4',  nome: 'Ré Maior',   label: 'Ré'   },
-  { raiz: 'D#4', nome: 'Ré♯ Maior',  label: 'R♯'   },
-  { raiz: 'E4',  nome: 'Mi Maior',   label: 'Mi'   },
-  { raiz: 'F4',  nome: 'Fá Maior',   label: 'Fá'   },
-  { raiz: 'F#4', nome: 'Fá♯ Maior',  label: 'F♯'   },
-  { raiz: 'G4',  nome: 'Sol Maior',  label: 'Sol'  },
-  { raiz: 'G#4', nome: 'Sol♯ Maior', label: 'S♯'   },
-  { raiz: 'A4',  nome: 'Lá Maior',   label: 'Lá'   },
-  { raiz: 'A#4', nome: 'Lá♯ Maior',  label: 'L♯'   },
-  { raiz: 'B4',  nome: 'Si Maior',   label: 'Si'   },
+  // Naturais (sequência padrão)
+  { raiz: 'C4',  nome: 'Dó Maior',   label: 'Dó',  natural: true  },
+  { raiz: 'D4',  nome: 'Ré Maior',   label: 'Ré',  natural: true  },
+  { raiz: 'E4',  nome: 'Mi Maior',   label: 'Mi',  natural: true  },
+  { raiz: 'F4',  nome: 'Fá Maior',   label: 'Fá',  natural: true  },
+  { raiz: 'G4',  nome: 'Sol Maior',  label: 'Sol', natural: true  },
+  { raiz: 'A4',  nome: 'Lá Maior',   label: 'Lá',  natural: true  },
+  { raiz: 'B4',  nome: 'Si Maior',   label: 'Si',  natural: true  },
+  // Sustenidos (extras — clicáveis, não na sequência automática)
+  { raiz: 'C#4', nome: 'Dó♯ Maior',  label: 'D♯',  natural: false },
+  { raiz: 'D#4', nome: 'Ré♯ Maior',  label: 'R♯',  natural: false },
+  { raiz: 'F#4', nome: 'Fá♯ Maior',  label: 'F♯',  natural: false },
+  { raiz: 'G#4', nome: 'Sol♯ Maior', label: 'S♯',  natural: false },
+  { raiz: 'A#4', nome: 'Lá♯ Maior',  label: 'L♯',  natural: false },
 ];
 
 /* ══════════════════════════════════════════════════════════════
@@ -405,9 +445,16 @@ function buildAcordeVis(containerId, ns) {
 function buildChordBar() {
   const el = document.getElementById('chord-bar');
   el.innerHTML = '';
-  ACORDES.forEach((a, i) => {
+  // Separador visual entre naturais e sustenidos
+  const naturais  = ACORDES.filter(a => a.natural);
+  const extras    = ACORDES.filter(a => !a.natural);
+
+  [...naturais, ...extras].forEach((a, displayIdx) => {
+    const i = ACORDES.indexOf(a);
     const dot = document.createElement('div');
-    dot.className = 'chord-dot' + (i === acordeIdx ? ' ativo' : i < acordeIdx ? ' feito' : '');
+    dot.className = 'chord-dot'
+      + (i === acordeIdx ? ' ativo' : i < acordeIdx ? ' feito' : '')
+      + (!a.natural ? ' sustenido' : '');
     dot.innerHTML = `<div class="chord-dot__circle"></div><div class="chord-dot__label">${a.label}</div>`;
     dot.addEventListener('click', () => {
       if (i === acordeIdx) return;
@@ -508,6 +555,7 @@ function irFase(fase) {
     salvarProgresso(ultimo);
     TTS.falar('Parabéns! ' + ac.nome + ' concluído!');
   }
+  atualizarFaseNav();
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -666,8 +714,15 @@ function mostrarErro(noteStr) {
 }
 
 function proximoAcorde() {
-  if (acordeIdx >= ACORDES.length - 1) { goTo('index.html'); return; }
-  acordeIdx++;
+  // Avança para o próximo acorde natural na sequência
+  const naturais = ACORDES.map((a, i) => ({ ...a, i })).filter(a => a.natural);
+  const idxNatural = naturais.findIndex(a => a.i === acordeIdx);
+  if (idxNatural < 0 || idxNatural >= naturais.length - 1) {
+    // Se completou todos os naturais (ou está num sustenido), vai para celebra final
+    irFase('celebra');
+    return;
+  }
+  acordeIdx = naturais[idxNatural + 1].i;
   buildChordBar();
   irFase('intro');
 }
@@ -690,6 +745,33 @@ function toggleSom() {
   const on = Settings.getSoundOn();
   Settings.setSoundOn(!on);
   document.getElementById('btn-sound').textContent = !on ? '🔊' : '🔇';
+}
+
+/* ── NAV PADRONIZADA ─────────────────────────────────────── */
+const FASES_ORDEM = ['intro', 'demo', 'junto', 'livre'];
+
+function atualizarFaseNav() {
+  const idx = FASES_ORDEM.indexOf(faseAtual);
+  document.getElementById('btn-fase-prev').disabled = idx <= 0;
+  document.getElementById('btn-fase-next').disabled = faseAtual === 'celebra';
+  const dotsEl = document.getElementById('fase-dots-row');
+  dotsEl.innerHTML = '';
+  FASES_ORDEM.forEach((f, i) => {
+    const d = document.createElement('div');
+    d.className = 'fase-dot' + (i === idx ? ' ativa' : i < idx ? ' feita' : '');
+    dotsEl.appendChild(d);
+  });
+}
+
+function faseAnterior() {
+  const idx = FASES_ORDEM.indexOf(faseAtual);
+  if (idx > 0) irFase(FASES_ORDEM[idx - 1]);
+}
+
+function faseSeguinte() {
+  const idx = FASES_ORDEM.indexOf(faseAtual);
+  if (idx >= 0 && idx < FASES_ORDEM.length - 1) irFase(FASES_ORDEM[idx + 1]);
+  else if (faseAtual === 'livre') irFase('celebra');
 }
 
 /* ══════════════════════════════════════════════════════════════
