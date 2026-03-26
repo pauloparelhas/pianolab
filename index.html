@@ -207,7 +207,7 @@
     <div class="hero__sub">Aprenda piano do zero — notas, escalas, acordes e muito mais.</div>
     <div class="hero__progresso">
       <div class="prog-wrap"><div class="prog-bar" id="prog-bar"></div></div>
-      <span class="prog-label" id="prog-label">0 / 5 módulos</span>
+      <span class="prog-label" id="prog-label">0 / 3 módulos</span>
     </div>
   </div>
 
@@ -233,25 +233,8 @@
 <script>
 'use strict';
 
-// Novo currículo — 5 módulos
+// Currículo — módulos ativos
 const MODULOS = [
-  {
-    n: 1,
-    href: 'm1_hub.html',
-    nome: 'Conhecendo as Teclas',
-    desc: '3 exercícios · Dó, 5 notas, 7 notas brancas',
-    cor: 'var(--nota-do)',
-    // M1 completo = Ex1 + Ex2 + Ex3 todos concluídos
-    keys: ['piano_m1_ex1_progresso', 'piano_m1_ex2_progresso', 'piano_m1_ex3_progresso'],
-  },
-  {
-    n: 2,
-    href: 'm2_escalas.html',
-    nome: 'Escalas',
-    desc: '7 escalas maiores · Dó, Ré, Mi, Fá, Sol, Lá, Si',
-    cor: 'var(--nota-re)',
-    keys: ['piano_m2_progresso'],
-  },
   {
     n: 3,
     href: 'm3_acordes.html',
@@ -279,7 +262,7 @@ const MODULOS = [
 ];
 
 // Módulos com arquivo real publicado
-const PUBLICADOS = new Set([1, 2, 3, 4]);
+const PUBLICADOS = new Set([3, 4]);
 
 function getProgresso(key) {
   try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch { return null; }
@@ -323,7 +306,7 @@ function build() {
   const pct = Math.round((concluidos / MODULOS.length) * 100);
   document.getElementById('prog-bar').style.width = pct + '%';
   document.getElementById('prog-label').textContent =
-    concluidos === 0 ? '0 / 5 módulos' : `${concluidos} / 5 módulos`;
+    `${concluidos} / ${MODULOS.length} módulos`;
 }
 
 build();
