@@ -75,10 +75,12 @@
     }
     .scale-dot {
       display: flex; flex-direction: column; align-items: center; gap: 2px;
-      padding: 3px 5px; border-radius: 6px;
-      cursor: default;
+      padding: 5px 6px; border-radius: 6px;
+      cursor: pointer;
       transition: background .2s;
+      touch-action: manipulation;
     }
+    .scale-dot:active { background: rgba(79,195,247,.1); }
     .scale-dot__circle {
       width: 8px; height: 8px; border-radius: 50%;
       background: #2a3a4a; border: 1px solid #3a4a5a;
@@ -306,7 +308,7 @@
 
     <!-- Topbar -->
     <div class="panel-topbar">
-      <button class="panel-btn" id="btn-back" title="Voltar" onclick="goTo('m1_hub.html')">←</button>
+      <button class="panel-btn" id="btn-back" title="Voltar" onclick="goTo('index.html')">←</button>
       <span class="panel-title" id="panel-title-text">M2 · ESCALAS</span>
       <button class="panel-btn" id="btn-easy"  title="Modo fácil"  onclick="toggleEasy()">☆</button>
       <button class="panel-btn" id="btn-lock"  title="Tela cheia"  onclick="LockMode.toggle(this)">🔓</button>
@@ -565,10 +567,16 @@ function buildScaleBar() {
     const dot = document.createElement('div');
     dot.className = 'scale-dot' + (i === escalaIdx ? ' ativa' : i < escalaIdx ? ' concluida' : '');
     dot.dataset.i = i;
-    const nomeRaiz = cfg.nome.split(' ')[0]; // "Dó", "Ré", etc.
+    const nomeRaiz = cfg.nome.split(' ')[0];
     dot.innerHTML = `
       <div class="scale-dot__circle"></div>
       <div class="scale-dot__label">${nomeRaiz}</div>`;
+    dot.addEventListener('click', () => {
+      if (i === escalaIdx) return; // já está nessa escala
+      escalaIdx = i;
+      buildScaleBar();
+      irFase('intro');
+    });
     el.appendChild(dot);
   });
 }
