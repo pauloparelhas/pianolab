@@ -203,24 +203,24 @@
     .fase-dot.ativa { background: #4FC3F7; }
     .fase-dot.feita { background: #4CAF50; }
 
-    /* ── TECLADO ─────────────────────────────────────────────── */
+    /* ── TECLADO + PARTITURA ─────────────────────────────────── */
     .piano-stage {
-      background: #111827; padding: 8px 0 12px;
-      border-top: 3px solid #000; flex: 0 0 45dvh;
-      display: flex; align-items: stretch;
-      --key-h:    clamp(140px, 38dvh, 300px);
-      --key-bk-h: clamp( 84px, 23dvh, 180px);
+      background: #111827;
+      border-top: 3px solid #000; flex: 0 0 52dvh;
+      display: flex; flex-direction: column;
+      --key-h:    clamp(128px, 33dvh, 258px);
+      --key-bk-h: clamp( 77px, 20dvh, 155px);
     }
     @media (orientation: landscape) {
       .piano-stage {
-        flex: 1; border-top: none; border-left: 3px solid #000; padding: 8px 0;
-        --key-h:    clamp(130px, 78dvh, 340px);
-        --key-bk-h: clamp( 78px, 47dvh, 204px);
+        flex: 1; border-top: none; border-left: 3px solid #000;
+        --key-h:    clamp(120px, 70dvh, 320px);
+        --key-bk-h: clamp( 72px, 42dvh, 192px);
       }
     }
-    .piano-stage #piano-campo {
-      width: 100%; display: flex; align-items: center;
-    }
+    #staff-container { flex-shrink: 0; padding: 2px 8px 0; background: #0d1117; border-bottom: 1px solid #1a2535; }
+    #piano-wrap { flex: 1; display: flex; align-items: center; }
+    #piano-wrap #piano-campo { width: 100%; }
     .piano-stage .piano-wrap.responsive { overflow: visible; padding-bottom: 0; }
     .piano-stage .piano.responsive { width: 100%; }
     .piano-stage .key__label { font-size: clamp(0.4rem, 1.2vw, 0.58rem); font-weight: 700; color: #888; }
@@ -304,7 +304,10 @@
   </div>
 
   <div class="piano-stage">
-    <div id="piano-campo"></div>
+    <div id="staff-container"></div>
+    <div id="piano-wrap">
+      <div id="piano-campo"></div>
+    </div>
   </div>
 
 </div>
@@ -401,6 +404,17 @@ const kb = createPianoKeyboard(document.getElementById('piano-campo'), {
     if (faseAtual === 'praticar') checarPratica(noteStr);
   },
 });
+
+const score = createStaffScore(document.getElementById('staff-container'));
+
+function buildCampoScore() {
+  const campo = campoAtual();
+  score.loadScore(campo.map(ac => ({
+    midis: ac.notas.map(noteToMidi),
+    duration: 'w', label: ac.romano
+  })));
+  score.highlight(-1);
+}
 
 /* ══════════════════════════════════════════════════════════════
    HELPERS
@@ -520,6 +534,7 @@ function irFase(fase) {
   const cfg   = cfgAtual();
 
   if (fase === 'intro') {
+    buildCampoScore();
     buildCampoGrid('campo-grid-intro', campo, false);
     document.getElementById('intro-titulo').textContent = 'Campo de ' + cfg.tonica + ' Maior';
     document.getElementById('intro-texto').innerHTML =
@@ -544,6 +559,7 @@ function irFase(fase) {
   }
 
   if (fase === 'praticar') {
+    score.highlight(0);
     buildCampoGrid('campo-grid-pratica', campo, false, 0);
     buildPraticaProg();
     document.getElementById('pratica-titulo').textContent = cfg.tonica + ' Maior · I ao VII';
@@ -586,6 +602,7 @@ function tocarAcorde(i, gridId) {
   acorde.notas.forEach(n => kb.highlight(n));
   AudioEngine.playChord(acorde.notas, 60, 1.2);
   acordeAtivo = i;
+  score.highlight(i);
 
   // Atualiza destaque visual nos cards
   const cards = document.querySelectorAll('#' + gridId + ' .campo-card');
@@ -618,6 +635,7 @@ function tocarProgressao() {
     }
     const acorde = campo[idxSeq[step]];
     cards[step].classList.add('ativo');
+    score.highlight(idxSeq[step]);
     AudioEngine.playChord(acorde.notas, 60, 1.1);
     acorde.notas.forEach(n => kb.highlight(n));
     step++;
@@ -679,6 +697,7 @@ function checarPratica(noteStr) {
     // Toca o acorde como reforço
     AudioEngine.playChord(acorde.notas, 40, 1.0);
     praticaIdx++;
+    score.highlight(praticaIdx < campo.length ? praticaIdx : -1);
 
     if (praticaIdx >= campo.length) {
       setTimeout(() => { kb.clearHighlights(); irFase('celebra'); }, 800);
@@ -729,6 +748,7 @@ function toggleSom() {
 })();
 
 buildCampoBar();
+buildCampoScore();
 irFase('intro');
 document.addEventListener('pointerdown', () => AudioEngine.init(), { once: true });
 LockMode.listenChanges(document.getElementById('btn-lock'));

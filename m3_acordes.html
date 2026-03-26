@@ -182,24 +182,24 @@
       color: #4FC3F7; text-align: center; min-height: 1.4em;
     }
 
-    /* ── TECLADO ─────────────────────────────────────────────── */
+    /* ── TECLADO + PARTITURA ─────────────────────────────────── */
     .piano-stage {
-      background: #111827; padding: 8px 0 12px;
-      border-top: 3px solid #000; flex: 0 0 45dvh;
-      display: flex; align-items: stretch;
-      --key-h:    clamp(140px, 38dvh, 300px);
-      --key-bk-h: clamp( 84px, 23dvh, 180px);
+      background: #111827;
+      border-top: 3px solid #000; flex: 0 0 52dvh;
+      display: flex; flex-direction: column;
+      --key-h:    clamp(128px, 33dvh, 258px);
+      --key-bk-h: clamp( 77px, 20dvh, 155px);
     }
     @media (orientation: landscape) {
       .piano-stage {
-        flex: 1; border-top: none; border-left: 3px solid #000; padding: 8px 0;
-        --key-h:    clamp(130px, 78dvh, 340px);
-        --key-bk-h: clamp( 78px, 47dvh, 204px);
+        flex: 1; border-top: none; border-left: 3px solid #000;
+        --key-h:    clamp(120px, 70dvh, 320px);
+        --key-bk-h: clamp( 72px, 42dvh, 192px);
       }
     }
-    .piano-stage #piano-acordes {
-      width: 100%; display: flex; align-items: center;
-    }
+    #staff-container { flex-shrink: 0; padding: 2px 8px 0; background: #0d1117; border-bottom: 1px solid #1a2535; }
+    #piano-wrap { flex: 1; display: flex; align-items: center; }
+    #piano-wrap #piano-acordes { width: 100%; }
     .piano-stage .piano-wrap.responsive { overflow: visible; padding-bottom: 0; }
     .piano-stage .piano.responsive { width: 100%; }
     .piano-stage .key__label { font-size: clamp(0.4rem, 1.2vw, 0.58rem); font-weight: 700; color: #888; }
@@ -320,7 +320,10 @@
   </div>
 
   <div class="piano-stage">
-    <div id="piano-acordes"></div>
+    <div id="staff-container"></div>
+    <div id="piano-wrap">
+      <div id="piano-acordes"></div>
+    </div>
   </div>
 
 </div>
@@ -407,6 +410,15 @@ const kb = createPianoKeyboard(document.getElementById('piano-acordes'), {
     else if (faseAtual === 'livre') checarLivre(noteStr);
   },
 });
+
+const score = createStaffScore(document.getElementById('staff-container'));
+
+function buildAcordeScore() {
+  score.loadScore(ACORDES.map(a => ({
+    midis: buildChord(a.raiz, FORMULA_MAIOR).map(noteToMidi),
+    duration: 'w', label: a.label
+  })));
+}
 
 /* ══════════════════════════════════════════════════════════════
    HELPERS
@@ -555,6 +567,7 @@ function irFase(fase) {
     salvarProgresso(ultimo);
     TTS.falar('Parabéns! ' + ac.nome + ' concluído!');
   }
+  score.highlight(acordeIdx);
   atualizarFaseNav();
 }
 
@@ -785,6 +798,7 @@ function faseSeguinte() {
 })();
 
 buildChordBar();
+buildAcordeScore();
 irFase('intro');
 document.addEventListener('pointerdown', () => AudioEngine.init(), { once: true });
 LockMode.listenChanges(document.getElementById('btn-lock'));

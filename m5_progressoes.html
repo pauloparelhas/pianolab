@@ -319,11 +319,12 @@
 ══════════════════════════════════════════════════════════════ */
 
 // Offsets MIDI relativos à tônica (tônica = offset 0)
+// rootOffset = offset da fundamental do acorde (para nome e label corretos)
 const PROGRESSAO = [
-  { grau:'I',  nome:'Maior',       inv:'raiz', offsets:[ 0, 4, 7] },
-  { grau:'vi', nome:'menor',       inv:'1ª',   offsets:[ 0, 4, 9] },
-  { grau:'IV', nome:'Maior',       inv:'2ª',   offsets:[ 0, 5, 9] },
-  { grau:'V',  nome:'Maior',       inv:'2ª',   offsets:[ 2, 7,11] },
+  { grau:'I',  nome:'Maior', inv:'raiz', offsets:[ 0, 4, 7], rootOffset: 0 },
+  { grau:'vi', nome:'menor', inv:'1ª',   offsets:[ 0, 4, 9], rootOffset: 9 },
+  { grau:'IV', nome:'Maior', inv:'2ª',   offsets:[ 0, 5, 9], rootOffset: 5 },
+  { grau:'V',  nome:'Maior', inv:'2ª',   offsets:[ 2, 7,11], rootOffset: 7 },
 ];
 
 // 7 tonalidades — piano sempre em C4-B5 (2 oitavas)
@@ -373,7 +374,22 @@ const kb = createPianoKeyboard(document.getElementById('piano-prog'), {
   onNoteOn(noteStr) { AudioEngine.play(noteStr); },
 });
 
-const staff = createStaff(document.getElementById('staff-container'));
+const score = createStaffScore(document.getElementById('staff-container'));
+
+// Partitura para a fase de conceito (3 inversões de Dó fixo)
+const SCORE_CONCEITO = [
+  { midis:[60,64,67], duration:'w', label:'Raiz' },
+  { midis:[64,67,72], duration:'w', label:'1ª'   },
+  { midis:[67,72,76], duration:'w', label:'2ª'   },
+];
+
+function buildProgressaoScore() {
+  const t = tonicMidi();
+  score.loadScore(PROGRESSAO.map(p => ({
+    midis: p.offsets.map(o => t + o),
+    duration: 'q', label: p.grau
+  })));
+}
 
 /* ══════════════════════════════════════════════════════════════
    HELPERS
@@ -387,7 +403,7 @@ function getChordMidis(stepIdx) {
 function nomeAcorde(stepIdx) {
   const p = PROGRESSAO[stepIdx];
   const t = tonicMidi();
-  const rootNote = midiToNote(t + p.offsets[0]);
+  const rootNote = midiToNote(t + p.rootOffset);
   return nomeNota(rootNote) + ' ' + p.nome + ' (' + p.inv + ')';
 }
 
@@ -423,7 +439,7 @@ function mostrarInversao(idx) {
   const inv = INV_CONCEITO[idx];
   kb.clearHighlights();
   inv.midis.forEach(m => kb.highlight(midiToNote(m)));
-  staff.showNotes(inv.midis);
+  score.highlight(idx);
 
   if (invAnterior !== null && invAnterior !== idx)
     mostrarVL(INV_CONCEITO[invAnterior].midis, inv.midis);
@@ -466,7 +482,7 @@ function tocarDemo() {
     const midis = getChordMidis(step);
     if (prevMidis) mostrarVL(prevMidis, midis);
     midis.forEach(m => kb.highlight(midiToNote(m)));
-    staff.showNotes(midis);
+    score.highlight(step);
     AudioEngine.playChord(midis.map(midiToNote), 40, 1.0);
     prevMidis = midis;
     step++;
@@ -486,7 +502,7 @@ function mostrarEtapa() {
   const midis = getChordMidis(etapaIdx);
   kb.clearHighlights();
   midis.forEach(m => kb.highlight(midiToNote(m)));
-  staff.showNotes(midis);
+  score.highlight(etapaIdx);
 
   if (prevMidisPratica) mostrarVL(prevMidisPratica, midis);
   else clearVL();
@@ -506,7 +522,7 @@ function mostrarEtapa() {
   // Instrução
   const p = PROGRESSAO[etapaIdx];
   const t = tonicMidi();
-  const rootMidi = t + p.offsets[0];
+  const rootMidi = t + p.rootOffset;
   const notasStr = p.offsets.map(o => nomeNota(midiToNote(t + o))).join(' + ');
   document.getElementById('pratica-titulo').textContent =
     p.grau + ' — ' + nomeNota(midiToNote(rootMidi)) + ' ' + p.nome;
@@ -572,7 +588,7 @@ function buildBarraProgressao(containerId) {
     card.className = 'prog-acorde';
     card.dataset.idx = i;
     const t = tonicMidi();
-    const rootMidi = t + p.offsets[0];
+    const rootMidi = t + p.rootOffset;
     card.innerHTML = `<div>${p.grau}</div><div style="font-size:.8em;color:#7a8fa8;margin-top:1px">${nomeNota(midiToNote(rootMidi))}</div>`;
     el.appendChild(card);
   });
@@ -580,7 +596,7 @@ function buildBarraProgressao(containerId) {
 
 function irFase(fase) {
   if (animTimer) { clearTimeout(animTimer); animTimer = null; }
-  kb.clearHighlights(); kb.clearHints(); kb.clearNextHints(); staff.clear(); clearVL();
+  kb.clearHighlights(); kb.clearHints(); kb.clearNextHints(); clearVL();
   etapaIdx = 0; prevMidisPratica = null; invAnterior = null;
 
   faseAtual = fase;
@@ -591,11 +607,13 @@ function irFase(fase) {
   const cfg = CHAVES[chaveIdx];
 
   if (fase === 'conceito') {
+    score.loadScore(SCORE_CONCEITO);
     mostrarInversao(invAtiva);
     TTS.falar('Inversões — mesmo acorde, posições diferentes');
   }
 
   if (fase === 'demo') {
+    buildProgressaoScore();
     buildBarraProgressao('demo-barra');
     document.getElementById('demo-titulo').textContent =
       'I – vi – IV – V em ' + cfg.tonica + ' Maior';
@@ -606,6 +624,7 @@ function irFase(fase) {
   }
 
   if (fase === 'praticar') {
+    buildProgressaoScore();
     buildBarraProgressao('pratica-barra');
     // Dots
     const dotsEl = document.getElementById('pratica-dots');
@@ -651,6 +670,7 @@ function buildChaveBar() {
       if (i === chaveIdx) return;
       chaveIdx = i;
       buildChaveBar();
+      buildProgressaoScore();
       if (faseAtual === 'demo' || faseAtual === 'praticar') irFase(faseAtual);
     });
     el.appendChild(dot);

@@ -550,7 +550,150 @@ function createStaff(container) {
   };
 }
 
-/* ── 9. INICIALIZAÇÃO ─────────────────────────────────────── */
+/* ── 9. PARTITURA SEQUENCIAL ──────────────────────────────── */
+// createStaffScore(container, opts)
+// Partitura horizontal multi-acorde com rolagem e destaque do acorde atual.
+// API: { loadScore(chords), highlight(idx), scrollTo(idx), clear(), el }
+// chords = [{ midis:[], duration:'w'|'h'|'q'|'8', label:'' }]
+// duration: 'w'=semibreve (vazia, sem haste) 'h'=mínima (vazia+haste)
+//           'q'=semínima (cheia+haste)       '8'=colcheia (cheia+haste+bandeira)
+
+function createStaffScore(container, opts = {}) {
+  const SLOT  = opts.slotWidth || 76;  // largura de cada slot (px)
+  const CLEF  = 50;                    // área da clave (px)
+  const H     = 96;                    // altura total SVG (px)
+  const STEP  = 4;                     // px por passo diatônico
+  const L1Y   = 64;                    // Y da linha 1 do pentagrama (Mi4)
+  const NRX   = 4.6;                   // rx da cabeça de nota
+  const NRY   = 3.0;                   // ry da cabeça de nota
+  const TILT  = -15;                   // rotação da cabeça (graus)
+  const STMH  = 25;                    // comprimento da haste (px)
+  const LBH   = 12;                    // altura do rótulo no fundo
+
+  const NS   = 'http://www.w3.org/2000/svg';
+  // Índice cromático → posição diatônica (a partir de Dó)
+  const DIAT = [0,0,1,1,2,3,3,4,4,5,5,6];
+
+  // MIDI → passo diatônico relativo ao Mi4 (Mi4=0, Dó4=-2, Si5=11)
+  function mToStep(m) {
+    return (Math.floor(m / 12) - 5) * 7 + DIAT[m % 12] - 2;
+  }
+  function sY(s)        { return L1Y - s * STEP; }
+  function isSharp(m)   { return [1,3,6,8,10].includes(m % 12); }
+  function isFilled(d)  { return d === 'q' || d === '8'; }
+
+  const $ = (tag, a = {}) => {
+    const e = document.createElementNS(NS, tag);
+    for (const [k, v] of Object.entries(a)) e.setAttribute(k, String(v));
+    return e;
+  };
+
+  // Container rolável
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'width:100%;overflow-x:auto;overflow-y:hidden;flex-shrink:0;';
+  container.appendChild(wrap);
+
+  let svg = null, chords = [], hlIdx = -1;
+
+  function rebuild() {
+    if (svg) { svg.remove(); svg = null; }
+    if (!chords.length) return;
+
+    const W = CLEF + chords.length * SLOT + 6;
+    svg = $('svg', { width: W, height: H, viewBox: `0 0 ${W} ${H}`, style: 'display:block' });
+
+    // 5 linhas do pentagrama (Mi4,Sol4,Si4,Ré5,Fá5 = passos 0,2,4,6,8)
+    [0, 2, 4, 6, 8].forEach(s =>
+      svg.appendChild($('line', { x1: CLEF-2, y1: sY(s), x2: W-2, y2: sY(s), stroke: '#3a5068', 'stroke-width': 1 }))
+    );
+
+    // Clave de Sol
+    const clef = $('text', { x: 2, y: sY(9), fill: '#4a6274', 'font-size': 42, 'dominant-baseline': 'hanging', 'font-family': "'Segoe UI Symbol','Symbola',serif" });
+    clef.textContent = '\u{1D11E}';
+    svg.appendChild(clef);
+
+    // Linha de compasso inicial
+    svg.appendChild($('line', { x1: CLEF-1, y1: sY(0), x2: CLEF-1, y2: sY(8), stroke: '#2a3a4a', 'stroke-width': 1.2 }));
+
+    chords.forEach((ch, i) => {
+      const { midis = [], duration = 'w', label = '' } = ch;
+      const active = i === hlIdx;
+      const cx     = CLEF + i * SLOT + SLOT / 2;
+      const steps  = midis.map(mToStep);
+      const col    = active ? '#4FC3F7' : '#8da7ba';
+
+      // Caixa de destaque
+      if (active)
+        svg.appendChild($('rect', { x: CLEF+i*SLOT+2, y: 2, width: SLOT-4, height: H-LBH-4, rx: 5, fill: 'rgba(79,195,247,0.14)', stroke: '#4FC3F7', 'stroke-width': 1 }));
+
+      // Cabeças de nota, linhas suplementares, acidentes
+      midis.forEach((midi, j) => {
+        const step = steps[j];
+        const cy   = sY(step);
+
+        if (step <= -2)  // linha suplementar inferior (Dó4)
+          svg.appendChild($('line', { x1: cx-8, y1: sY(-2), x2: cx+8, y2: sY(-2), stroke: active ? '#4FC3F7' : '#3a5068', 'stroke-width': 1 }));
+        if (step >= 10)  // linha suplementar superior (Lá5+)
+          svg.appendChild($('line', { x1: cx-8, y1: sY(10), x2: cx+8, y2: sY(10), stroke: active ? '#4FC3F7' : '#3a5068', 'stroke-width': 1 }));
+
+        if (isSharp(midi)) {
+          const acc = $('text', { x: cx-11, y: cy+4.5, fill: active ? '#4FC3F7' : '#6a7a8a', 'font-size': 9, 'font-weight': 'bold', 'text-anchor': 'middle' });
+          acc.textContent = '\u266F';
+          svg.appendChild(acc);
+        }
+
+        svg.appendChild($('ellipse', {
+          cx, cy, rx: NRX, ry: NRY,
+          fill: isFilled(duration) ? col : 'none',
+          stroke: col, 'stroke-width': isFilled(duration) ? 0 : 1.4,
+          transform: `rotate(${TILT} ${cx} ${cy})`
+        }));
+      });
+
+      // Haste (mínima e semínima)
+      if (duration !== 'w' && steps.length) {
+        const avg = steps.reduce((a, b) => a + b, 0) / steps.length;
+        const up  = avg < 4;
+        const top = Math.max(...steps), bot = Math.min(...steps);
+        const [sx, sy1, sy2] = up
+          ? [cx+NRX-0.3, sY(top)-NRY,     sY(top)-NRY-STMH]
+          : [cx-NRX+0.3, sY(bot)+NRY,     sY(bot)+NRY+STMH];
+        svg.appendChild($('line', { x1: sx, y1: sy1, x2: sx, y2: sy2, stroke: col, 'stroke-width': 1.2 }));
+
+        // Bandeira (colcheia)
+        if (duration === '8') {
+          const d = up ? 1 : -1;
+          svg.appendChild($('path', { d: `M${sx} ${sy2} C${sx+11*d} ${sy2+5} ${sx+10*d} ${sy2+13} ${sx+4*d} ${sy2+17}`, fill: 'none', stroke: col, 'stroke-width': 1.2 }));
+        }
+      }
+
+      // Linha de compasso final
+      svg.appendChild($('line', { x1: CLEF+(i+1)*SLOT, y1: sY(0), x2: CLEF+(i+1)*SLOT, y2: sY(8), stroke: '#2a3a4a', 'stroke-width': 1.2 }));
+
+      // Rótulo abaixo
+      if (label) {
+        const t = $('text', { x: cx, y: H-2, fill: active ? '#4FC3F7' : '#4a6274', 'font-size': 8.5, 'font-weight': 700, 'text-anchor': 'middle', 'font-family': 'sans-serif' });
+        t.textContent = label;
+        svg.appendChild(t);
+      }
+    });
+
+    wrap.appendChild(svg);
+  }
+
+  return {
+    loadScore(c) { chords = c; hlIdx = -1; rebuild(); },
+    highlight(i) { hlIdx = i; rebuild(); this.scrollTo(i); },
+    scrollTo(i) {
+      if (!wrap || i < 0) return;
+      wrap.scrollLeft = Math.max(0, CLEF + i * SLOT + SLOT / 2 - wrap.clientWidth / 2);
+    },
+    clear() { chords = []; hlIdx = -1; if (svg) { svg.remove(); svg = null; } },
+    el: wrap
+  };
+}
+
+/* ── 10. INICIALIZAÇÃO ────────────────────────────────────── */
 
 document.addEventListener('DOMContentLoaded', () => {
   Settings.init();
