@@ -177,8 +177,8 @@
     @media (orientation: landscape) {
       .piano-stage {
         flex: 1; border-top: none;
-        --key-h:    clamp(120px, 72dvh, 320px);
-        --key-bk-h: clamp( 72px, 43dvh, 192px);
+        --key-h:    clamp(60px, 45dvh, 200px);
+        --key-bk-h: clamp(36px, 27dvh, 120px);
       }
     }
 
@@ -190,7 +190,7 @@
 
     /* Keyboard container: preenche resto */
     #piano-wrap {
-      flex: 1; display: flex; align-items: center; position: relative;
+      flex: 1; min-height: 0; display: flex; align-items: center; position: relative; overflow: hidden;
     }
     #piano-prog {
       width: 100%;
@@ -295,7 +295,7 @@
   </div><!-- digital-panel -->
 
   <!-- PIANO STAGE: staff acima + teclado abaixo -->
-  <div class="piano-stage">
+  <div class="piano-stage" id="piano-stage">
     <div id="staff-container"></div>
     <div id="piano-wrap">
       <div id="piano-prog"></div>
@@ -714,6 +714,23 @@ function toggleSom() {
 /* ══════════════════════════════════════════════════════════════
    INIT
 ══════════════════════════════════════════════════════════════ */
+/* ── Ajuste dinâmico do piano ──────────────────────────────
+   Mede espaço real disponível e define --key-h para o piano
+   caber sempre inteiro, em qualquer orientação.             */
+function ajustarTeclado() {
+  const stage   = document.getElementById('piano-stage');
+  const staffEl = document.getElementById('staff-container');
+  if (!stage) return;
+  const disponivel = stage.clientHeight - (staffEl ? staffEl.offsetHeight : 0) - 4;
+  if (disponivel < 40) return;
+  const keyH = Math.max(60, Math.min(disponivel, 280));
+  stage.style.setProperty('--key-h',    keyH + 'px');
+  stage.style.setProperty('--key-bk-h', Math.round(keyH * 0.62) + 'px');
+}
+window.addEventListener('resize', ajustarTeclado);
+window.addEventListener('orientationchange', () => setTimeout(ajustarTeclado, 150));
+requestAnimationFrame(() => requestAnimationFrame(ajustarTeclado));
+
 buildChaveBar();
 irFase('conceito');
 document.addEventListener('pointerdown', () => AudioEngine.init(), { once: true });

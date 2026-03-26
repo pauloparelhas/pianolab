@@ -70,7 +70,7 @@
       align-items: center; justify-content: center;
       padding: 8px 10px; gap: 7px; overflow: hidden;
     }
-    .screen { display: none; flex-direction: column; align-items: center; gap: 7px; width: 100%; }
+    .screen { display: none; flex-direction: column; align-items: center; gap: 6px; width: 100%; }
     .screen.active { display: flex; }
 
     .fase-label {
@@ -82,7 +82,7 @@
       color: #e8eaed; text-align: center; line-height: 1.2;
     }
     .fase-texto {
-      font-size: clamp(0.68rem, 2.3vw, 0.82rem);
+      font-size: clamp(0.66rem, 2.2vw, 0.80rem);
       color: #7a8fa8; text-align: center; line-height: 1.5;
     }
 
@@ -94,10 +94,10 @@
       display: flex; flex-direction: column; align-items: center; gap: 2px;
     }
     .escala-nota__circulo {
-      width: clamp(28px, 7vw, 38px); height: clamp(28px, 7vw, 38px);
+      width: clamp(26px, 6.5vw, 36px); height: clamp(26px, 6.5vw, 36px);
       border-radius: 50%; background: #1e2a3a; border: 2px solid #2a3a4a;
       display: flex; align-items: center; justify-content: center;
-      font-size: clamp(0.42rem, 1.4vw, 0.62rem); font-weight: 700; color: #4a6274;
+      font-size: clamp(0.38rem, 1.3vw, 0.58rem); font-weight: 700; color: #4a6274;
       transition: background .18s, border-color .18s, color .18s, transform .12s;
     }
     .escala-nota.ativa .escala-nota__circulo {
@@ -107,13 +107,13 @@
       background: #4CAF50; border-color: #4CAF50; color: #fff;
     }
     .escala-nota__grau {
-      font-size: clamp(0.36rem, 1vw, 0.48rem); color: #3a4a5a; font-weight: 700;
+      font-size: clamp(0.34rem, 1vw, 0.46rem); color: #3a4a5a; font-weight: 700;
     }
     .escala-nota.ativa .escala-nota__grau,
     .escala-nota.acerto .escala-nota__grau { color: #e8eaed; }
     .escala-sep {
-      font-size: clamp(0.34rem, 1vw, 0.46rem); color: #2a3a4a;
-      font-weight: 700; padding-bottom: 12px;
+      font-size: clamp(0.32rem, 1vw, 0.44rem); color: #2a3a4a;
+      font-weight: 700; padding-bottom: 10px;
     }
 
     /* ── PROGRESSO PRATICAR ──────────────────────────────────── */
@@ -150,27 +150,31 @@
     .btn-acao:active { background: #1e2e44; border-color: #4FC3F7; }
     .btn-acao.destaque { background: #4FC3F7; color: #000; border-color: #4FC3F7; }
     .btn-acao:disabled { opacity: .35; cursor: default; pointer-events: none; }
+    .btn-acao.sec { color: #7a8fa8; border-color: #1e2a3a; font-size: clamp(0.65rem, 2vw, 0.78rem); padding: 7px 14px; }
 
     /* ── TECLADO + PARTITURA ─────────────────────────────────── */
+    /* JS (ajustarTeclado) define --key-h e --key-bk-h dinamicamente
+       com base na altura real disponível. CSS define apenas fallback seguro. */
     .piano-stage {
       background: #111827; border-top: 3px solid #000; flex: 0 0 52dvh;
       display: flex; flex-direction: column;
-      --key-h:    clamp(128px, 33dvh, 258px);
-      --key-bk-h: clamp( 77px, 20dvh, 155px);
+      --key-h:    clamp(100px, 30dvh, 240px);
+      --key-bk-h: clamp( 60px, 18dvh, 144px);
     }
     @media (orientation: landscape) {
       .piano-stage {
         flex: 1; border-top: none;
-        --key-h:    clamp(120px, 70dvh, 320px);
-        --key-bk-h: clamp( 72px, 42dvh, 192px);
+        /* JS vai corrigir; valor inicial conservador para evitar overflow */
+        --key-h:    clamp(60px, 45dvh, 200px);
+        --key-bk-h: clamp(36px, 27dvh, 120px);
       }
     }
     #staff-container { flex-shrink: 0; padding: 2px 8px 0; background: #0d1117; border-bottom: 1px solid #1a2535; }
-    #piano-wrap { flex: 1; display: flex; align-items: center; }
+    #piano-wrap { flex: 1; min-height: 0; display: flex; align-items: center; overflow: hidden; }
     #piano-wrap #piano-escalas { width: 100%; }
     .piano-stage .piano-wrap.responsive { overflow: visible; padding-bottom: 0; }
     .piano-stage .piano.responsive { width: 100%; }
-    .piano-stage .key__label { font-size: clamp(0.4rem, 1.2vw, 0.58rem); font-weight: 700; color: #888; }
+    .piano-stage .key__label { font-size: clamp(0.38rem, 1.1vw, 0.54rem); font-weight: 700; color: #888; }
     .piano-stage .key { border-color: #444; }
 
     /* ── NAV PADRONIZADA ─────────────────────────────────────── */
@@ -222,18 +226,21 @@
         <span class="fase-label">Aprenda</span>
         <div class="fase-titulo" id="intro-titulo"></div>
         <div class="escala-vis" id="escala-vis-intro"></div>
-        <div class="fase-texto">Padrão: Tom Tom Semitom Tom Tom Tom Semitom</div>
+        <div class="fase-texto">Padrão: T T S T T T S &nbsp;·&nbsp; Tom=2 st &nbsp;·&nbsp; Semitom=1 st</div>
         <button class="btn-acao" onclick="irFase('demo')">▶ Demonstração</button>
       </div>
 
       <!-- Demo -->
       <div class="screen" id="s-demo">
-        <span class="fase-label">Ouça!</span>
+        <span class="fase-label" id="demo-label">Ouça!</span>
         <div class="fase-titulo" id="demo-titulo"></div>
         <div class="escala-vis" id="escala-vis-demo"></div>
-        <div class="fase-texto">As notas acendem uma a uma ✨</div>
-        <button class="btn-acao" id="btn-demo" onclick="iniciarDemo()">▶ Tocar</button>
-        <button class="btn-acao" id="btn-ir-pratica" style="display:none" onclick="irFase('praticar')">Praticar →</button>
+        <div class="fase-texto" id="demo-texto">As notas acendem uma a uma ✨</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
+          <button class="btn-acao" id="btn-demo" onclick="iniciarDemo()">▶ Tocar</button>
+          <button class="btn-acao sec" id="btn-demo-next" style="display:none" onclick="demoAvancar()">Próxima nota →</button>
+        </div>
+        <button class="btn-acao destaque" id="btn-ir-pratica" style="display:none" onclick="irFase('praticar')">Praticar →</button>
       </div>
 
       <!-- Praticar -->
@@ -241,7 +248,7 @@
         <span class="fase-label">Sua vez!</span>
         <div class="fase-titulo" id="pratica-titulo"></div>
         <div class="pratica-prog" id="pratica-prog"></div>
-        <div class="pratica-status" id="pratica-status">Toque a nota acesa</div>
+        <div class="pratica-status" id="pratica-status">Toque a nota acesa no piano</div>
       </div>
 
       <!-- Celebração -->
@@ -262,7 +269,7 @@
     </div>
   </div>
 
-  <div class="piano-stage">
+  <div class="piano-stage" id="piano-stage">
     <div id="staff-container"></div>
     <div id="piano-wrap">
       <div id="piano-escalas"></div>
@@ -276,12 +283,11 @@
 
 /* ══════════════════════════════════════════════════════════════
    TEORIA — 7 ESCALAS MAIORES
-   Padrão de intervalos: T T S T T T S
-   ESCALA_ST: semitons dos 7 graus em relação à tônica
+   Intervalos: T T S T T T S (T=2 st, S=1 st)
 ══════════════════════════════════════════════════════════════ */
 const ESCALA_ST   = [0, 2, 4, 5, 7, 9, 11];
 const GRAUS       = ['I','II','III','IV','V','VI','VII'];
-const INTERVALOS  = ['T','T','S','T','T','T']; // entre graus consecutivos
+const INTERVALOS  = ['T','T','S','T','T','T'];
 const NOMES_PT    = ['Dó','Dó♯','Ré','Ré♯','Mi','Fá','Fá♯','Sol','Sol♯','Lá','Lá♯','Si'];
 const FASES_ORDEM = ['intro','demo','praticar','celebra'];
 
@@ -292,10 +298,12 @@ const CHAVES = [
 ];
 
 /* ── Estado ───────────────────────────────────────────────── */
-let chaveIdx    = 0;
-let faseAtual   = 'intro';
-let praticaStep = 0;
-let demoTimer   = null;
+let chaveIdx     = 0;
+let faseAtual    = 'intro';
+let praticaStep  = 0;
+let demoTimer    = null;
+let demoJaRodou  = false;  // false = auto na próxima, true = manual
+let demoStep     = 0;      // step atual do demo manual
 const acertosSet = new Set();
 
 /* ── Piano (fixo C4-B5, criado uma vez) ──────────────────── */
@@ -314,9 +322,36 @@ const kb = createPianoKeyboard(
 /* ── Staff ────────────────────────────────────────────────── */
 const score = createStaffScore(document.getElementById('staff-container'));
 
+/* ══════════════════════════════════════════════════════════════
+   AJUSTE DINÂMICO DO PIANO
+   Mede o espaço real disponível e define --key-h e --key-bk-h
+   para que o piano nunca ultrapasse nem seja muito pequeno.
+══════════════════════════════════════════════════════════════ */
+function ajustarTeclado() {
+  const stage    = document.getElementById('piano-stage');
+  const staffEl  = document.getElementById('staff-container');
+  if (!stage) return;
+  const stageH   = stage.clientHeight;
+  const staffH   = staffEl ? staffEl.offsetHeight : 0;
+  // Margem de segurança: 4px abaixo, borda superior
+  const disponivel = stageH - staffH - 4;
+  if (disponivel < 40) return; // tela muito pequena — deixa CSS decidir
+  // Limita ao mínimo razoável (60px) e ao máximo estético (280px)
+  const keyH   = Math.max(60, Math.min(disponivel, 280));
+  const keyBkH = Math.round(keyH * 0.62);
+  stage.style.setProperty('--key-h',    keyH   + 'px');
+  stage.style.setProperty('--key-bk-h', keyBkH + 'px');
+}
+
+// Chama após layout estabilizar e sempre que a tela mudar
+window.addEventListener('resize', ajustarTeclado);
+window.addEventListener('orientationchange', () => setTimeout(ajustarTeclado, 150));
+// Duplo requestAnimationFrame: garante que o layout foi calculado
+requestAnimationFrame(() => requestAnimationFrame(ajustarTeclado));
+
 /* ── Helpers ──────────────────────────────────────────────── */
-const nomePT   = midi => NOMES_PT[midi % 12];
-const tonicMidi = ()  => noteToMidi(CHAVES[chaveIdx].raiz);
+const nomePT    = midi => NOMES_PT[midi % 12];
+const tonicMidi = ()   => noteToMidi(CHAVES[chaveIdx].raiz);
 const escalaNotas = () => ESCALA_ST.map(st => tonicMidi() + st);
 
 function isConcluida(i) {
@@ -340,10 +375,10 @@ function buildChaveBar() {
   CHAVES.forEach((c, i) => {
     const d = document.createElement('div');
     d.className = 'chave-dot' +
-      (i === chaveIdx ? ' ativo' : '') +
+      (i === chaveIdx  ? ' ativo' : '') +
       (isConcluida(i)  ? ' feito' : '');
     d.innerHTML = `<div class="chave-dot__c"></div><div class="chave-dot__l">${c.label}</div>`;
-    d.onclick = () => { chaveIdx = i; irFase('intro'); };
+    d.onclick = () => { chaveIdx = i; demoJaRodou = false; irFase('intro'); };
     bar.appendChild(d);
   });
 }
@@ -363,7 +398,7 @@ function buildVis(id, activeIdx = -1) {
     }
     const nota = document.createElement('div');
     nota.className = 'escala-nota' +
-      (i === activeIdx  ? ' ativa'  : '') +
+      (i === activeIdx ? ' ativa' : '') +
       (acertosSet.has(i) && faseAtual === 'praticar' ? ' acerto' : '');
     nota.innerHTML = `
       <div class="escala-nota__circulo">${nomePT(midi)}</div>
@@ -395,29 +430,79 @@ function toggleSom() {
   document.getElementById('btn-sound').textContent = on ? '🔊' : '🔇';
 }
 
-/* ── Demo ─────────────────────────────────────────────────── */
-function iniciarDemo() {
-  if (demoTimer) clearTimeout(demoTimer);
+/* ══════════════════════════════════════════════════════════════
+   DEMO — DUAS MODALIDADES
+   1ª vez na escala: automático (900ms/nota) — mais devagar
+   Vezes seguintes: nota a nota, aluno controla o ritmo
+══════════════════════════════════════════════════════════════ */
+
+function mostrarNotaDemo(idx) {
   const notas = escalaNotas();
-  const btn   = document.getElementById('btn-demo');
-  btn.disabled = true;
-  document.getElementById('btn-ir-pratica').style.display = 'none';
-  let i = 0;
-  function passo() {
-    if (i >= notas.length) {
-      btn.disabled = false;
-      document.getElementById('btn-ir-pratica').style.display = '';
-      kb.clearHighlights(); score.highlight(-1); buildVis('escala-vis-demo');
-      return;
+  if (idx < 0 || idx >= notas.length) return;
+  const nota = midiToNote(notas[idx]);
+  kb.clearHighlights();
+  kb.highlight(nota);
+  score.highlight(idx);
+  buildVis('escala-vis-demo', idx);
+  if (Settings.getSoundOn()) AudioEngine.play(nota, 0.7); // duração em SEGUNDOS
+}
+
+function iniciarDemo() {
+  if (demoTimer) { clearTimeout(demoTimer); demoTimer = null; }
+  kb.clearHighlights(); score.highlight(-1);
+
+  if (!demoJaRodou) {
+    // ── Modo automático (1ª vez) ────────────────────────────
+    demoJaRodou = true;
+    document.getElementById('btn-demo').disabled = true;
+    document.getElementById('btn-demo-next').style.display = 'none';
+    document.getElementById('btn-ir-pratica').style.display = 'none';
+    document.getElementById('demo-texto').textContent = 'Ouça toda a escala…';
+
+    const notas = escalaNotas();
+    let i = 0;
+    function passo() {
+      if (i >= notas.length) {
+        // fim do auto-demo
+        kb.clearHighlights(); score.highlight(-1); buildVis('escala-vis-demo');
+        document.getElementById('btn-demo').disabled = false;
+        document.getElementById('btn-demo').textContent = '▶ Nota a nota';
+        document.getElementById('demo-texto').textContent = 'Agora no seu ritmo — note a note';
+        document.getElementById('btn-ir-pratica').style.display = '';
+        return;
+      }
+      mostrarNotaDemo(i);
+      i++;
+      demoTimer = setTimeout(passo, 950); // 950ms por nota — ritmo calmo
     }
-    const nota = midiToNote(notas[i]);
-    kb.clearHighlights(); kb.highlight(nota);
-    score.highlight(i); buildVis('escala-vis-demo', i);
-    if (Settings.getSoundOn()) AudioEngine.play(nota, 500);
-    i++;
-    demoTimer = setTimeout(passo, 650);
+    passo();
+
+  } else {
+    // ── Modo nota a nota (vezes seguintes) ─────────────────
+    demoStep = 0;
+    document.getElementById('btn-demo').style.display = 'none';
+    document.getElementById('btn-demo-next').style.display = '';
+    document.getElementById('btn-ir-pratica').style.display = 'none';
+    document.getElementById('demo-texto').textContent = 'Toque cada nota antes de avançar';
+    mostrarNotaDemo(0);
   }
-  passo();
+}
+
+function demoAvancar() {
+  // avança para próxima nota no modo manual
+  const notas = escalaNotas();
+  demoStep++;
+  if (demoStep >= notas.length) {
+    // fim
+    kb.clearHighlights(); score.highlight(-1); buildVis('escala-vis-demo');
+    document.getElementById('btn-demo-next').style.display = 'none';
+    document.getElementById('btn-demo').style.display = '';
+    document.getElementById('btn-demo').textContent = '▶ Repetir';
+    document.getElementById('demo-texto').textContent = 'Escala completa!';
+    document.getElementById('btn-ir-pratica').style.display = '';
+  } else {
+    mostrarNotaDemo(demoStep);
+  }
 }
 
 /* ── Praticar ─────────────────────────────────────────────── */
@@ -425,7 +510,7 @@ function iniciarPratica() {
   praticaStep = 0; acertosSet.clear();
   kb.clearHighlights(); kb.clearHints();
   mostrarHint(); buildProgDots();
-  document.getElementById('pratica-status').textContent = 'Toque a nota acesa';
+  document.getElementById('pratica-status').textContent = 'Toque a nota acesa no piano';
 }
 
 function mostrarHint() {
@@ -481,7 +566,7 @@ function mostrarCelebracao() {
 }
 
 function proximaChave() {
-  if (chaveIdx < CHAVES.length - 1) { chaveIdx++; irFase('intro'); }
+  if (chaveIdx < CHAVES.length - 1) { chaveIdx++; demoJaRodou = false; irFase('intro'); }
   else goTo('index.html');
 }
 
@@ -495,26 +580,43 @@ function irFase(fase) {
   document.getElementById('s-' + fase).classList.add('active');
 
   buildChaveBar(); buildScore(); atualizarFaseNav();
+  // Remeasure piano after panel content changes
+  requestAnimationFrame(ajustarTeclado);
 
   const notas = escalaNotas();
   const label = CHAVES[chaveIdx].label;
 
   if (fase === 'intro') {
+    demoJaRodou = false; // reset: próxima ida ao demo será automático
     document.getElementById('intro-titulo').textContent = `Escala de ${label} Maior`;
     buildVis('escala-vis-intro');
     score.highlight(0);
     kb.hint(midiToNote(notas[0]));
   }
+
   if (fase === 'demo') {
     document.getElementById('demo-titulo').textContent = `${label} Maior`;
-    buildVis('escala-vis-demo');
-    document.getElementById('btn-demo').disabled = false;
+    document.getElementById('demo-label').textContent  = 'Ouça!';
+    document.getElementById('demo-texto').textContent  = demoJaRodou
+      ? 'Toque cada nota antes de avançar'
+      : 'As notas acendem uma a uma ✨';
+    document.getElementById('btn-demo').textContent    = demoJaRodou ? '▶ Repetir' : '▶ Tocar';
+    document.getElementById('btn-demo').style.display  = '';
+    document.getElementById('btn-demo').disabled       = false;
+    document.getElementById('btn-demo-next').style.display = 'none';
     document.getElementById('btn-ir-pratica').style.display = 'none';
+    buildVis('escala-vis-demo');
+    if (!demoJaRodou) {
+      // Inicia automático sem clique na primeira visita
+      iniciarDemo();
+    }
   }
+
   if (fase === 'praticar') {
     document.getElementById('pratica-titulo').textContent = `Toque a escala de ${label}`;
     iniciarPratica();
   }
+
   if (fase === 'celebra') {
     mostrarCelebracao();
   }
