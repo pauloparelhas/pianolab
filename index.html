@@ -248,7 +248,7 @@ const MODULOS = [
     n: 2,
     href: 'm2_escalas.html',
     nome: 'Escalas',
-    desc: 'em breve · Dó maior → 12 tonalidades',
+    desc: '7 escalas maiores · Dó, Ré, Mi, Fá, Sol, Lá, Si',
     cor: 'var(--nota-re)',
     keys: ['piano_m2_progresso'],
   },
@@ -279,7 +279,7 @@ const MODULOS = [
 ];
 
 // Módulos com arquivo real publicado
-const PUBLICADOS = new Set([1]);
+const PUBLICADOS = new Set([1, 2]);
 
 function getProgresso(key) {
   try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch { return null; }
