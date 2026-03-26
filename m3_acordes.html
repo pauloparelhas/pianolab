@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>PianoLab — M3: Acordes</title>
+  <link rel="stylesheet" href="base.css">
+  <link rel="stylesheet" href="piano.css">
+  <style>
+    html, body { height: 100%; overflow: hidden; }
+
+    .piano-body {
+      display: flex; flex-direction: column;
+      height: 100dvh; background: #111827;
+      max-width: 960px; margin: 0 auto;
+    }
+    @media (orientation: landscape) { .piano-body { flex-direction: row; } }
+
+    /* ── PAINEL ──────────────────────────────────────────────── */
+    .digital-panel {
+      flex: 1; min-height: 0; background: #0d1117;
+      display: flex; flex-direction: column;
+      border-bottom: 3px solid #000; overflow: hidden;
+    }
+    @media (orientation: landscape) {
+      .digital-panel { flex: 0 0 38%; border-bottom: none; border-right: 3px solid #000; }
+    }
+
+    /* ── TOPBAR ──────────────────────────────────────────────── */
+    .panel-topbar {
+      display: flex; align-items: center; padding: 5px 8px; gap: 4px;
+      background: #070d14; border-bottom: 1px solid #1a2535; flex-shrink: 0;
+    }
+    .panel-title {
+      flex: 1; text-align: center; font-size: 0.65rem; letter-spacing: 3px;
+      color: #4FC3F7; font-weight: 700; text-transform: uppercase;
+    }
+    .panel-btn {
+      width: 34px; height: 34px; background: #141e2e;
+      border: 1px solid #263045; border-radius: 7px; color: #7a8fa8;
+      font-size: 0.9rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      touch-action: manipulation;
+    }
+    .panel-btn:active { background: #1e2e44; }
+    .panel-btn.active { color: #F9A825; border-color: #F9A825; }
+
+    /* ── BARRA DE ACORDES (12 dots) ──────────────────────────── */
+    .chord-bar {
+      display: flex; align-items: center; justify-content: center;
+      gap: 2px; padding: 5px 6px;
+      background: #070d14; border-bottom: 1px solid #1a2535; flex-shrink: 0;
+    }
+    .chord-dot {
+      display: flex; flex-direction: column; align-items: center; gap: 1px;
+      padding: 4px 4px; border-radius: 5px; cursor: pointer;
+      touch-action: manipulation; transition: background .15s;
+    }
+    .chord-dot:active { background: rgba(79,195,247,.1); }
+    .chord-dot__circle {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #2a3a4a; border: 1px solid #3a4a5a;
+      transition: background .2s, border-color .2s;
+    }
+    .chord-dot__label {
+      font-size: 0.38rem; font-weight: 700; color: #3a4a5a; letter-spacing: .3px;
+      transition: color .2s;
+    }
+    .chord-dot.ativo  .chord-dot__circle { background: #4FC3F7; border-color: #4FC3F7; }
+    .chord-dot.ativo  .chord-dot__label  { color: #4FC3F7; }
+    .chord-dot.feito  .chord-dot__circle { background: #4CAF50; border-color: #4CAF50; }
+    .chord-dot.feito  .chord-dot__label  { color: #4CAF50; }
+
+    /* ── CONTEÚDO ────────────────────────────────────────────── */
+    .panel-content {
+      flex: 1; min-height: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 10px 14px; gap: 8px; overflow: hidden;
+    }
+    .screen { display: none; flex-direction: column; align-items: center; gap: 7px; width: 100%; }
+    .screen.active { display: flex; }
+
+    .fase-label {
+      font-size: 0.55rem; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; color: #4a6274;
+    }
+    .fase-titulo {
+      font-size: clamp(1rem, 4vw, 1.4rem); font-weight: 900;
+      color: #e8eaed; text-align: center; line-height: 1.2;
+    }
+    .fase-texto {
+      font-size: clamp(0.72rem, 2.6vw, 0.88rem);
+      color: #7a8fa8; text-align: center; line-height: 1.5;
+    }
+
+    /* ── VISUALIZADOR DO ACORDE (3 notas + intervalos) ───────── */
+    .acorde-vis {
+      display: flex; align-items: center; gap: 4px; justify-content: center;
+    }
+    .acorde-nota {
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+    }
+    .acorde-nota__circulo {
+      width: clamp(34px, 9vw, 48px); height: clamp(34px, 9vw, 48px);
+      border-radius: 50%; background: #1e2a3a; border: 2px solid #2a3a4a;
+      display: flex; align-items: center; justify-content: center;
+      font-size: clamp(0.55rem, 1.8vw, 0.78rem); font-weight: 700; color: #4a6274;
+      overflow: hidden;
+      transition: background .18s, border-color .18s, color .18s, transform .12s;
+    }
+    .acorde-nota.ativa .acorde-nota__circulo {
+      background: var(--cor, #4FC3F7); border-color: var(--cor, #4FC3F7);
+      color: #fff; transform: scale(1.15);
+    }
+    .acorde-nota.acerto .acorde-nota__circulo {
+      background: #4CAF50; border-color: #4CAF50; color: #fff;
+    }
+    .acorde-nota__label {
+      font-size: clamp(0.45rem, 1.3vw, 0.58rem); color: #4a6274; font-weight: 600;
+    }
+    .acorde-nota.ativa .acorde-nota__label,
+    .acorde-nota.acerto .acorde-nota__label { color: #e8eaed; }
+
+    /* Seta entre notas + label de intervalo */
+    .acorde-sep {
+      display: flex; flex-direction: column; align-items: center; gap: 1px;
+      padding-bottom: 14px;
+    }
+    .acorde-sep__seta { font-size: 0.7rem; color: #2a3a4a; }
+    .acorde-sep__iv {
+      font-size: clamp(0.38rem, 1.1vw, 0.5rem); font-weight: 700;
+      color: #3a5060; letter-spacing: .2px;
+    }
+
+    /* ── INFO DO ACORDE ──────────────────────────────────────── */
+    .acorde-info {
+      font-size: clamp(0.65rem, 2vw, 0.78rem); color: #4a6274; text-align: center;
+    }
+    .acorde-info strong { color: #4FC3F7; }
+
+    /* ── PROGRESSO LIVRE ─────────────────────────────────────── */
+    .livre-prog {
+      display: flex; gap: 8px; justify-content: center;
+    }
+    .livre-dot {
+      width: 12px; height: 12px; border-radius: 50%;
+      background: #1e2a3a; border: 2px solid #2a3a4a;
+      transition: background .18s, border-color .18s;
+    }
+    .livre-dot.atual  { background: #4FC3F7; border-color: #4FC3F7; animation: pulsar .9s ease-in-out infinite; }
+    .livre-dot.acerto { background: #4CAF50; border-color: #4CAF50; }
+
+    /* ── CELEBRAÇÃO ──────────────────────────────────────────── */
+    .celebra-emoji { font-size: clamp(2rem, 9vw, 3rem); }
+    .celebra-titulo { font-size: clamp(1.1rem, 4vw, 1.5rem); font-weight: 900; color: #fff; text-align: center; }
+    .celebra-sub  { font-size: clamp(0.72rem, 2.4vw, 0.88rem); color: #7a8fa8; text-align: center; }
+    .celebra-contador { font-size: clamp(0.65rem, 2vw, 0.8rem); color: #4CAF50; font-weight: 700; }
+
+    /* ── BOTÕES ──────────────────────────────────────────────── */
+    .btn-acao {
+      padding: 10px 20px; background: #141e2e;
+      border: 1.5px solid #263045; border-radius: 10px;
+      color: #4FC3F7; font-size: clamp(0.78rem, 2.4vw, 0.92rem);
+      font-weight: 700; cursor: pointer; touch-action: manipulation;
+      transition: background .15s, border-color .15s;
+    }
+    .btn-acao:active { background: #1e2e44; border-color: #4FC3F7; }
+    .btn-acao.destaque { background: #4FC3F7; color: #000; border-color: #4FC3F7; }
+    .btn-acao:disabled { opacity: .35; cursor: default; pointer-events: none; }
+
+    .btn-pular {
+      font-size: clamp(0.6rem, 1.8vw, 0.72rem); color: #3a5060;
+      background: none; border: none; cursor: pointer; padding: 2px 8px;
+      touch-action: manipulation; text-decoration: underline;
+    }
+    .btn-pular:active { color: #4FC3F7; }
+
+    /* ── STATUS PLAY-ALONG ───────────────────────────────────── */
+    .junto-status {
+      font-size: clamp(0.75rem, 2.5vw, 0.95rem); font-weight: 700;
+      color: #4FC3F7; text-align: center; min-height: 1.4em;
+    }
+
+    /* ── TECLADO ─────────────────────────────────────────────── */
+    .piano-stage {
+      background: #111827; padding: 8px 0 12px;
+      border-top: 3px solid #000; flex: 0 0 45dvh;
+      display: flex; align-items: stretch;
+      --key-h:    clamp(140px, 38dvh, 300px);
+      --key-bk-h: clamp( 84px, 23dvh, 180px);
+    }
+    @media (orientation: landscape) {
+      .piano-stage {
+        flex: 1; border-top: none; border-left: 3px solid #000; padding: 8px 0;
+        --key-h:    clamp(130px, 78dvh, 340px);
+        --key-bk-h: clamp( 78px, 47dvh, 204px);
+      }
+    }
+    .piano-stage #piano-acordes {
+      width: 100%; display: flex; align-items: center;
+    }
+    .piano-stage .piano-wrap.responsive { overflow: visible; padding-bottom: 0; }
+    .piano-stage .piano.responsive { width: 100%; }
+    .piano-stage .key__label { font-size: clamp(0.4rem, 1.2vw, 0.58rem); font-weight: 700; color: #888; }
+    .piano-stage .key { border-color: #444; }
+
+    @keyframes pulsar { 0%,100%{opacity:1} 50%{opacity:.5} }
+    @keyframes shake-tecla {
+      0%,100%{transform:translateX(0)} 20%{transform:translateX(-4px)}
+      40%{transform:translateX(4px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(3px)}
+    }
+    .key.shake { animation: shake-tecla .35s ease-in-out; }
+  </style>
+</head>
+<body>
+<div class="piano-body">
+
+  <div class="digital-panel">
+    <div class="panel-topbar">
+      <button class="panel-btn" onclick="goTo('index.html')">←</button>
+      <span class="panel-title">M3 · ACORDES</span>
+      <button class="panel-btn" id="btn-easy" onclick="toggleEasy()">☆</button>
+      <button class="panel-btn" id="btn-lock" onclick="LockMode.toggle(this)">🔓</button>
+      <button class="panel-btn" id="btn-sound" onclick="toggleSom()">🔊</button>
+    </div>
+
+    <div class="chord-bar" id="chord-bar"></div>
+
+    <div class="panel-content">
+
+      <!-- Intro -->
+      <div class="screen" id="s-intro">
+        <span class="fase-label">Aprenda</span>
+        <div class="fase-titulo" id="intro-titulo">Acorde de Dó</div>
+        <div class="acorde-vis" id="acorde-vis-intro"></div>
+        <div class="acorde-info" id="intro-info"></div>
+        <button class="btn-acao" onclick="irFase('demo')">▶ Demonstração</button>
+      </div>
+
+      <!-- Demo -->
+      <div class="screen" id="s-demo">
+        <span class="fase-label">Ouça!</span>
+        <div class="fase-titulo" id="demo-titulo"></div>
+        <div class="acorde-vis" id="acorde-vis-demo"></div>
+        <div class="fase-texto">As notas acendem em ordem, depois juntas ✨</div>
+        <button class="btn-acao" id="btn-iniciar-demo" onclick="iniciarDemo()">▶ Tocar</button>
+        <button class="btn-acao" id="btn-ir-junto" style="display:none" onclick="irFase('junto')">Toque Junto →</button>
+        <button class="btn-pular" onclick="irFase('junto')">pular demonstração</button>
+      </div>
+
+      <!-- Play-Along -->
+      <div class="screen" id="s-junto">
+        <span class="fase-label">Toque Junto!</span>
+        <div class="fase-titulo">Siga a luz!</div>
+        <div class="acorde-vis" id="acorde-vis-junto"></div>
+        <div class="junto-status" id="junto-status">Pronto?</div>
+        <button class="btn-acao" id="btn-comecar-junto" onclick="iniciarJunto()">▶ Começar</button>
+        <button class="btn-acao" id="btn-ir-livre" style="display:none" onclick="irFase('livre')">Toque Livre →</button>
+        <button class="btn-pular" onclick="irFase('livre')">pular exercício</button>
+      </div>
+
+      <!-- Livre -->
+      <div class="screen" id="s-livre">
+        <span class="fase-label">Sua vez!</span>
+        <div class="fase-titulo" id="livre-titulo"></div>
+        <div class="acorde-vis" id="acorde-vis-livre"></div>
+        <div class="livre-prog" id="livre-prog"></div>
+        <div class="fase-texto" id="livre-instrucao"></div>
+      </div>
+
+      <!-- Celebração -->
+      <div class="screen" id="s-celebra">
+        <div class="celebra-emoji" id="celebra-emoji">🎉</div>
+        <div class="celebra-titulo" id="celebra-titulo"></div>
+        <div class="celebra-sub" id="celebra-sub"></div>
+        <div class="celebra-contador" id="celebra-contador"></div>
+        <button class="btn-acao destaque" id="btn-proxima">Próximo acorde →</button>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="piano-stage">
+    <div id="piano-acordes"></div>
+  </div>
+
+</div>
+<script src="base.js"></script>
+<script>
+'use strict';
+
+/* ══════════════════════════════════════════════════════════════
+   TEORIA — 12 ACORDES MAIORES
+   Fórmula: tônica + 3ª Maior (4 st) + 5ª Justa (7 st)
+══════════════════════════════════════════════════════════════ */
+
+const FORMULA_MAIOR = [0, 4, 7];
+
+// Nomes e cores por nota (base)
+const NOTA = {
+  'C':  { pt: 'Dó',   cor: 'var(--nota-do)'  },
+  'C#': { pt: 'Dó♯',  cor: '#e57373'         },
+  'D':  { pt: 'Ré',   cor: 'var(--nota-re)'  },
+  'D#': { pt: 'Ré♯',  cor: '#ffb74d'         },
+  'E':  { pt: 'Mi',   cor: 'var(--nota-mi)'  },
+  'F':  { pt: 'Fá',   cor: 'var(--nota-fa)'  },
+  'F#': { pt: 'Fá♯',  cor: '#81c784'         },
+  'G':  { pt: 'Sol',  cor: 'var(--nota-sol)' },
+  'G#': { pt: 'Sol♯', cor: '#64b5f6'         },
+  'A':  { pt: 'Lá',   cor: 'var(--nota-la)'  },
+  'A#': { pt: 'Lá♯',  cor: '#ba68c8'         },
+  'B':  { pt: 'Si',   cor: 'var(--nota-si)'  },
+};
+
+function infoNota(midiStr) {
+  const base = midiStr.replace(/\d/, '');
+  return NOTA[base] || { pt: base, cor: '#4FC3F7' };
+}
+
+// Gera os 3 objetos de nota de um acorde maior
+function notasAcorde(rootMidi) {
+  return buildChord(rootMidi, FORMULA_MAIOR).map(m => ({
+    midi: m,
+    ...infoNota(m),
+    preta: m.includes('#'),
+  }));
+}
+
+// 12 acordes maiores em ordem cromática
+const ACORDES = [
+  { raiz: 'C4',  nome: 'Dó Maior',   label: 'Dó'   },
+  { raiz: 'C#4', nome: 'Dó♯ Maior',  label: 'D♯'   },
+  { raiz: 'D4',  nome: 'Ré Maior',   label: 'Ré'   },
+  { raiz: 'D#4', nome: 'Ré♯ Maior',  label: 'R♯'   },
+  { raiz: 'E4',  nome: 'Mi Maior',   label: 'Mi'   },
+  { raiz: 'F4',  nome: 'Fá Maior',   label: 'Fá'   },
+  { raiz: 'F#4', nome: 'Fá♯ Maior',  label: 'F♯'   },
+  { raiz: 'G4',  nome: 'Sol Maior',  label: 'Sol'  },
+  { raiz: 'G#4', nome: 'Sol♯ Maior', label: 'S♯'   },
+  { raiz: 'A4',  nome: 'Lá Maior',   label: 'Lá'   },
+  { raiz: 'A#4', nome: 'Lá♯ Maior',  label: 'L♯'   },
+  { raiz: 'B4',  nome: 'Si Maior',   label: 'Si'   },
+];
+
+/* ══════════════════════════════════════════════════════════════
+   ESTADO
+══════════════════════════════════════════════════════════════ */
+let acordeIdx    = 0;
+let faseAtual    = 'intro';
+let modoFacil    = Settings.getEasyMode();
+let animTimer    = null;
+let juntoTimer   = null;
+let juntoIdx     = -1;
+let juntoAguarda = false;
+let livreIdx     = 0;
+
+/* ══════════════════════════════════════════════════════════════
+   TECLADO — C4–B5
+══════════════════════════════════════════════════════════════ */
+const kb = createPianoKeyboard(document.getElementById('piano-acordes'), {
+  startNote: 'C4', endNote: 'B5',
+  showLabels: true, responsive: true,
+  onNoteOn(noteStr) {
+    AudioEngine.play(noteStr);
+    if (faseAtual === 'junto') checarJunto(noteStr);
+    else if (faseAtual === 'livre') checarLivre(noteStr);
+  },
+});
+
+/* ══════════════════════════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════════════════════════ */
+const acordeAtual = () => ACORDES[acordeIdx];
+const notas       = () => notasAcorde(acordeAtual().raiz);
+
+/* ══════════════════════════════════════════════════════════════
+   CONSTRUTORES DE VISUALIZADORES
+══════════════════════════════════════════════════════════════ */
+const ROTULOS_GRAU = ['Tônica', '3ª Maior', '5ª Justa'];
+
+function buildAcordeVis(containerId, ns) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = '';
+  ns.forEach((n, i) => {
+    if (i > 0) {
+      const sep = document.createElement('div');
+      sep.className = 'acorde-sep';
+      const sts = i === 1 ? '+4st' : '+3st';
+      sep.innerHTML = `<div class="acorde-sep__seta">→</div><div class="acorde-sep__iv">${sts}</div>`;
+      el.appendChild(sep);
+    }
+    const div = document.createElement('div');
+    div.className = 'acorde-nota';
+    div.dataset.i = i;
+    div.style.setProperty('--cor', n.cor);
+    div.innerHTML = `
+      <div class="acorde-nota__circulo">${n.pt}</div>
+      <div class="acorde-nota__label">${ROTULOS_GRAU[i]}</div>`;
+    el.appendChild(div);
+  });
+}
+
+function buildChordBar() {
+  const el = document.getElementById('chord-bar');
+  el.innerHTML = '';
+  ACORDES.forEach((a, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'chord-dot' + (i === acordeIdx ? ' ativo' : i < acordeIdx ? ' feito' : '');
+    dot.innerHTML = `<div class="chord-dot__circle"></div><div class="chord-dot__label">${a.label}</div>`;
+    dot.addEventListener('click', () => {
+      if (i === acordeIdx) return;
+      acordeIdx = i;
+      buildChordBar();
+      irFase('intro');
+    });
+    el.appendChild(dot);
+  });
+}
+
+function buildLivreProg() {
+  const el = document.getElementById('livre-prog');
+  el.innerHTML = '';
+  notas().forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'livre-dot' + (i === 0 ? ' atual' : '');
+    d.dataset.i = i;
+    el.appendChild(d);
+  });
+}
+
+/* ══════════════════════════════════════════════════════════════
+   NAVEGAÇÃO ENTRE FASES
+══════════════════════════════════════════════════════════════ */
+function irFase(fase) {
+  if (animTimer)  { clearTimeout(animTimer);  animTimer  = null; }
+  if (juntoTimer) { clearTimeout(juntoTimer); juntoTimer = null; }
+  juntoIdx = -1; juntoAguarda = false; livreIdx = 0;
+  kb.clearHighlights(); kb.clearHints(); kb.clearNextHints();
+
+  faseAtual = fase;
+  ['intro','demo','junto','livre','celebra'].forEach(f =>
+    document.getElementById('s-' + f)?.classList.remove('active'));
+  document.getElementById('s-' + fase)?.classList.add('active');
+
+  const ac = acordeAtual();
+  const ns = notas();
+
+  if (fase === 'intro') {
+    buildAcordeVis('acorde-vis-intro', ns);
+    document.getElementById('intro-titulo').textContent = 'Acorde de ' + ac.nome.split(' ')[0];
+    document.getElementById('intro-info').innerHTML =
+      `<strong>${ns[0].pt}</strong> + <strong>${ns[1].pt}</strong> + <strong>${ns[2].pt}</strong>` +
+      ` &nbsp;·&nbsp; fórmula <strong>1 — 3M — 5J</strong>`;
+    // Destaca as 3 teclas do acorde no piano (sem pressColor — usa cor natural)
+    ns.forEach(n => kb.highlight(n.midi));
+    TTS.falar('Acorde de ' + ac.nome);
+  }
+
+  if (fase === 'demo') {
+    buildAcordeVis('acorde-vis-demo', ns);
+    document.getElementById('demo-titulo').textContent = ac.nome;
+    document.getElementById('btn-iniciar-demo').style.display = '';
+    document.getElementById('btn-iniciar-demo').disabled = false;
+    document.getElementById('btn-iniciar-demo').textContent = '▶ Tocar';
+    document.getElementById('btn-ir-junto').style.display = 'none';
+  }
+
+  if (fase === 'junto') {
+    buildAcordeVis('acorde-vis-junto', ns);
+    document.getElementById('junto-status').textContent = 'Pronto?';
+    document.getElementById('btn-comecar-junto').style.display = '';
+    document.getElementById('btn-ir-livre').style.display = 'none';
+    TTS.falar('Agora toque junto comigo!');
+  }
+
+  if (fase === 'livre') {
+    buildAcordeVis('acorde-vis-livre', ns);
+    buildLivreProg();
+    document.getElementById('livre-titulo').textContent = ac.nome;
+    document.getElementById('livre-instrucao').textContent =
+      ns.map(n => n.pt).join(' → ');
+    mostrarHintLivre();
+    TTS.falar('Sua vez! Toque o acorde de ' + ac.nome.split(' ')[0]);
+  }
+
+  if (fase === 'celebra') {
+    const total    = ACORDES.length;
+    const feitos   = acordeIdx + 1;
+    const ultimo   = acordeIdx >= total - 1;
+    const proxAc   = !ultimo ? ACORDES[acordeIdx + 1] : null;
+
+    document.getElementById('celebra-emoji').textContent  = ultimo ? '🏆' : '🎉';
+    document.getElementById('celebra-titulo').textContent = ac.nome + ' ✓';
+    document.getElementById('celebra-sub').textContent    = ultimo
+      ? 'Você aprendeu todos os 12 acordes maiores!'
+      : 'Acorde concluído!';
+    document.getElementById('celebra-contador').textContent = feitos + ' de ' + total;
+    const btnProx = document.getElementById('btn-proxima');
+    if (ultimo) {
+      btnProx.textContent = '← Voltar ao curso';
+      btnProx.onclick = () => goTo('index.html');
+    } else {
+      btnProx.textContent = 'Próximo: ' + proxAc.nome + ' →';
+      btnProx.onclick = proximoAcorde;
+    }
+    salvarProgresso(ultimo);
+    TTS.falar('Parabéns! ' + ac.nome + ' concluído!');
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FASE DEMO
+══════════════════════════════════════════════════════════════ */
+function iniciarDemo() {
+  document.getElementById('btn-iniciar-demo').disabled = true;
+  const ns   = notas();
+  const circs = document.querySelectorAll('#acorde-vis-demo .acorde-nota');
+  let step = 0;
+
+  // Passos: notas individuais (0,1,2) + acorde junto (3)
+  function passo() {
+    circs.forEach(c => c.classList.remove('ativa'));
+    kb.clearHighlights();
+
+    if (step < ns.length) {
+      // Nota individual
+      circs[step].classList.add('ativa');
+      AudioEngine.play(ns[step].midi, 0.55);
+      kb.highlight(ns[step].midi);
+      step++;
+      animTimer = setTimeout(passo, 650);
+    } else if (step === ns.length) {
+      // Acorde junto
+      circs.forEach(c => c.classList.add('ativa'));
+      AudioEngine.playChord(ns.map(n => n.midi), 30, 1.2);
+      ns.forEach(n => kb.highlight(n.midi));
+      step++;
+      animTimer = setTimeout(() => {
+        kb.clearHighlights();
+        circs.forEach(c => c.classList.remove('ativa'));
+        document.getElementById('btn-iniciar-demo').textContent = '↻ Ouvir de novo';
+        document.getElementById('btn-iniciar-demo').disabled = false;
+        document.getElementById('btn-ir-junto').style.display = '';
+      }, 1400);
+    }
+  }
+  AudioEngine.init();
+  passo();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FASE PLAY-ALONG
+   Guia nota a nota (tônica → 3ª → 5ª) depois acorde junto
+══════════════════════════════════════════════════════════════ */
+const JUNTO_MS = 1000;
+
+function iniciarJunto() {
+  document.getElementById('btn-comecar-junto').style.display = 'none';
+  juntoIdx = 0; juntoAguarda = false;
+  AudioEngine.init();
+  tocarProximoJunto();
+}
+
+function tocarProximoJunto() {
+  if (juntoTimer) { clearTimeout(juntoTimer); juntoTimer = null; }
+  kb.clearHighlights(); kb.clearHints(); kb.clearNextHints();
+
+  const ns    = notas();
+  const circs = document.querySelectorAll('#acorde-vis-junto .acorde-nota');
+  circs.forEach(c => c.classList.remove('ativa'));
+
+  // juntoIdx 0,1,2 = notas individuais | 3 = acorde completo
+  if (juntoIdx > ns.length) {
+    document.getElementById('junto-status').textContent = '✓ Perfeito!';
+    document.getElementById('btn-ir-livre').style.display = '';
+    return;
+  }
+
+  if (juntoIdx < ns.length) {
+    // Nota individual
+    const n = ns[juntoIdx];
+    circs[juntoIdx].classList.add('ativa');
+    AudioEngine.play(n.midi, 0.55);
+    kb.highlight(n.midi);
+    document.getElementById('junto-status').textContent = n.pt + ' →';
+    if (modoFacil) kb.hint(n.midi);
+    juntoAguarda = true;
+    juntoTimer = setTimeout(() => { juntoAguarda = false; juntoIdx++; tocarProximoJunto(); }, JUNTO_MS);
+  } else {
+    // Acorde junto — feedback visual, sem exigir toque
+    circs.forEach(c => c.classList.add('ativa'));
+    AudioEngine.playChord(ns.map(n => n.midi), 30, 1.2);
+    ns.forEach(n => kb.highlight(n.midi));
+    document.getElementById('junto-status').textContent = '🎵 Acorde!';
+    juntoTimer = setTimeout(() => {
+      kb.clearHighlights();
+      circs.forEach(c => c.classList.remove('ativa'));
+      juntoIdx++;
+      tocarProximoJunto();
+    }, 1400);
+  }
+}
+
+function checarJunto(noteStr) {
+  if (!juntoAguarda || juntoIdx < 0) return;
+  const ns = notas();
+  if (noteStr === ns[juntoIdx]?.midi) {
+    juntoAguarda = false;
+    clearTimeout(juntoTimer);
+    juntoIdx++;
+    juntoTimer = setTimeout(tocarProximoJunto, 300);
+  } else {
+    mostrarErro(noteStr);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FASE LIVRE
+══════════════════════════════════════════════════════════════ */
+function mostrarHintLivre() {
+  kb.clearNextHints(); kb.clearHints();
+  const ns = notas();
+  if (livreIdx >= ns.length) return;
+  modoFacil ? kb.hint(ns[livreIdx].midi) : kb.nextHint(ns[livreIdx].midi);
+  const circs = document.querySelectorAll('#acorde-vis-livre .acorde-nota');
+  circs.forEach((c, i) => c.classList.toggle('ativa', i === livreIdx));
+}
+
+function checarLivre(noteStr) {
+  const ns = notas();
+  if (livreIdx >= ns.length) return;
+  if (noteStr !== ns[livreIdx]?.midi) { mostrarErro(noteStr); return; }
+
+  // Acerto
+  document.querySelectorAll('.livre-dot')[livreIdx]?.classList.replace('atual', 'acerto');
+  document.querySelectorAll('#acorde-vis-livre .acorde-nota')[livreIdx]?.classList.replace('ativa','acerto');
+  kb.highlight(noteStr);
+  setTimeout(() => kb.release(noteStr), 280);
+
+  livreIdx++;
+  if (livreIdx >= ns.length) {
+    // Acorde completo — toca junto como reforço
+    setTimeout(() => {
+      AudioEngine.playChord(ns.map(n => n.midi), 30, 1.2);
+      ns.forEach(n => kb.highlight(n.midi));
+      setTimeout(() => { kb.clearHighlights(); irFase('celebra'); }, 900);
+    }, 300);
+  } else {
+    document.querySelectorAll('.livre-dot')[livreIdx]?.classList.add('atual');
+    mostrarHintLivre();
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   UTILITÁRIOS
+══════════════════════════════════════════════════════════════ */
+function mostrarErro(noteStr) {
+  const keyEl = kb.getKeyElement(noteStr);
+  if (!keyEl) return;
+  keyEl.classList.remove('shake');
+  void keyEl.offsetWidth;
+  keyEl.classList.add('shake');
+  keyEl.addEventListener('animationend', () => keyEl.classList.remove('shake'), { once: true });
+}
+
+function proximoAcorde() {
+  if (acordeIdx >= ACORDES.length - 1) { goTo('index.html'); return; }
+  acordeIdx++;
+  buildChordBar();
+  irFase('intro');
+}
+
+function salvarProgresso(completo = false) {
+  try {
+    localStorage.setItem('piano_m3_progresso', JSON.stringify({ acordeIdx, fase: faseAtual, completo }));
+  } catch {}
+}
+
+function toggleEasy() {
+  modoFacil = !modoFacil;
+  Settings.setEasyMode(modoFacil);
+  document.getElementById('btn-easy').classList.toggle('active', modoFacil);
+  document.getElementById('btn-easy').textContent = modoFacil ? '⭐' : '☆';
+  if (faseAtual === 'livre') mostrarHintLivre();
+}
+
+function toggleSom() {
+  const on = Settings.getSoundOn();
+  Settings.setSoundOn(!on);
+  document.getElementById('btn-sound').textContent = !on ? '🔊' : '🔇';
+}
+
+/* ══════════════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════════════ */
+(function restaurar() {
+  try {
+    const p = JSON.parse(localStorage.getItem('piano_m3_progresso') || '{}');
+    if (p.acordeIdx !== undefined && !p.completo) acordeIdx = p.acordeIdx;
+  } catch {}
+})();
+
+buildChordBar();
+irFase('intro');
+document.addEventListener('pointerdown', () => AudioEngine.init(), { once: true });
+LockMode.listenChanges(document.getElementById('btn-lock'));
+document.getElementById('btn-easy').classList.toggle('active', modoFacil);
+document.getElementById('btn-easy').textContent = modoFacil ? '⭐' : '☆';
+</script>
+</body>
+</html>

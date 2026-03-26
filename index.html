@@ -255,8 +255,8 @@ const MODULOS = [
   {
     n: 3,
     href: 'm3_acordes.html',
-    nome: 'Acordes',
-    desc: 'em breve · maior, menor, com sétima',
+    nome: 'Acordes Maiores',
+    desc: '12 acordes maiores · Dó a Si',
     cor: 'var(--nota-mi)',
     keys: ['piano_m3_progresso'],
   },
@@ -279,7 +279,7 @@ const MODULOS = [
 ];
 
 // Módulos com arquivo real publicado
-const PUBLICADOS = new Set([1, 2]);
+const PUBLICADOS = new Set([1, 2, 3]);
 
 function getProgresso(key) {
   try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch { return null; }
