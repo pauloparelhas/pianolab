@@ -322,7 +322,7 @@ const GRAUS_ST   = [0, 2, 4, 5, 7, 9, 11];
 // Qualidade de cada tríade dentro da escala maior
 const QUALIDADES = ['M', 'm', 'm', 'M', 'M', 'm', 'dim'];
 // Intervalos por qualidade
-const FORMULAS   = { M: [0,4,7], m: [0,3,7], dim: [0,3,6] };
+const FORMULAS_Q = { M: [0,4,7], m: [0,3,7], dim: [0,3,6] };
 // Sufixo para exibição
 const SUFIXO_Q   = { M: '', m: 'm', dim: '°' };
 // Numeral romano por grau
@@ -352,7 +352,7 @@ function buildCampo(rootNote) {
   return GRAUS_ST.map((st, grau) => {
     const baseMidi  = rootMidi + st;
     const qual      = QUALIDADES[grau];
-    const notas     = buildChord(midiToNote(baseMidi), FORMULAS[qual]);
+    const notas     = buildChord(midiToNote(baseMidi), FORMULAS_Q[qual]);
     const funcao    = FUNCAO_GRAU[grau];
     const baseNome  = nomePT(midiToNote(baseMidi));
     return {
