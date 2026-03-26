@@ -211,18 +211,6 @@
     </div>
   </div>
 
-  <div class="secao-titulo">Explorar</div>
-  <div class="modulos">
-    <a href="demo.html" class="card disponivel card-demo" style="--cor:#4FC3F7">
-      <div class="card__num">🎵</div>
-      <div class="card__info">
-        <div class="card__nome">Piano Livre</div>
-        <div class="card__desc">Toque e explore o teclado à vontade</div>
-      </div>
-      <div class="card__seta">›</div>
-    </a>
-  </div>
-
   <div class="secao-titulo">Módulos do curso</div>
   <div class="modulos" id="lista-modulos"></div>
 
@@ -255,14 +243,14 @@ const MODULOS = [
     n: 5,
     href: 'm5_progressoes.html',
     nome: 'Progressões',
-    desc: 'em breve',
+    desc: '5 progressões · inversões + voice leading',
     cor: 'var(--nota-sol)',
     keys: ['piano_m5_progresso'],
   },
 ];
 
 // Módulos com arquivo real publicado
-const PUBLICADOS = new Set([3, 4]);
+const PUBLICADOS = new Set([3, 4, 5]);
 
 function getProgresso(key) {
   try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch { return null; }
