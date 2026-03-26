@@ -217,6 +217,17 @@
   100% { transform: translate(-50%,-50%) scale(1);                  opacity: 0; }
 }
 
+/* ── DICA DISCRETA (próxima nota — sem cobrir o fundo da tecla) */
+.key.next-hint {
+  box-shadow: 0 0 0 2px rgba(79, 195, 247, 0.7), 0 0 14px rgba(79, 195, 247, 0.35);
+  z-index: 3;
+}
+
+.key--black.next-hint {
+  box-shadow: 0 0 0 2px rgba(79, 195, 247, 0.7), 0 0 10px rgba(79, 195, 247, 0.4);
+  z-index: 3;
+}
+
 /* ── LANDSCAPE — teclas reduzidas (cobre o padrão de 160px) ─── */
 @media (max-height: 500px) {
   :root {

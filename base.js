@@ -334,6 +334,30 @@ function createPianoKeyboard(container, options = {}) {
       notes.forEach(n => this.highlight(n));
     },
 
+    // Apaga todos os destaques (alias de releaseAll para compatibilidade)
+    clearHighlights() {
+      Object.values(keys).forEach(k => k.classList.remove('active', 'pressed'));
+    },
+
+    // Dica discreta: outline suave SEM mudar background (modo livre)
+    nextHint(noteStr) {
+      this.clearNextHints();
+      const midi = noteToMidi(noteStr);
+      const key = keys[midi];
+      if (key) key.classList.add('next-hint');
+    },
+
+    // Remove todas as dicas discretas
+    clearNextHints() {
+      Object.values(keys).forEach(k => k.classList.remove('next-hint'));
+    },
+
+    // Retorna o elemento DOM da tecla
+    getKeyElement(noteStr) {
+      const midi = noteToMidi(noteStr);
+      return keys[midi] || null;
+    },
+
     element: wrap,
   };
 }
