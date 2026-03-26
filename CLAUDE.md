@@ -23,7 +23,7 @@ Deploy: push para `main` → GitHub Pages atualiza em ~1 min.
 |---------|----------|
 | `m3_acordes.html` | 12 acordes maiores (7 naturais + 5 sustenidos) |
 | `m4_campo.html` | 7 campos harmônicos maiores — funções T, SD, D |
-| `m5_progressoes.html` | 5 progressões com inversões e voice leading *(em desenvolvimento)* |
+| `m5_progressoes.html` | Progressão I–vi–IV–V com inversões e voice leading, 7 tonalidades |
 
 ### Módulos retirados temporariamente (redesign pendente)
 - `m1_hub.html` — Conhecendo as teclas
@@ -95,6 +95,28 @@ localStorage.setItem('piano_m5_progresso', JSON.stringify({ concluidas:[], compl
 ```
 `completo: true` desbloqueia o módulo seguinte no index.
 
+### Pentagrama (staff)
+```javascript
+const staff = createStaff(container); // container = div vazio acima do piano
+staff.showNotes([60, 64, 67]);        // Array de MIDI — exibe cabeças de nota
+staff.clear();                         // limpa notas
+// Clave de sol, C4–B5, linhas suplementares automáticas, acidentes ♯
+// CSS em piano.css: .staff-wrap, .staff-line, .staff-clef, .staff-note, .staff-ledger, .staff-acc
+```
+
+**REGRA CRÍTICA — Piano fixo C4-B5:**
+```javascript
+// SEMPRE assim — nunca modificar startNote/endNote
+const kb = createPianoKeyboard(container, { startNote:'C4', endNote:'B5', ... });
+// Piano criado UMA VEZ ao carregar — nunca recriar ao trocar tonalidade
+// Transposição = apenas matemática nos offsets MIDI
+```
+
+**REGRA CRÍTICA — Gameplay display-only:**
+- Piano virtual mostra o acorde (highlights), criança toca no piano REAL
+- Avanço via botão "Próximo →", nunca via detecção de acordes pressionados
+- `onNoteOn()` apenas para som individual ao explorar o teclado
+
 ### Piano responsivo
 ```css
 .piano-wrap.responsive { width: 100%; }
@@ -125,12 +147,17 @@ localStorage.setItem('piano_m5_progresso', JSON.stringify({ concluidas:[], compl
 | 2026-03 | Cores por nota removidas dos destaques | Sem função pedagógica, poluição visual |
 | 2026-03 | Acordes sustenidos como "extras" no M3 | Não fazem parte da sequência default |
 | 2026-03 | Inversão exata obrigatória no M5 | Força o aprendizado do voice leading |
+| 2026-03-26 | M5 display-only (sem chord detection) | Crianças 7-9a não conseguem pressionar 3 teclas |
+| 2026-03-26 | Piano fixo C4-B5 em todos os módulos | Violação detectada: range dinâmico = piano degradado |
+| 2026-03-26 | createStaff() adicionado ao base.js | Pentagrama compartilhado por todos os módulos |
 
 ---
 
 ## Próximos Passos (roadmap)
 
-1. **M5 Progressões** *(em desenvolvimento)* — inversões + voice leading + 5 progressões × 7 tonalidades
-2. **Redesign retroativo M1** — Conhecendo as teclas (padrão M3+)
-3. **Redesign retroativo M2** — Escalas (padrão M3+)
-4. **Redesign Piano Livre** — exploração livre com qualidade
+1. **Validar M5 ao vivo** — conferir I–vi–IV–V em todas as 7 tonalidades
+2. **Adicionar staff a M3 e M4** — `createStaff()` já disponível em base.js
+3. **Expandir M5** — adicionar as outras 4 progressões após validação do I–vi–IV–V
+4. **Redesign retroativo M1** — Conhecendo as teclas (padrão M3+)
+5. **Redesign retroativo M2** — Escalas (padrão M3+)
+6. **Redesign Piano Livre** — exploração livre com qualidade
