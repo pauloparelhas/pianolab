@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>PianoLab — M4: Campo Harmônico</title>
+  <link rel="stylesheet" href="base.css">
+  <link rel="stylesheet" href="piano.css">
+  <style>
+    html, body { height: 100%; overflow: hidden; }
+
+    .piano-body {
+      display: flex; flex-direction: column;
+      height: 100dvh; background: #111827;
+      max-width: 960px; margin: 0 auto;
+    }
+    @media (orientation: landscape) { .piano-body { flex-direction: row; } }
+
+    /* ── PAINEL ──────────────────────────────────────────────── */
+    .digital-panel {
+      flex: 1; min-height: 0; background: #0d1117;
+      display: flex; flex-direction: column;
+      border-bottom: 3px solid #000; overflow: hidden;
+    }
+    @media (orientation: landscape) {
+      .digital-panel { flex: 0 0 38%; border-bottom: none; border-right: 3px solid #000; }
+    }
+
+    /* ── TOPBAR ──────────────────────────────────────────────── */
+    .panel-topbar {
+      display: flex; align-items: center; padding: 5px 8px; gap: 4px;
+      background: #070d14; border-bottom: 1px solid #1a2535; flex-shrink: 0;
+    }
+    .panel-title {
+      flex: 1; text-align: center; font-size: 0.65rem; letter-spacing: 3px;
+      color: #4FC3F7; font-weight: 700; text-transform: uppercase;
+    }
+    .panel-btn {
+      width: 34px; height: 34px; background: #141e2e;
+      border: 1px solid #263045; border-radius: 7px; color: #7a8fa8;
+      font-size: 0.9rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      touch-action: manipulation;
+    }
+    .panel-btn:active { background: #1e2e44; }
+    .panel-btn.active { color: #F9A825; border-color: #F9A825; }
+
+    /* ── BARRA DE CAMPOS (7 escalas) ─────────────────────────── */
+    .campo-bar {
+      display: flex; align-items: center; justify-content: center;
+      gap: 3px; padding: 5px 6px;
+      background: #070d14; border-bottom: 1px solid #1a2535; flex-shrink: 0;
+    }
+    .campo-bar-dot {
+      display: flex; flex-direction: column; align-items: center; gap: 1px;
+      padding: 4px 5px; border-radius: 5px; cursor: pointer;
+      touch-action: manipulation; transition: background .15s;
+    }
+    .campo-bar-dot:active { background: rgba(79,195,247,.1); }
+    .campo-bar-dot__c {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #2a3a4a; border: 1px solid #3a4a5a; transition: background .2s;
+    }
+    .campo-bar-dot__l {
+      font-size: 0.38rem; font-weight: 700; color: #3a4a5a; transition: color .2s;
+    }
+    .campo-bar-dot.ativo  .campo-bar-dot__c { background: #4FC3F7; border-color: #4FC3F7; }
+    .campo-bar-dot.ativo  .campo-bar-dot__l { color: #4FC3F7; }
+    .campo-bar-dot.feito  .campo-bar-dot__c { background: #4CAF50; border-color: #4CAF50; }
+    .campo-bar-dot.feito  .campo-bar-dot__l { color: #4CAF50; }
+
+    /* ── CONTEÚDO ────────────────────────────────────────────── */
+    .panel-content {
+      flex: 1; min-height: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: flex-start;
+      padding: 8px 10px; gap: 6px; overflow-y: auto;
+    }
+    .screen { display: none; flex-direction: column; align-items: center; gap: 6px; width: 100%; }
+    .screen.active { display: flex; }
+
+    .fase-label {
+      font-size: 0.55rem; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; color: #4a6274; align-self: flex-start;
+    }
+    .fase-titulo {
+      font-size: clamp(0.95rem, 3.6vw, 1.3rem); font-weight: 900;
+      color: #e8eaed; text-align: center; line-height: 1.2; width: 100%;
+    }
+    .fase-texto {
+      font-size: clamp(0.68rem, 2.4vw, 0.84rem);
+      color: #7a8fa8; text-align: center; line-height: 1.5;
+    }
+
+    /* ── GRID DE ACORDES DO CAMPO ────────────────────────────── */
+    .campo-grid {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; width: 100%;
+    }
+    .campo-card {
+      width: calc(25% - 5px);
+      min-width: 52px;
+      padding: 7px 4px 5px;
+      background: #1a2535; border-radius: 9px;
+      border: 2px solid #2a3a4a;
+      cursor: pointer; touch-action: manipulation;
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+      transition: border-color .15s, background .15s, transform .1s;
+    }
+    .campo-card:active { transform: scale(.95); }
+    .campo-card.ativo {
+      border-color: var(--funcao-cor, #4FC3F7);
+      background: color-mix(in srgb, var(--funcao-cor, #4FC3F7) 12%, #1a2535);
+    }
+    .campo-card__romano {
+      font-size: clamp(0.5rem, 1.6vw, 0.65rem); font-weight: 900;
+      color: var(--funcao-cor, #4a6274); letter-spacing: .5px;
+    }
+    .campo-card__nome {
+      font-size: clamp(0.55rem, 1.8vw, 0.72rem); font-weight: 700;
+      color: #e8eaed; text-align: center; line-height: 1.1;
+    }
+    .campo-card__funcao {
+      font-size: clamp(0.38rem, 1.2vw, 0.5rem); font-weight: 700;
+      color: var(--funcao-cor, #4a6274); letter-spacing: .5px;
+    }
+
+    /* ── LEGENDA DE FUNÇÕES ──────────────────────────────────── */
+    .funcao-legenda {
+      display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
+    }
+    .funcao-item {
+      display: flex; align-items: center; gap: 4px;
+      font-size: clamp(0.55rem, 1.7vw, 0.7rem); color: #7a8fa8;
+    }
+    .funcao-cor { width: 8px; height: 8px; border-radius: 50%; }
+
+    /* ── PROGRESSÃO VISUAL ───────────────────────────────────── */
+    .prog-vis {
+      display: flex; align-items: center; gap: 4px; justify-content: center; flex-wrap: wrap;
+    }
+    .prog-acorde {
+      padding: 5px 8px; border-radius: 7px;
+      background: #1a2535; border: 1.5px solid #2a3a4a;
+      font-size: clamp(0.6rem, 1.9vw, 0.78rem); font-weight: 700;
+      color: #7a8fa8; text-align: center;
+      transition: border-color .2s, background .2s, color .2s;
+    }
+    .prog-acorde.ativo {
+      border-color: var(--funcao-cor, #4FC3F7);
+      background: color-mix(in srgb, var(--funcao-cor, #4FC3F7) 15%, #1a2535);
+      color: #e8eaed;
+    }
+    .prog-seta { color: #2a3a4a; font-size: 0.8rem; }
+
+    /* ── PRATICAR — progresso ────────────────────────────────── */
+    .pratica-prog {
+      display: flex; gap: 5px; justify-content: center; flex-wrap: wrap;
+    }
+    .pratica-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: #1e2a3a; border: 2px solid #2a3a4a;
+      transition: background .18s;
+    }
+    .pratica-dot.atual  { background: #4FC3F7; border-color: #4FC3F7; animation: pulsar .9s ease-in-out infinite; }
+    .pratica-dot.acerto { background: #4CAF50; border-color: #4CAF50; }
+
+    /* ── CELEBRAÇÃO ──────────────────────────────────────────── */
+    .celebra-emoji { font-size: clamp(2rem, 9vw, 3rem); }
+    .celebra-titulo { font-size: clamp(1rem, 3.6vw, 1.4rem); font-weight: 900; color: #fff; text-align: center; }
+    .celebra-sub   { font-size: clamp(0.68rem, 2.2vw, 0.84rem); color: #7a8fa8; text-align: center; }
+    .celebra-cont  { font-size: clamp(0.6rem, 1.9vw, 0.76rem); color: #4CAF50; font-weight: 700; }
+
+    /* ── BOTÕES ──────────────────────────────────────────────── */
+    .btn-acao {
+      padding: 9px 18px; background: #141e2e;
+      border: 1.5px solid #263045; border-radius: 10px;
+      color: #4FC3F7; font-size: clamp(0.75rem, 2.3vw, 0.9rem);
+      font-weight: 700; cursor: pointer; touch-action: manipulation;
+      transition: background .15s, border-color .15s;
+    }
+    .btn-acao:active { background: #1e2e44; border-color: #4FC3F7; }
+    .btn-acao.destaque { background: #4FC3F7; color: #000; border-color: #4FC3F7; }
+
+    /* ── NAV PADRONIZADA ─────────────────────────────────────── */
+    .fase-nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 7px 12px; gap: 8px;
+      background: #070d14; border-top: 1px solid #1a2535; flex-shrink: 0;
+    }
+    .fase-nav-btn {
+      width: 32px; height: 32px; background: #141e2e;
+      border: 1px solid #263045; border-radius: 7px;
+      color: #4FC3F7; font-size: 1.1rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      touch-action: manipulation;
+    }
+    .fase-nav-btn:disabled { opacity: .3; cursor: default; pointer-events: none; }
+    .fase-dots-row { display: flex; gap: 5px; }
+    .fase-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: #2a3a4a; border: 1px solid #3a4a5a; transition: background .2s;
+    }
+    .fase-dot.ativa { background: #4FC3F7; }
+    .fase-dot.feita { background: #4CAF50; }
+
+    /* ── TECLADO ─────────────────────────────────────────────── */
+    .piano-stage {
+      background: #111827; padding: 8px 0 12px;
+      border-top: 3px solid #000; flex: 0 0 45dvh;
+      display: flex; align-items: stretch;
+      --key-h:    clamp(140px, 38dvh, 300px);
+      --key-bk-h: clamp( 84px, 23dvh, 180px);
+    }
+    @media (orientation: landscape) {
+      .piano-stage {
+        flex: 1; border-top: none; border-left: 3px solid #000; padding: 8px 0;
+        --key-h:    clamp(130px, 78dvh, 340px);
+        --key-bk-h: clamp( 78px, 47dvh, 204px);
+      }
+    }
+    .piano-stage #piano-campo {
+      width: 100%; display: flex; align-items: center;
+    }
+    .piano-stage .piano-wrap.responsive { overflow: visible; padding-bottom: 0; }
+    .piano-stage .piano.responsive { width: 100%; }
+    .piano-stage .key__label { font-size: clamp(0.4rem, 1.2vw, 0.58rem); font-weight: 700; color: #888; }
+    .piano-stage .key { border-color: #444; }
+
+    @keyframes pulsar { 0%,100%{opacity:1} 50%{opacity:.5} }
+  </style>
+</head>
+<body>
+<div class="piano-body">
+
+  <div class="digital-panel">
+    <div class="panel-topbar">
+      <button class="panel-btn" onclick="goTo('index.html')">←</button>
+      <span class="panel-title">M4 · CAMPO HARMÔNICO</span>
+      <button class="panel-btn" id="btn-easy" onclick="toggleEasy()">☆</button>
+      <button class="panel-btn" id="btn-lock" onclick="LockMode.toggle(this)">🔓</button>
+      <button class="panel-btn" id="btn-sound" onclick="toggleSom()">🔊</button>
+    </div>
+
+    <div class="campo-bar" id="campo-bar"></div>
+
+    <div class="panel-content">
+
+      <!-- Intro -->
+      <div class="screen" id="s-intro">
+        <span class="fase-label">Entenda</span>
+        <div class="fase-titulo" id="intro-titulo">Campo de Dó Maior</div>
+        <div class="fase-texto" id="intro-texto"></div>
+        <div class="campo-grid" id="campo-grid-intro"></div>
+        <div class="funcao-legenda">
+          <div class="funcao-item"><div class="funcao-cor" style="background:#4FC3F7"></div>Tônica (T)</div>
+          <div class="funcao-item"><div class="funcao-cor" style="background:#81C784"></div>Subdominante (SD)</div>
+          <div class="funcao-item"><div class="funcao-cor" style="background:#F9A825"></div>Dominante (D)</div>
+        </div>
+        <button class="btn-acao" onclick="irFase('explorar')">▶ Explorar</button>
+      </div>
+
+      <!-- Explorar -->
+      <div class="screen" id="s-explorar">
+        <span class="fase-label">Explore</span>
+        <div class="fase-titulo" id="explorar-titulo">Toque cada acorde</div>
+        <div class="campo-grid" id="campo-grid-explorar"></div>
+        <div class="fase-texto" id="explorar-info">Toque um acorde para ouvir sua função</div>
+      </div>
+
+      <!-- Progressão -->
+      <div class="screen" id="s-prog">
+        <span class="fase-label">Ouça</span>
+        <div class="fase-titulo">Tensão e resolução</div>
+        <div class="fase-texto">T → SD → D → T · a história de toda música</div>
+        <div class="prog-vis" id="prog-vis"></div>
+        <button class="btn-acao" id="btn-tocar-prog" onclick="tocarProgressao()">▶ Tocar progressão</button>
+      </div>
+
+      <!-- Praticar -->
+      <div class="screen" id="s-praticar">
+        <span class="fase-label">Pratique</span>
+        <div class="fase-titulo" id="pratica-titulo">Toque o campo!</div>
+        <div class="campo-grid" id="campo-grid-pratica"></div>
+        <div class="pratica-prog" id="pratica-prog"></div>
+        <div class="fase-texto" id="pratica-instrucao">Do grau I ao VII, em ordem</div>
+      </div>
+
+      <!-- Celebração -->
+      <div class="screen" id="s-celebra">
+        <div class="celebra-emoji" id="celebra-emoji">🎉</div>
+        <div class="celebra-titulo" id="celebra-titulo"></div>
+        <div class="celebra-sub" id="celebra-sub"></div>
+        <div class="celebra-cont" id="celebra-cont"></div>
+        <button class="btn-acao destaque" id="btn-proximo">Próximo campo →</button>
+      </div>
+
+    </div><!-- panel-content -->
+
+    <div class="fase-nav">
+      <button class="fase-nav-btn" id="btn-fase-prev" onclick="faseAnterior()">‹</button>
+      <div class="fase-dots-row" id="fase-dots-row"></div>
+      <button class="fase-nav-btn" id="btn-fase-next" onclick="faseSeguinte()">›</button>
+    </div>
+  </div>
+
+  <div class="piano-stage">
+    <div id="piano-campo"></div>
+  </div>
+
+</div>
+<script src="base.js"></script>
+<script>
+'use strict';
+
+/* ══════════════════════════════════════════════════════════════
+   TEORIA — CAMPO HARMÔNICO MAIOR
+   Construído algoritmicamente a partir de qualquer tônica.
+══════════════════════════════════════════════════════════════ */
+
+// Semitons de cada grau na escala maior
+const GRAUS_ST   = [0, 2, 4, 5, 7, 9, 11];
+// Qualidade de cada tríade dentro da escala maior
+const QUALIDADES = ['M', 'm', 'm', 'M', 'M', 'm', 'dim'];
+// Intervalos por qualidade
+const FORMULAS   = { M: [0,4,7], m: [0,3,7], dim: [0,3,6] };
+// Sufixo para exibição
+const SUFIXO_Q   = { M: '', m: 'm', dim: '°' };
+// Numeral romano por grau
+const ROMANOS    = ['I','II','III','IV','V','VI','VII'];
+// Função harmônica por grau (0-indexed)
+const FUNCAO_GRAU = [
+  { nome:'Tônica',       sigla:'T',  cor:'#4FC3F7' }, // I
+  { nome:'Subdominante', sigla:'SD', cor:'#81C784' }, // II
+  { nome:'Tônica',       sigla:'T',  cor:'#4FC3F7' }, // III
+  { nome:'Subdominante', sigla:'SD', cor:'#81C784' }, // IV
+  { nome:'Dominante',    sigla:'D',  cor:'#F9A825' }, // V
+  { nome:'Tônica',       sigla:'T',  cor:'#4FC3F7' }, // VI
+  { nome:'Dominante',    sigla:'D',  cor:'#F9A825' }, // VII
+];
+
+// Nomes em português
+const NOTA_PT = {
+  'C':'Dó','C#':'Dó♯','D':'Ré','D#':'Ré♯','E':'Mi',
+  'F':'Fá','F#':'Fá♯','G':'Sol','G#':'Sol♯','A':'Lá','A#':'Lá♯','B':'Si',
+};
+function nomePT(midiStr) {
+  return NOTA_PT[midiStr.replace(/\d/,'')] || midiStr.replace(/\d/,'');
+}
+
+function buildCampo(rootNote) {
+  const rootMidi = noteToMidi(rootNote);
+  return GRAUS_ST.map((st, grau) => {
+    const baseMidi  = rootMidi + st;
+    const qual      = QUALIDADES[grau];
+    const notas     = buildChord(midiToNote(baseMidi), FORMULAS[qual]);
+    const funcao    = FUNCAO_GRAU[grau];
+    const baseNome  = nomePT(midiToNote(baseMidi));
+    return {
+      grau:   grau + 1,
+      romano: ROMANOS[grau] + SUFIXO_Q[qual],
+      qual,
+      notas,
+      funcao,
+      nome: baseNome + (qual === 'm' ? ' m' : qual === 'dim' ? '°' : ''),
+      nomeBreve: baseNome,
+    };
+  });
+}
+
+// 7 campos: Dó, Ré, Mi, Fá, Sol, Lá, Si
+const CAMPOS = [
+  { raiz:'C4', tonica:'Dó',  label:'Dó'  },
+  { raiz:'D4', tonica:'Ré',  label:'Ré'  },
+  { raiz:'E4', tonica:'Mi',  label:'Mi'  },
+  { raiz:'F4', tonica:'Fá',  label:'Fá'  },
+  { raiz:'G4', tonica:'Sol', label:'Sol' },
+  { raiz:'A4', tonica:'Lá',  label:'Lá'  },
+  { raiz:'B4', tonica:'Si',  label:'Si'  },
+];
+
+/* ══════════════════════════════════════════════════════════════
+   ESTADO
+══════════════════════════════════════════════════════════════ */
+let campoIdx   = 0;
+let faseAtual  = 'intro';
+let modoFacil  = Settings.getEasyMode();
+let animTimer  = null;
+let praticaIdx = 0;
+let acordeAtivo = -1; // índice do card ativo na fase explorar
+
+const FASES_ORDEM = ['intro', 'explorar', 'prog', 'praticar'];
+
+/* ══════════════════════════════════════════════════════════════
+   TECLADO
+══════════════════════════════════════════════════════════════ */
+const kb = createPianoKeyboard(document.getElementById('piano-campo'), {
+  startNote: 'C4', endNote: 'B5',
+  showLabels: true, responsive: true,
+  onNoteOn(noteStr) {
+    AudioEngine.play(noteStr);
+    if (faseAtual === 'praticar') checarPratica(noteStr);
+  },
+});
+
+/* ══════════════════════════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════════════════════════ */
+const cfgAtual  = () => CAMPOS[campoIdx];
+const campoAtual = () => buildCampo(cfgAtual().raiz);
+
+/* ══════════════════════════════════════════════════════════════
+   CONSTRUTORES
+══════════════════════════════════════════════════════════════ */
+function buildCampoGrid(containerId, campo, clicavel = false, idxAtivo = -1) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = '';
+  campo.forEach((acorde, i) => {
+    const card = document.createElement('div');
+    card.className = 'campo-card' + (i === idxAtivo ? ' ativo' : '');
+    card.style.setProperty('--funcao-cor', acorde.funcao.cor);
+    card.innerHTML = `
+      <div class="campo-card__romano">${acorde.romano}</div>
+      <div class="campo-card__nome">${acorde.nome}</div>
+      <div class="campo-card__funcao">${acorde.funcao.sigla}</div>`;
+    if (clicavel) {
+      card.addEventListener('click', () => tocarAcorde(i, containerId));
+    }
+    el.appendChild(card);
+  });
+}
+
+function buildCampoBar() {
+  const el = document.getElementById('campo-bar');
+  el.innerHTML = '';
+  CAMPOS.forEach((c, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'campo-bar-dot' + (i === campoIdx ? ' ativo' : i < campoIdx ? ' feito' : '');
+    dot.innerHTML = `<div class="campo-bar-dot__c"></div><div class="campo-bar-dot__l">${c.label}</div>`;
+    dot.addEventListener('click', () => {
+      if (i === campoIdx) return;
+      campoIdx = i; acordeAtivo = -1;
+      buildCampoBar(); irFase('intro');
+    });
+    el.appendChild(dot);
+  });
+}
+
+function buildPraticaProg() {
+  const el = document.getElementById('pratica-prog');
+  el.innerHTML = '';
+  campoAtual().forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'pratica-dot' + (i === 0 ? ' atual' : '');
+    el.appendChild(d);
+  });
+}
+
+function buildProgVis(campo) {
+  // Progressão I–IV–V–I (graus 0,3,4,0)
+  const idx = [0, 3, 4, 0];
+  const el  = document.getElementById('prog-vis');
+  el.innerHTML = '';
+  idx.forEach((gi, pi) => {
+    if (pi > 0) {
+      const seta = document.createElement('div');
+      seta.className = 'prog-seta'; seta.textContent = '→';
+      el.appendChild(seta);
+    }
+    const div = document.createElement('div');
+    div.className = 'prog-acorde';
+    div.dataset.pi = pi;
+    div.style.setProperty('--funcao-cor', campo[gi].funcao.cor);
+    div.innerHTML = `<div>${campo[gi].romano}</div><div style="font-size:.85em;color:#7a8fa8">${campo[gi].nomeBreve}</div>`;
+    el.appendChild(div);
+  });
+}
+
+/* ══════════════════════════════════════════════════════════════
+   NAV PADRONIZADA
+══════════════════════════════════════════════════════════════ */
+function atualizarFaseNav() {
+  const idx = FASES_ORDEM.indexOf(faseAtual);
+  document.getElementById('btn-fase-prev').disabled = idx <= 0;
+  document.getElementById('btn-fase-next').disabled = faseAtual === 'celebra';
+  const dotsEl = document.getElementById('fase-dots-row');
+  dotsEl.innerHTML = '';
+  FASES_ORDEM.forEach((f, i) => {
+    const d = document.createElement('div');
+    d.className = 'fase-dot' + (i === idx ? ' ativa' : i < idx ? ' feita' : '');
+    dotsEl.appendChild(d);
+  });
+}
+
+function faseAnterior() {
+  const idx = FASES_ORDEM.indexOf(faseAtual);
+  if (idx > 0) irFase(FASES_ORDEM[idx - 1]);
+}
+
+function faseSeguinte() {
+  const idx = FASES_ORDEM.indexOf(faseAtual);
+  if (idx >= 0 && idx < FASES_ORDEM.length - 1) irFase(FASES_ORDEM[idx + 1]);
+  else if (faseAtual === 'praticar') irFase('celebra');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   NAVEGAÇÃO DE FASES
+══════════════════════════════════════════════════════════════ */
+function irFase(fase) {
+  if (animTimer) { clearTimeout(animTimer); animTimer = null; }
+  praticaIdx = 0;
+  kb.clearHighlights(); kb.clearHints(); kb.clearNextHints();
+
+  faseAtual = fase;
+  ['intro','explorar','prog','praticar','celebra'].forEach(f =>
+    document.getElementById('s-' + f)?.classList.remove('active'));
+  document.getElementById('s-' + fase)?.classList.add('active');
+
+  const campo = campoAtual();
+  const cfg   = cfgAtual();
+
+  if (fase === 'intro') {
+    buildCampoGrid('campo-grid-intro', campo, false);
+    document.getElementById('intro-titulo').textContent = 'Campo de ' + cfg.tonica + ' Maior';
+    document.getElementById('intro-texto').innerHTML =
+      `7 acordes construídos a partir da escala de <strong style="color:#4FC3F7">${cfg.tonica} Maior</strong>.<br>` +
+      `Cada um tem uma função: Tônica (repouso), Subdominante (movimento) ou Dominante (tensão).`;
+    TTS.falar('Campo harmônico de ' + cfg.tonica + ' Maior');
+  }
+
+  if (fase === 'explorar') {
+    acordeAtivo = -1;
+    buildCampoGrid('campo-grid-explorar', campo, true, -1);
+    document.getElementById('explorar-titulo').textContent = cfg.tonica + ' Maior';
+    document.getElementById('explorar-info').textContent = 'Toque um acorde para ouvir sua função';
+    TTS.falar('Toque cada acorde e ouça sua função');
+  }
+
+  if (fase === 'prog') {
+    buildProgVis(campo);
+    document.getElementById('btn-tocar-prog').disabled = false;
+    document.getElementById('btn-tocar-prog').textContent = '▶ Tocar progressão';
+    TTS.falar('Tensão e resolução — a história de toda música');
+  }
+
+  if (fase === 'praticar') {
+    buildCampoGrid('campo-grid-pratica', campo, false, 0);
+    buildPraticaProg();
+    document.getElementById('pratica-titulo').textContent = cfg.tonica + ' Maior · I ao VII';
+    document.getElementById('pratica-instrucao').textContent = 'Toque o ' + campo[0].romano + ': ' + campo[0].notas.map(nomePT).join(' - ');
+    mostrarHintPratica();
+    TTS.falar('Sua vez! Toque os 7 acordes em ordem');
+  }
+
+  if (fase === 'celebra') {
+    const feitos  = campoIdx + 1;
+    const ultimo  = campoIdx >= CAMPOS.length - 1;
+    document.getElementById('celebra-emoji').textContent  = ultimo ? '🏆' : '🎉';
+    document.getElementById('celebra-titulo').textContent = cfg.tonica + ' Maior ✓';
+    document.getElementById('celebra-sub').textContent    = ultimo
+      ? 'Você domina todos os 7 campos harmônicos maiores!'
+      : 'Campo harmônico concluído!';
+    document.getElementById('celebra-cont').textContent   = feitos + ' de ' + CAMPOS.length;
+    const btn = document.getElementById('btn-proximo');
+    if (ultimo) {
+      btn.textContent = '← Voltar ao curso';
+      btn.onclick     = () => goTo('index.html');
+    } else {
+      btn.textContent = 'Próximo: ' + CAMPOS[campoIdx + 1].tonica + ' →';
+      btn.onclick     = proximoCampo;
+    }
+    salvarProgresso(ultimo);
+    TTS.falar('Parabéns! ' + cfg.tonica + ' Maior concluído!');
+  }
+
+  atualizarFaseNav();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FASE EXPLORAR — toca acorde ao clicar no card
+══════════════════════════════════════════════════════════════ */
+function tocarAcorde(i, gridId) {
+  const campo = campoAtual();
+  const acorde = campo[i];
+  kb.clearHighlights();
+  acorde.notas.forEach(n => kb.highlight(n));
+  AudioEngine.playChord(acorde.notas, 60, 1.2);
+  acordeAtivo = i;
+
+  // Atualiza destaque visual nos cards
+  const cards = document.querySelectorAll('#' + gridId + ' .campo-card');
+  cards.forEach((c, j) => c.classList.toggle('ativo', j === i));
+
+  document.getElementById('explorar-info').innerHTML =
+    `<strong style="color:${acorde.funcao.cor}">${acorde.funcao.sigla} — ${acorde.funcao.nome}</strong> · ` +
+    acorde.notas.map(nomePT).join(' – ');
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FASE PROGRESSÃO — I–IV–V–I
+══════════════════════════════════════════════════════════════ */
+function tocarProgressao() {
+  document.getElementById('btn-tocar-prog').disabled = true;
+  const campo   = campoAtual();
+  const idxSeq  = [0, 3, 4, 0]; // I, IV, V, I
+  const cards   = document.querySelectorAll('#prog-vis .prog-acorde');
+  let step = 0;
+
+  function passo() {
+    if (step > 0) {
+      cards[step - 1]?.classList.remove('ativo');
+      kb.clearHighlights();
+    }
+    if (step >= idxSeq.length) {
+      document.getElementById('btn-tocar-prog').disabled = false;
+      document.getElementById('btn-tocar-prog').textContent = '↻ Ouvir de novo';
+      return;
+    }
+    const acorde = campo[idxSeq[step]];
+    cards[step].classList.add('ativo');
+    AudioEngine.playChord(acorde.notas, 60, 1.1);
+    acorde.notas.forEach(n => kb.highlight(n));
+    step++;
+    animTimer = setTimeout(passo, 1400);
+  }
+  AudioEngine.init();
+  passo();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FASE PRATICAR — toca os 7 acordes em ordem
+══════════════════════════════════════════════════════════════ */
+function mostrarHintPratica() {
+  kb.clearNextHints(); kb.clearHints();
+  const campo = campoAtual();
+  if (praticaIdx >= campo.length) return;
+  const acorde = campo[praticaIdx];
+  acorde.notas.forEach(n => modoFacil ? kb.hint(n) : kb.nextHint(n));
+
+  // Destaca card ativo
+  const cards = document.querySelectorAll('#campo-grid-pratica .campo-card');
+  cards.forEach((c, i) => c.classList.toggle('ativo', i === praticaIdx));
+  cards[praticaIdx]?.style.setProperty('--funcao-cor', acorde.funcao.cor);
+
+  document.getElementById('pratica-instrucao').textContent =
+    acorde.romano + ': ' + acorde.notas.map(nomePT).join(' – ');
+}
+
+// Rastreia quais notas do acorde atual já foram tocadas
+let notasTocadas = new Set();
+
+function checarPratica(noteStr) {
+  const campo  = campoAtual();
+  if (praticaIdx >= campo.length) return;
+  const acorde = campo[praticaIdx];
+  const notasSet = new Set(acorde.notas);
+
+  if (!notasSet.has(noteStr)) {
+    // Nota errada (não pertence ao acorde)
+    const keyEl = kb.getKeyElement(noteStr);
+    if (keyEl) {
+      keyEl.classList.remove('shake');
+      void keyEl.offsetWidth;
+      keyEl.classList.add('shake');
+      keyEl.addEventListener('animationend', () => keyEl.classList.remove('shake'), { once: true });
+    }
+    return;
+  }
+
+  // Nota correta — acumula
+  notasTocadas.add(noteStr);
+  kb.highlight(noteStr);
+
+  if (notasTocadas.size >= acorde.notas.length) {
+    // Acorde completo
+    notasTocadas.clear();
+    document.querySelectorAll('.pratica-dot')[praticaIdx]?.classList.replace('atual', 'acerto');
+
+    // Toca o acorde como reforço
+    AudioEngine.playChord(acorde.notas, 40, 1.0);
+    praticaIdx++;
+
+    if (praticaIdx >= campo.length) {
+      setTimeout(() => { kb.clearHighlights(); irFase('celebra'); }, 800);
+    } else {
+      document.querySelectorAll('.pratica-dot')[praticaIdx]?.classList.add('atual');
+      setTimeout(() => { kb.clearHighlights(); mostrarHintPratica(); }, 600);
+    }
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PROGRESSÃO DE CAMPOS
+══════════════════════════════════════════════════════════════ */
+function proximoCampo() {
+  if (campoIdx >= CAMPOS.length - 1) { goTo('index.html'); return; }
+  campoIdx++; acordeAtivo = -1;
+  buildCampoBar(); irFase('intro');
+}
+
+function salvarProgresso(completo = false) {
+  try {
+    localStorage.setItem('piano_m4_progresso', JSON.stringify({ campoIdx, fase: faseAtual, completo }));
+  } catch {}
+}
+
+function toggleEasy() {
+  modoFacil = !modoFacil;
+  Settings.setEasyMode(modoFacil);
+  document.getElementById('btn-easy').classList.toggle('active', modoFacil);
+  document.getElementById('btn-easy').textContent = modoFacil ? '⭐' : '☆';
+  if (faseAtual === 'praticar') mostrarHintPratica();
+}
+
+function toggleSom() {
+  const on = Settings.getSoundOn();
+  Settings.setSoundOn(!on);
+  document.getElementById('btn-sound').textContent = !on ? '🔊' : '🔇';
+}
+
+/* ══════════════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════════════ */
+(function restaurar() {
+  try {
+    const p = JSON.parse(localStorage.getItem('piano_m4_progresso') || '{}');
+    if (p.campoIdx !== undefined && !p.completo) campoIdx = p.campoIdx;
+  } catch {}
+})();
+
+buildCampoBar();
+irFase('intro');
+document.addEventListener('pointerdown', () => AudioEngine.init(), { once: true });
+LockMode.listenChanges(document.getElementById('btn-lock'));
+document.getElementById('btn-easy').classList.toggle('active', modoFacil);
+document.getElementById('btn-easy').textContent = modoFacil ? '⭐' : '☆';
+
+// Estilo de shake para teclas erradas (reusado de M3)
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes shake-tecla {
+    0%,100%{transform:translateX(0)} 20%{transform:translateX(-4px)}
+    40%{transform:translateX(4px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(3px)}
+  }
+  .key.shake { animation: shake-tecla .35s ease-in-out; }
+`;
+document.head.appendChild(style);
+</script>
+</body>
+</html>

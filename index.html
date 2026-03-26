@@ -264,7 +264,7 @@ const MODULOS = [
     n: 4,
     href: 'm4_campo.html',
     nome: 'Campo Harmônico',
-    desc: 'em breve',
+    desc: '7 campos harmônicos · funções T, SD e D',
     cor: 'var(--nota-fa)',
     keys: ['piano_m4_progresso'],
   },
@@ -279,7 +279,7 @@ const MODULOS = [
 ];
 
 // Módulos com arquivo real publicado
-const PUBLICADOS = new Set([1, 2, 3]);
+const PUBLICADOS = new Set([1, 2, 3, 4]);
 
 function getProgresso(key) {
   try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch { return null; }
