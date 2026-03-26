@@ -589,7 +589,8 @@ function buildBarraProgressao(containerId) {
     card.dataset.idx = i;
     const t = tonicMidi();
     const rootMidi = t + p.rootOffset;
-    card.innerHTML = `<div>${p.grau}</div><div style="font-size:.8em;color:#7a8fa8;margin-top:1px">${nomeNota(midiToNote(rootMidi))}</div>`;
+    const qual = p.nome === 'menor' ? ' m' : '';
+    card.innerHTML = `<div>${p.grau}</div><div style="font-size:.75em;color:#7a8fa8;margin-top:1px">${nomeNota(midiToNote(rootMidi))}${qual}</div>`;
     el.appendChild(card);
   });
 }

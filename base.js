@@ -620,11 +620,8 @@ function createStaffScore(container, opts = {}) {
       const active = i === hlIdx;
       const cx     = CLEF + i * SLOT + SLOT / 2;
       const steps  = midis.map(mToStep);
-      const col    = active ? '#4FC3F7' : '#8da7ba';
-
-      // Caixa de destaque
-      if (active)
-        svg.appendChild($('rect', { x: CLEF+i*SLOT+2, y: 2, width: SLOT-4, height: H-LBH-4, rx: 5, fill: 'rgba(79,195,247,0.14)', stroke: '#4FC3F7', 'stroke-width': 1 }));
+      // Ativo = azul padrão; inativo = apagado (quase cor das linhas)
+      const col    = active ? '#4FC3F7' : '#3a5068';
 
       // Cabeças de nota, linhas suplementares, acidentes
       midis.forEach((midi, j) => {
@@ -672,7 +669,7 @@ function createStaffScore(container, opts = {}) {
 
       // Rótulo abaixo
       if (label) {
-        const t = $('text', { x: cx, y: H-2, fill: active ? '#4FC3F7' : '#4a6274', 'font-size': 8.5, 'font-weight': 700, 'text-anchor': 'middle', 'font-family': 'sans-serif' });
+        const t = $('text', { x: cx, y: H-2, fill: active ? '#4FC3F7' : '#2e4055', 'font-size': 8.5, 'font-weight': 700, 'text-anchor': 'middle', 'font-family': 'sans-serif' });
         t.textContent = label;
         svg.appendChild(t);
       }
