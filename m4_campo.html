@@ -14,8 +14,6 @@
       height: 100dvh; background: #111827;
       max-width: 960px; margin: 0 auto;
     }
-    @media (orientation: landscape) { .piano-body { flex-direction: row; } }
-
     /* ── PAINEL ──────────────────────────────────────────────── */
     .digital-panel {
       flex: 1; min-height: 0; background: #0d1117;
@@ -23,7 +21,7 @@
       border-bottom: 3px solid #000; overflow: hidden;
     }
     @media (orientation: landscape) {
-      .digital-panel { flex: 0 0 38%; border-bottom: none; border-right: 3px solid #000; }
+      .digital-panel { flex: 0 0 auto; max-height: 32dvh; overflow-y: auto; border-bottom: 1px solid #1a2535; }
     }
 
     /* ── TOPBAR ──────────────────────────────────────────────── */
@@ -213,7 +211,7 @@
     }
     @media (orientation: landscape) {
       .piano-stage {
-        flex: 1; border-top: none; border-left: 3px solid #000;
+        flex: 1; border-top: none;
         --key-h:    clamp(120px, 70dvh, 320px);
         --key-bk-h: clamp( 72px, 42dvh, 192px);
       }

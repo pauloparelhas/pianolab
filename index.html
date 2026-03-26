@@ -224,6 +224,14 @@
 // Currículo — módulos ativos
 const MODULOS = [
   {
+    n: 2,
+    href: 'm2_escalas.html',
+    nome: 'Escalas Maiores',
+    desc: '7 escalas maiores · Dó a Si',
+    cor: 'var(--nota-re)',
+    keys: ['piano_m2_progresso'],
+  },
+  {
     n: 3,
     href: 'm3_acordes.html',
     nome: 'Acordes Maiores',
@@ -250,7 +258,7 @@ const MODULOS = [
 ];
 
 // Módulos com arquivo real publicado
-const PUBLICADOS = new Set([3, 4, 5]);
+const PUBLICADOS = new Set([2, 3, 4, 5]);
 
 function getProgresso(key) {
   try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch { return null; }
