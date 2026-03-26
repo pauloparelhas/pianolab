@@ -16,7 +16,7 @@
     }
     @media (orientation: landscape) { .piano-body { flex-direction: row; } }
 
-    /* ── PAINEL ──────────────────────────────────────────────── */
+    /* ── PAINEL ─────────────────────────────────────────────── */
     .digital-panel {
       flex: 1; min-height: 0; background: #0d1117;
       display: flex; flex-direction: column;
@@ -26,7 +26,6 @@
       .digital-panel { flex: 0 0 38%; border-bottom: none; border-right: 3px solid #000; }
     }
 
-    /* ── TOPBAR ──────────────────────────────────────────────── */
     .panel-topbar {
       display: flex; align-items: center; padding: 5px 8px; gap: 4px;
       background: #070d14; border-bottom: 1px solid #1a2535; flex-shrink: 0;
@@ -45,7 +44,7 @@
     .panel-btn:active { background: #1e2e44; }
     .panel-btn.active { color: #F9A825; border-color: #F9A825; }
 
-    /* ── BARRA DE TONALIDADE ─────────────────────────────────── */
+    /* ── BARRA DE TONALIDADE ────────────────────────────────── */
     .chave-bar {
       display: flex; align-items: center; justify-content: center;
       gap: 3px; padding: 5px 6px;
@@ -53,27 +52,22 @@
     }
     .chave-dot {
       display: flex; flex-direction: column; align-items: center; gap: 1px;
-      padding: 4px 5px; border-radius: 5px; cursor: pointer;
-      touch-action: manipulation; transition: background .15s;
+      padding: 4px 5px; border-radius: 5px; cursor: pointer; touch-action: manipulation;
     }
-    .chave-dot:active { background: rgba(79,195,247,.1); }
     .chave-dot__c {
       width: 7px; height: 7px; border-radius: 50%;
       background: #2a3a4a; border: 1px solid #3a4a5a; transition: background .2s;
     }
-    .chave-dot__l {
-      font-size: 0.38rem; font-weight: 700; color: #3a4a5a; transition: color .2s;
-    }
+    .chave-dot__l { font-size: 0.38rem; font-weight: 700; color: #3a4a5a; transition: color .2s; }
     .chave-dot.ativo .chave-dot__c { background: #4FC3F7; border-color: #4FC3F7; }
     .chave-dot.ativo .chave-dot__l { color: #4FC3F7; }
     .chave-dot.feito .chave-dot__c { background: #4CAF50; border-color: #4CAF50; }
     .chave-dot.feito .chave-dot__l { color: #4CAF50; }
 
-    /* ── CONTEÚDO ────────────────────────────────────────────── */
+    /* ── CONTEÚDO ───────────────────────────────────────────── */
     .panel-content {
       flex: 1; min-height: 0;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: flex-start;
+      display: flex; flex-direction: column; align-items: center;
       padding: 8px 10px; gap: 6px; overflow-y: auto;
     }
     .screen { display: none; flex-direction: column; align-items: center; gap: 6px; width: 100%; }
@@ -84,112 +78,74 @@
       text-transform: uppercase; color: #4a6274; align-self: flex-start;
     }
     .fase-titulo {
-      font-size: clamp(0.95rem, 3.6vw, 1.3rem); font-weight: 900;
+      font-size: clamp(0.9rem, 3.2vw, 1.2rem); font-weight: 900;
       color: #e8eaed; text-align: center; line-height: 1.2; width: 100%;
     }
     .fase-texto {
-      font-size: clamp(0.68rem, 2.4vw, 0.84rem);
+      font-size: clamp(0.65rem, 2.2vw, 0.82rem);
       color: #7a8fa8; text-align: center; line-height: 1.5;
     }
 
-    /* ── CONCEITO — inversões ────────────────────────────────── */
-    .inv-btns {
-      display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;
-    }
+    /* ── INVERSÕES (conceito) ───────────────────────────────── */
+    .inv-btns { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
     .inv-btn {
-      padding: 7px 12px; background: #141e2e;
-      border: 1.5px solid #263045; border-radius: 9px;
-      color: #7a8fa8; font-size: clamp(0.65rem, 2vw, 0.78rem);
+      padding: 6px 11px; background: #141e2e;
+      border: 1.5px solid #263045; border-radius: 8px;
+      color: #7a8fa8; font-size: clamp(0.62rem, 1.9vw, 0.75rem);
       font-weight: 700; cursor: pointer; touch-action: manipulation;
-      transition: background .15s, border-color .15s, color .15s;
+      transition: border-color .15s, color .15s;
     }
-    .inv-btn.ativo { background: #1a2e4a; border-color: #4FC3F7; color: #4FC3F7; }
+    .inv-btn.ativo { border-color: #4FC3F7; color: #4FC3F7; background: rgba(79,195,247,.07); }
     .inv-info {
-      text-align: center;
-      font-size: clamp(0.65rem, 2vw, 0.78rem); color: #7a8fa8; line-height: 1.6;
+      font-size: clamp(0.62rem, 1.9vw, 0.75rem); color: #7a8fa8;
+      text-align: center; line-height: 1.6;
     }
     .inv-info strong { color: #e8eaed; }
-    .inv-info .notas { color: #4FC3F7; font-weight: 700; letter-spacing: 1px; }
+    .inv-info .notas { color: #4FC3F7; font-weight: 700; letter-spacing: .5px; }
 
-    /* ── ESCOLHER — cards de progressão ─────────────────────── */
-    .prog-cards {
-      display: flex; flex-direction: column; gap: 5px; width: 100%;
+    /* ── BARRA DE PROGRESSÃO (demo / praticar) ──────────────── */
+    .prog-barra {
+      display: flex; align-items: center; gap: 4px;
+      justify-content: center; flex-wrap: wrap; width: 100%;
     }
-    .prog-card {
-      display: flex; align-items: center; gap: 10px;
-      padding: 9px 12px; background: #141e2e;
-      border: 1.5px solid #1e2a3a; border-radius: 10px;
-      cursor: pointer; touch-action: manipulation;
-      transition: border-color .15s, background .15s, transform .1s;
-    }
-    .prog-card:active { transform: scale(.98); }
-    .prog-card:hover  { border-color: #4FC3F7; background: rgba(79,195,247,.05); }
-    .prog-card.ativo  { border-color: #4FC3F7; background: rgba(79,195,247,.08); }
-    .prog-card.feito  { border-color: rgba(76,175,80,.4); }
-    .prog-card__emoji { font-size: 1.2rem; flex-shrink: 0; }
-    .prog-card__info  { flex: 1; min-width: 0; }
-    .prog-card__nome  { font-size: clamp(0.72rem,2.2vw,0.88rem); font-weight: 700; color: #e8eaed; }
-    .prog-card__sub   { font-size: clamp(0.58rem,1.7vw,0.7rem); color: #5a7a8a; margin-top: 2px; }
-    .prog-card__graus {
-      font-size: clamp(0.55rem,1.6vw,0.65rem); font-weight: 700;
-      color: #4FC3F7; letter-spacing: .5px; flex-shrink: 0;
-    }
-    .prog-card__feito { font-size: 0.8rem; color: #4CAF50; flex-shrink: 0; }
-    .prog-tag {
-      font-size: 0.48rem; font-weight: 700; letter-spacing: 1px;
-      text-transform: uppercase; color: #4a6274; padding: 1px 5px;
-      border: 1px solid #2a3a4a; border-radius: 3px;
-    }
-
-    /* ── DEMO — barra de progressão visual ───────────────────── */
-    .demo-barra {
-      display: flex; align-items: center; gap: 4px; justify-content: center; flex-wrap: wrap;
-    }
-    .demo-acorde {
-      padding: 6px 9px; border-radius: 8px;
+    .prog-acorde {
+      padding: 5px 8px; border-radius: 7px;
       background: #1a2535; border: 1.5px solid #2a3a4a;
-      font-size: clamp(0.6rem,1.9vw,0.78rem); font-weight: 700;
+      font-size: clamp(0.58rem, 1.8vw, 0.74rem); font-weight: 700;
       color: #7a8fa8; text-align: center;
       transition: border-color .2s, background .2s, color .2s;
     }
-    .demo-acorde.ativo {
-      border-color: #4FC3F7;
-      background: rgba(79,195,247,.15);
-      color: #e8eaed;
-    }
-    .demo-seta { color: #2a3a4a; font-size: 0.8rem; }
+    .prog-acorde.ativo { border-color: #4FC3F7; background: rgba(79,195,247,.13); color: #e8eaed; }
+    .prog-seta { color: #2a3a4a; font-size: 0.8rem; }
 
-    /* ── PRATICAR — progresso ────────────────────────────────── */
-    .pratica-prog {
-      display: flex; gap: 6px; justify-content: center;
-    }
+    /* ── PROGRESSO (praticar) ───────────────────────────────── */
+    .pratica-dots { display: flex; gap: 6px; justify-content: center; }
     .pratica-dot {
       width: 10px; height: 10px; border-radius: 50%;
-      background: #1e2a3a; border: 2px solid #2a3a4a;
-      transition: background .18s;
+      background: #1e2a3a; border: 2px solid #2a3a4a; transition: background .18s;
     }
     .pratica-dot.atual  { background: #4FC3F7; border-color: #4FC3F7; animation: pulsar .9s ease-in-out infinite; }
-    .pratica-dot.acerto { background: #4CAF50; border-color: #4CAF50; }
+    .pratica-dot.feito  { background: #4CAF50; border-color: #4CAF50; }
 
-    /* ── CELEBRAÇÃO ──────────────────────────────────────────── */
-    .celebra-emoji { font-size: clamp(2rem,9vw,3rem); }
-    .celebra-titulo { font-size: clamp(1rem,3.6vw,1.4rem); font-weight: 900; color: #fff; text-align: center; }
-    .celebra-sub   { font-size: clamp(0.68rem,2.2vw,0.84rem); color: #7a8fa8; text-align: center; }
-    .celebra-cont  { font-size: clamp(0.6rem,1.9vw,0.76rem); color: #4CAF50; font-weight: 700; }
+    /* ── CELEBRAÇÃO ─────────────────────────────────────────── */
+    .celebra-emoji { font-size: clamp(2rem, 9vw, 3rem); }
+    .celebra-titulo { font-size: clamp(1rem, 3.6vw, 1.4rem); font-weight: 900; color: #fff; text-align: center; }
+    .celebra-sub   { font-size: clamp(0.65rem, 2vw, 0.82rem); color: #7a8fa8; text-align: center; }
 
-    /* ── BOTÕES ──────────────────────────────────────────────── */
+    /* ── BOTÕES ─────────────────────────────────────────────── */
     .btn-acao {
-      padding: 9px 18px; background: #141e2e;
+      padding: 8px 16px; background: #141e2e;
       border: 1.5px solid #263045; border-radius: 10px;
-      color: #4FC3F7; font-size: clamp(0.75rem,2.3vw,0.9rem);
+      color: #4FC3F7; font-size: clamp(0.72rem, 2.2vw, 0.88rem);
       font-weight: 700; cursor: pointer; touch-action: manipulation;
       transition: background .15s, border-color .15s;
     }
     .btn-acao:active { background: #1e2e44; border-color: #4FC3F7; }
     .btn-acao.destaque { background: #4FC3F7; color: #000; border-color: #4FC3F7; }
     .btn-acao:disabled { opacity: .4; pointer-events: none; }
+    .btns-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
 
-    /* ── NAV PADRONIZADA ─────────────────────────────────────── */
+    /* ── NAV DE FASES ───────────────────────────────────────── */
     .fase-nav {
       display: flex; align-items: center; justify-content: space-between;
       padding: 7px 12px; gap: 8px;
@@ -199,8 +155,7 @@
       width: 32px; height: 32px; background: #141e2e;
       border: 1px solid #263045; border-radius: 7px;
       color: #4FC3F7; font-size: 1.1rem; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      touch-action: manipulation;
+      display: flex; align-items: center; justify-content: center; touch-action: manipulation;
     }
     .fase-nav-btn:disabled { opacity: .3; cursor: default; pointer-events: none; }
     .fase-dots-row { display: flex; gap: 5px; }
@@ -211,45 +166,58 @@
     .fase-dot.ativa { background: #4FC3F7; }
     .fase-dot.feita { background: #4CAF50; }
 
-    /* ── TECLADO ─────────────────────────────────────────────── */
+    /* ── PIANO STAGE ────────────────────────────────────────── */
+    /* REGRA: piano sempre C4-B5 (2 oitavas). Staff acima. Não alterar. */
     .piano-stage {
-      background: #111827; padding: 8px 0 12px;
-      border-top: 3px solid #000; flex: 0 0 45dvh;
-      display: flex; align-items: stretch; position: relative;
-      --key-h:    clamp(140px, 38dvh, 300px);
-      --key-bk-h: clamp( 84px, 23dvh, 180px);
+      background: #111827; border-top: 3px solid #000;
+      flex: 0 0 52dvh;                       /* inclui espaço para staff */
+      display: flex; flex-direction: column; /* staff acima, piano abaixo */
+      align-items: stretch;
+      --key-h:    clamp(130px, 34dvh, 260px);
+      --key-bk-h: clamp( 78px, 20dvh, 156px);
     }
     @media (orientation: landscape) {
       .piano-stage {
-        flex: 1; border-top: none; border-left: 3px solid #000; padding: 8px 0;
-        --key-h:    clamp(130px, 78dvh, 340px);
-        --key-bk-h: clamp( 78px, 47dvh, 204px);
+        flex: 1; border-top: none; border-left: 3px solid #000;
+        --key-h:    clamp(120px, 72dvh, 320px);
+        --key-bk-h: clamp( 72px, 43dvh, 192px);
       }
     }
-    .piano-stage #piano-prog {
-      width: 100%; display: flex; align-items: center;
+
+    /* Staff container: fixo no topo do piano-stage */
+    #staff-container {
+      flex-shrink: 0; padding: 2px 8px 0;
+      background: #0d1117; border-bottom: 1px solid #1a2535;
+    }
+
+    /* Keyboard container: preenche resto */
+    #piano-wrap {
+      flex: 1; display: flex; align-items: center; position: relative;
+    }
+    #piano-prog {
+      width: 100%;
     }
     .piano-stage .piano-wrap.responsive { overflow: visible; padding-bottom: 0; }
-    .piano-stage .piano.responsive { width: 100%; }
-    .piano-stage .key__label { font-size: clamp(0.4rem,1.2vw,0.58rem); font-weight: 700; color: #888; }
-    .piano-stage .key { border-color: #444; }
+    .piano-stage .piano.responsive      { width: 100%; }
+    .piano-stage .key__label            { font-size: clamp(0.38rem,1vw,0.55rem); font-weight: 700; color: #888; }
+    .piano-stage .key                   { border-color: #444; }
 
-    /* ── VL OVERLAY (voice leading tags) ────────────────────── */
+    /* Voice leading overlay */
     #vl-overlay {
-      position: absolute; top: 0; left: 0; right: 0; pointer-events: none;
+      position: absolute; top: 0; left: 0; right: 0; height: 0;
+      pointer-events: none; z-index: 10;
     }
     .vl-tag {
-      position: absolute;
-      font-size: .55rem; font-weight: 900; padding: 1px 3px;
+      position: absolute; top: 4px;
+      font-size: .52rem; font-weight: 900; padding: 1px 3px;
       border-radius: 3px; transform: translateX(-50%);
-      top: 2px; z-index: 10;
-      animation: vl-pop .25s ease-out;
+      animation: vl-pop .2s ease-out;
     }
     .vl-ok  { background: #4CAF50; color: #fff; }
     .vl-med { background: #F9A825; color: #000; }
     .vl-big { background: #E53935; color: #fff; }
 
-    @keyframes vl-pop { from { opacity:0; transform:translateX(-50%) scale(.5); } to { opacity:1; transform:translateX(-50%) scale(1); } }
+    @keyframes vl-pop { from{opacity:0;transform:translateX(-50%) scale(.5)} to{opacity:1;transform:translateX(-50%) scale(1)} }
     @keyframes pulsar { 0%,100%{opacity:1} 50%{opacity:.5} }
   </style>
 </head>
@@ -269,59 +237,54 @@
 
     <div class="panel-content">
 
-      <!-- Conceito: inversões -->
+      <!-- CONCEITO: inversões -->
       <div class="screen" id="s-conceito">
         <span class="fase-label">Entenda</span>
         <div class="fase-titulo">Mesmo acorde, posições diferentes</div>
-        <div class="fase-texto">Um acorde tem 3 notas. A ordem em que estão dispostas é a <strong style="color:#4FC3F7">inversão</strong>. Mudar a inversão evita saltos grandes no piano.</div>
+        <div class="fase-texto">Um acorde tem 3 notas. A <strong style="color:#4FC3F7">inversão</strong> muda qual nota fica mais baixa — e permite que os dedos se movam o mínimo possível entre acordes.</div>
         <div class="inv-btns">
           <button class="inv-btn ativo" onclick="mostrarInversao(0)">Posição raiz</button>
-          <button class="inv-btn" onclick="mostrarInversao(1)">1ª inversão</button>
-          <button class="inv-btn" onclick="mostrarInversao(2)">2ª inversão</button>
+          <button class="inv-btn"       onclick="mostrarInversao(1)">1ª inversão</button>
+          <button class="inv-btn"       onclick="mostrarInversao(2)">2ª inversão</button>
         </div>
-        <div class="inv-info" id="inv-info">
-          <strong>Dó Maior — Posição raiz</strong><br>
-          <span class="notas">Dó4 — Mi4 — Sol4</span><br>
-          <span style="color:#4a6274">Nota mais baixa: fundamental</span>
-        </div>
-        <button class="btn-acao" onclick="irFase('escolher')">▶ Ver as progressões</button>
+        <div class="inv-info" id="inv-info"></div>
+        <button class="btn-acao destaque" onclick="irFase('demo')">▶ Ver a progressão</button>
       </div>
 
-      <!-- Escolher progressão -->
-      <div class="screen" id="s-escolher">
-        <span class="fase-label">Escolha</span>
-        <div class="fase-titulo" id="escolher-titulo">Qual progressão tocar?</div>
-        <div class="prog-cards" id="prog-cards"></div>
-      </div>
-
-      <!-- Demo -->
+      <!-- DEMO: progressão animada -->
       <div class="screen" id="s-demo">
         <span class="fase-label">Ouça</span>
-        <div class="fase-titulo" id="demo-titulo"></div>
-        <div class="demo-barra" id="demo-barra"></div>
-        <div class="fase-texto" id="demo-info">Veja como os dedos se movem o mínimo possível</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
-          <button class="btn-acao" id="btn-tocar-demo" onclick="tocarDemo()">▶ Tocar</button>
-          <button class="btn-acao destaque" id="btn-ir-praticar" style="display:none" onclick="irFase('praticar')">▶ Praticar</button>
+        <div class="fase-titulo" id="demo-titulo">I – vi – IV – V</div>
+        <div class="fase-texto">Veja como os dedos mal se movem. As etiquetas mostram quantos semitons cada nota se desloca.</div>
+        <div class="prog-barra" id="demo-barra"></div>
+        <div class="btns-row">
+          <button class="btn-acao" id="btn-demo-tocar" onclick="tocarDemo()">▶ Tocar</button>
+          <button class="btn-acao destaque" id="btn-demo-praticar" style="display:none" onclick="irFase('praticar')">▶ Praticar</button>
         </div>
       </div>
 
-      <!-- Praticar -->
+      <!-- PRATICAR: passo a passo, display-only -->
       <div class="screen" id="s-praticar">
-        <span class="fase-label">Pratique</span>
+        <span class="fase-label">Pratique no piano real</span>
         <div class="fase-titulo" id="pratica-titulo"></div>
-        <div class="demo-barra" id="pratica-barra"></div>
-        <div class="pratica-prog" id="pratica-prog"></div>
-        <div class="fase-texto" id="pratica-instrucao">Toque as 3 notas do acorde</div>
+        <div class="prog-barra" id="pratica-barra"></div>
+        <div class="pratica-dots" id="pratica-dots"></div>
+        <div class="fase-texto" id="pratica-instrucao">Toque este acorde no seu piano, depois avance</div>
+        <div class="btns-row">
+          <button class="btn-acao" id="btn-repetir" onclick="repetirAcorde()">↻ Repetir</button>
+          <button class="btn-acao destaque" id="btn-proximo" onclick="proximoAcorde()">Próximo →</button>
+        </div>
       </div>
 
-      <!-- Celebração -->
+      <!-- CELEBRAÇÃO -->
       <div class="screen" id="s-celebra">
         <div class="celebra-emoji" id="celebra-emoji">🎉</div>
         <div class="celebra-titulo" id="celebra-titulo"></div>
-        <div class="celebra-sub" id="celebra-sub"></div>
-        <div class="celebra-cont" id="celebra-cont"></div>
-        <button class="btn-acao destaque" id="btn-proximo">Próxima progressão →</button>
+        <div class="celebra-sub"   id="celebra-sub"></div>
+        <div class="btns-row">
+          <button class="btn-acao" onclick="irFase('demo')">↻ Repetir</button>
+          <button class="btn-acao destaque" id="btn-outra-chave" onclick="proximaChave()">Próxima tonalidade →</button>
+        </div>
       </div>
 
     </div><!-- panel-content -->
@@ -331,320 +294,183 @@
       <div class="fase-dots-row" id="fase-dots-row"></div>
       <button class="fase-nav-btn" id="btn-fase-next" onclick="faseSeguinte()">›</button>
     </div>
-  </div>
+  </div><!-- digital-panel -->
 
+  <!-- PIANO STAGE: staff acima + teclado abaixo -->
   <div class="piano-stage">
-    <div id="piano-prog"></div>
-    <div id="vl-overlay"></div>
+    <div id="staff-container"></div>
+    <div id="piano-wrap">
+      <div id="piano-prog"></div>
+      <div id="vl-overlay"></div>
+    </div>
   </div>
 
-</div>
+</div><!-- piano-body -->
 <script src="base.js"></script>
 <script>
 'use strict';
 
 /* ══════════════════════════════════════════════════════════════
-   TEORIA — INVERSÕES E VOICE LEADING
-   Todos os offsets são relativos à tônica (C4 = MIDI 60).
-   Transposição: somar o offset da nova tônica.
+   TEORIA — I–vi–IV–V COM INVERSÕES DE MENOR DESLOCAMENTO
+   Offsets MIDI relativos à tônica (ex: Dó4 = MIDI 60).
+
+   Em Dó: I=C4E4G4, vi=C4E4A4 (+2 apenas), IV=C4F4A4 (+1 apenas), V=D4G4B4 (+2×3)
+   O padrão matemático é o MESMO em qualquer tonalidade — apenas transposto.
 ══════════════════════════════════════════════════════════════ */
+
+// Offsets MIDI relativos à tônica (tônica = offset 0)
+const PROGRESSAO = [
+  { grau:'I',  nome:'Maior',       inv:'raiz', offsets:[ 0, 4, 7] },
+  { grau:'vi', nome:'menor',       inv:'1ª',   offsets:[ 0, 4, 9] },
+  { grau:'IV', nome:'Maior',       inv:'2ª',   offsets:[ 0, 5, 9] },
+  { grau:'V',  nome:'Maior',       inv:'2ª',   offsets:[ 2, 7,11] },
+];
+
+// 7 tonalidades — piano sempre em C4-B5 (2 oitavas)
+const CHAVES = [
+  { raiz:'C4', label:'Dó',  tonica:'Dó'  },
+  { raiz:'D4', label:'Ré',  tonica:'Ré'  },
+  { raiz:'E4', label:'Mi',  tonica:'Mi'  },
+  { raiz:'F4', label:'Fá',  tonica:'Fá'  },
+  { raiz:'G4', label:'Sol', tonica:'Sol' },
+  { raiz:'A4', label:'Lá',  tonica:'Lá'  },
+  { raiz:'B4', label:'Si',  tonica:'Si'  },
+];
+
+// Inversões de Dó Maior para o conceito (fixas)
+const INV_CONCEITO = [
+  { titulo:'Posição raiz', midis:[60,64,67], desc:'Dó mais baixo — fundamental' },
+  { titulo:'1ª inversão',  midis:[64,67,72], desc:'Mi mais baixo — 3ª ao fundo' },
+  { titulo:'2ª inversão',  midis:[67,72,76], desc:'Sol mais baixo — 5ª ao fundo' },
+];
 
 const NOTA_PT = {
   'C':'Dó','C#':'Dó♯','D':'Ré','D#':'Ré♯','E':'Mi',
   'F':'Fá','F#':'Fá♯','G':'Sol','G#':'Sol♯','A':'Lá','A#':'Lá♯','B':'Si',
 };
-function nomePT(midi) {
-  return (NOTA_PT[midiToNote(midi).replace(/\d/,'')] || '') + midiToNote(midi).replace(/[A-G]#?/,'');
-}
-function nomeNota(noteStr) {
-  return NOTA_PT[noteStr.replace(/\d/,'')] || noteStr.replace(/\d/,'');
-}
-
-// Dó Maior — 3 inversões (para tela de conceito)
-const INV_CONCEITO = [
-  { titulo:'Posição raiz',  notas:[60,64,67], desc:'Nota mais baixa: fundamental' },
-  { titulo:'1ª inversão',   notas:[64,67,72], desc:'Nota mais baixa: 3ª' },
-  { titulo:'2ª inversão',   notas:[67,72,76], desc:'Nota mais baixa: 5ª' },
-];
-
-// 5 Progressões — offsets MIDI relativos à tônica (60 = C4)
-const PROGRESSOES = [
-  {
-    id:'cadencia', nome:'Cadência Perfeita', tag:'Clássica', emoji:'🎼',
-    descricao:'A base de tudo — tensão e resolução',
-    grausNomes:['I','IV','V','I'],
-    inversoes:[[0,4,7],[0,5,9],[2,7,11],[4,7,12]],
-    // C4 E4 G4 → C4 F4 A4 → D4 G4 B4 → E4 G4 C5
-  },
-  {
-    id:'pop', nome:'4 Acordes Pop', tag:'Pop', emoji:'🎸',
-    descricao:'Usada em centenas de músicas',
-    grausNomes:['I','V','vi','IV'],
-    inversoes:[[0,4,7],[-1,2,7],[0,4,9],[0,5,9]],
-    // C4 E4 G4 → B3 D4 G4 → C4 E4 A4 → C4 F4 A4
-  },
-  {
-    id:'anos50', nome:'Anos 50', tag:'Retro', emoji:'🎷',
-    descricao:'"Stand By Me" — o standard do rock',
-    grausNomes:['I','vi','IV','V'],
-    inversoes:[[0,4,7],[0,4,9],[0,5,9],[2,7,11]],
-    // C4 E4 G4 → C4 E4 A4 → C4 F4 A4 → D4 G4 B4
-  },
-  {
-    id:'blues', nome:'Blues Simples', tag:'Blues', emoji:'🎶',
-    descricao:'O coração do blues e do rock',
-    grausNomes:['I','IV','I','V'],
-    inversoes:[[0,4,7],[0,5,9],[0,4,7],[-1,2,7]],
-    // C4 E4 G4 → C4 F4 A4 → C4 E4 G4 → B3 D4 G4
-  },
-  {
-    id:'melancolica', nome:'Melancólica', tag:'Emotiva', emoji:'🌙',
-    descricao:'Começa pelo vi — cria beleza melancólica',
-    grausNomes:['vi','IV','I','V'],
-    inversoes:[[0,4,9],[0,5,9],[0,4,7],[-1,2,7]],
-    // C4 E4 A4 → C4 F4 A4 → C4 E4 G4 → B3 D4 G4
-  },
-];
-
-const CHAVES = [
-  { raiz:'C4', label:'Dó' }, { raiz:'D4', label:'Ré' },
-  { raiz:'E4', label:'Mi' }, { raiz:'F4', label:'Fá' },
-  { raiz:'G4', label:'Sol'}, { raiz:'A4', label:'Lá' },
-  { raiz:'B4', label:'Si' },
-];
-
-function getChordMidis(tonicMidi, offsets) {
-  return offsets.map(o => tonicMidi + o);
-}
-
-function getPianoRange(tonicMidi, prog) {
-  const all = prog.inversoes.flat().map(o => tonicMidi + o);
-  return { start: midiToNote(Math.min(...all) - 1), end: midiToNote(Math.max(...all) + 1) };
-}
+function nomeNota(noteStr) { return NOTA_PT[noteStr.replace(/\d/,'')] || noteStr.replace(/\d/,''); }
 
 /* ══════════════════════════════════════════════════════════════
    ESTADO
 ══════════════════════════════════════════════════════════════ */
-let chaveIdx   = 0;
-let progIdx    = 0;
-let faseAtual  = 'conceito';
-let modoFacil  = Settings.getEasyMode();
-let animTimer  = null;
-let etapaIdx   = 0;
-let notasTocadas = new Set();
-let invAtiva   = 0;
+let chaveIdx  = 0;
+let faseAtual = 'conceito';
+let etapaIdx  = 0;
+let modoFacil = Settings.getEasyMode();
+let animTimer = null;
+let invAtiva  = 0;
+let invAnterior = null;
 
-const FASES_ORDEM = ['conceito', 'escolher', 'demo', 'praticar'];
+const FASES_ORDEM = ['conceito','demo','praticar'];
 
 /* ══════════════════════════════════════════════════════════════
-   TECLADO
+   PIANO + STAFF — criados UMA VEZ, reutilizados
+   Piano fixo C4-B5 (2 oitavas), como em M3/M4.
 ══════════════════════════════════════════════════════════════ */
-let kb = null;
+const kb = createPianoKeyboard(document.getElementById('piano-prog'), {
+  startNote: 'C4', endNote: 'B5',
+  showLabels: true, responsive: true,
+  onNoteOn(noteStr) { AudioEngine.play(noteStr); },
+});
 
-function criarPiano(tonicMidi, prog) {
-  const { start, end } = getPianoRange(tonicMidi, prog);
-  const container = document.getElementById('piano-prog');
-  container.innerHTML = '';
-  kb = createPianoKeyboard(container, {
-    startNote: start, endNote: end,
-    showLabels: true, responsive: true,
-    onNoteOn(noteStr) {
-      AudioEngine.play(noteStr);
-      if (faseAtual === 'praticar') checarPratica(noteStr);
-    },
-  });
-}
+const staff = createStaff(document.getElementById('staff-container'));
 
 /* ══════════════════════════════════════════════════════════════
    HELPERS
 ══════════════════════════════════════════════════════════════ */
 const tonicMidi = () => noteToMidi(CHAVES[chaveIdx].raiz);
-const progAtual = () => PROGRESSOES[progIdx];
-
-/* ══════════════════════════════════════════════════════════════
-   VOICE LEADING OVERLAY
-══════════════════════════════════════════════════════════════ */
-function clearVLTags() {
-  document.getElementById('vl-overlay').innerHTML = '';
+function getChordMidis(stepIdx) {
+  const t = tonicMidi();
+  return PROGRESSAO[stepIdx].offsets.map(o => t + o);
 }
 
-function mostrarMovimento(prevMidis, nextMidis) {
-  clearVLTags();
-  const overlay = document.getElementById('vl-overlay');
-  const stage   = document.querySelector('.piano-stage');
-  const stageRect = stage.getBoundingClientRect();
+function nomeAcorde(stepIdx) {
+  const p = PROGRESSAO[stepIdx];
+  const t = tonicMidi();
+  const rootNote = midiToNote(t + p.offsets[0]);
+  return nomeNota(rootNote) + ' ' + p.nome + ' (' + p.inv + ')';
+}
 
+/* ══════════════════════════════════════════════════════════════
+   VL OVERLAY — etiquetas de movimento entre acordes
+══════════════════════════════════════════════════════════════ */
+function clearVL() { document.getElementById('vl-overlay').innerHTML = ''; }
+
+function mostrarVL(prevMidis, nextMidis) {
+  clearVL();
+  const overlay  = document.getElementById('vl-overlay');
+  const wrapRect = document.getElementById('piano-wrap').getBoundingClientRect();
   nextMidis.forEach((mB, i) => {
     const delta = mB - prevMidis[i];
-    const keyEl = kb && kb.getKeyElement(midiToNote(mB));
+    const keyEl = kb.getKeyElement(midiToNote(mB));
     if (!keyEl) return;
-    const rect = keyEl.getBoundingClientRect();
+    const kr  = keyEl.getBoundingClientRect();
     const tag = document.createElement('div');
     tag.className = 'vl-tag vl-' + (Math.abs(delta) <= 2 ? 'ok' : Math.abs(delta) <= 4 ? 'med' : 'big');
     tag.textContent = delta === 0 ? '=' : (delta > 0 ? '+' : '') + delta;
-    tag.style.left = (rect.left - stageRect.left + rect.width / 2) + 'px';
+    tag.style.left  = (kr.left - wrapRect.left + kr.width / 2) + 'px';
     overlay.appendChild(tag);
   });
 }
 
 /* ══════════════════════════════════════════════════════════════
-   CONSTRUTORES
+   CONCEITO — inversões interativas (Dó fixo)
 ══════════════════════════════════════════════════════════════ */
-function buildChaveBar() {
-  const el = document.getElementById('chave-bar');
-  el.innerHTML = '';
-  const concluidas = getProgresso()?.concluidas || [];
-  CHAVES.forEach((c, i) => {
-    const feito = PROGRESSOES.some(p => concluidas.includes(p.id + '_' + c.raiz));
-    const dot = document.createElement('div');
-    dot.className = 'chave-dot' + (i === chaveIdx ? ' ativo' : feito ? ' feito' : '');
-    dot.innerHTML = `<div class="chave-dot__c"></div><div class="chave-dot__l">${c.label}</div>`;
-    dot.addEventListener('click', () => {
-      if (i === chaveIdx) return;
-      chaveIdx = i;
-      buildChaveBar();
-      if (faseAtual === 'demo' || faseAtual === 'praticar') {
-        criarPiano(tonicMidi(), progAtual());
-        irFase('demo');
-      }
-    });
-    el.appendChild(dot);
-  });
-}
-
-function buildProgCards() {
-  const el = document.getElementById('prog-cards');
-  el.innerHTML = '';
-  const concluidas = getProgresso()?.concluidas || [];
-  PROGRESSOES.forEach((p, i) => {
-    const feito = concluidas.includes(p.id + '_' + CHAVES[chaveIdx].raiz);
-    const card = document.createElement('div');
-    card.className = 'prog-card' + (i === progIdx ? ' ativo' : '') + (feito ? ' feito' : '');
-    card.innerHTML = `
-      <div class="prog-card__emoji">${p.emoji}</div>
-      <div class="prog-card__info">
-        <div class="prog-card__nome">${p.nome} <span class="prog-tag">${p.tag}</span></div>
-        <div class="prog-card__sub">${p.descricao}</div>
-      </div>
-      <div class="prog-card__graus">${p.grausNomes.join('·')}</div>
-      ${feito ? '<div class="prog-card__feito">✓</div>' : ''}`;
-    card.addEventListener('click', () => {
-      progIdx = i;
-      criarPiano(tonicMidi(), p);
-      irFase('demo');
-    });
-    el.appendChild(card);
-  });
-}
-
-function buildDemoBarra(containerId, prog, etapaAtiva = -1) {
-  const el = document.getElementById(containerId);
-  el.innerHTML = '';
-  prog.grausNomes.forEach((g, i) => {
-    if (i > 0) {
-      const seta = document.createElement('div');
-      seta.className = 'demo-seta'; seta.textContent = '→';
-      el.appendChild(seta);
-    }
-    const div = document.createElement('div');
-    div.className = 'demo-acorde' + (i === etapaAtiva ? ' ativo' : '');
-    div.dataset.idx = i;
-    const midis = getChordMidis(tonicMidi(), prog.inversoes[i]);
-    div.innerHTML = `<div>${g}</div><div style="font-size:.75em;color:#7a8fa8;margin-top:2px">${midis.map(m=>nomeNota(midiToNote(m))).join('-')}</div>`;
-    el.appendChild(div);
-  });
-}
-
-function buildPraticaProg(n) {
-  const el = document.getElementById('pratica-prog');
-  el.innerHTML = '';
-  for (let i = 0; i < n; i++) {
-    const d = document.createElement('div');
-    d.className = 'pratica-dot' + (i === 0 ? ' atual' : '');
-    el.appendChild(d);
-  }
-}
-
-/* ══════════════════════════════════════════════════════════════
-   CONCEITO — INVERSÕES
-══════════════════════════════════════════════════════════════ */
-let invAnterior = null;
-
 function mostrarInversao(idx) {
-  const inv = INV_CONCEITO[idx];
   invAtiva = idx;
-
-  // Atualiza botões
   document.querySelectorAll('.inv-btn').forEach((b, i) => b.classList.toggle('ativo', i === idx));
 
-  // Piano destaca as notas
-  if (kb) {
-    kb.clearHighlights(); kb.clearHints();
-    inv.notas.forEach(m => kb.highlight(midiToNote(m)));
+  const inv = INV_CONCEITO[idx];
+  kb.clearHighlights();
+  inv.midis.forEach(m => kb.highlight(midiToNote(m)));
+  staff.showNotes(inv.midis);
 
-    // Mostra voice leading se havia inversão anterior
-    if (invAnterior !== null && invAnterior !== idx) {
-      mostrarMovimento(INV_CONCEITO[invAnterior].notas, inv.notas);
-    } else {
-      clearVLTags();
-    }
-  }
+  if (invAnterior !== null && invAnterior !== idx)
+    mostrarVL(INV_CONCEITO[invAnterior].midis, inv.midis);
+  else clearVL();
 
-  // Informação
-  const nomesNotas = inv.notas.map(m => nomePT(m)).join(' — ');
+  const nomesStr = inv.midis.map(m => nomeNota(midiToNote(m))).join(' — ');
   document.getElementById('inv-info').innerHTML =
-    `<strong>Dó Maior — ${inv.titulo}</strong><br>
-     <span class="notas">${nomesNotas}</span><br>
+    `<strong>Dó Maior · ${inv.titulo}</strong><br>
+     <span class="notas">${nomesStr}</span><br>
      <span style="color:#4a6274">${inv.desc}</span>`;
 
-  AudioEngine.playChord(inv.notas.map(midiToNote), 40, 1.0);
+  AudioEngine.playChord(inv.midis.map(midiToNote), 40, 1.0);
   invAnterior = idx;
 }
 
 /* ══════════════════════════════════════════════════════════════
-   DEMO — ANIMAÇÃO AUTO
+   DEMO — animação automática com VL
 ══════════════════════════════════════════════════════════════ */
 function tocarDemo() {
   if (animTimer) { clearTimeout(animTimer); animTimer = null; }
-  clearVLTags();
-  const prog = progAtual();
-  document.getElementById('btn-tocar-demo').disabled = true;
-  document.getElementById('btn-ir-praticar').style.display = 'none';
+  clearVL();
+  document.getElementById('btn-demo-tocar').disabled = true;
+  document.getElementById('btn-demo-praticar').style.display = 'none';
 
   let step = 0;
   let prevMidis = null;
 
   function passo() {
-    // Apaga passo anterior
-    if (step > 0) {
-      document.querySelector('#demo-barra .demo-acorde.ativo')?.classList.remove('ativo');
-      kb.clearHighlights();
-      clearVLTags();
-    }
-    if (step >= prog.inversoes.length) {
-      document.getElementById('btn-tocar-demo').disabled = false;
-      document.getElementById('btn-tocar-demo').textContent = '↻ Ouvir de novo';
-      document.getElementById('btn-ir-praticar').style.display = '';
-      document.getElementById('demo-info').textContent = 'Notou como os dedos mal se movem?';
+    document.querySelectorAll('#demo-barra .prog-acorde').forEach((el, i) =>
+      el.classList.toggle('ativo', i === step));
+    kb.clearHighlights(); clearVL();
+
+    if (step >= PROGRESSAO.length) {
+      document.getElementById('btn-demo-tocar').disabled = false;
+      document.getElementById('btn-demo-tocar').textContent = '↻ Ouvir de novo';
+      document.getElementById('btn-demo-praticar').style.display = '';
       return;
     }
 
-    const midis = getChordMidis(tonicMidi(), prog.inversoes[step]);
-    const notes = midis.map(midiToNote);
-
-    // Destaca na barra
-    document.querySelectorAll('#demo-barra .demo-acorde')[step]?.classList.add('ativo');
-
-    // Mostra voice leading
-    if (prevMidis) mostrarMovimento(prevMidis, midis);
-
-    // Destaca no piano e toca
+    const midis = getChordMidis(step);
+    if (prevMidis) mostrarVL(prevMidis, midis);
     midis.forEach(m => kb.highlight(midiToNote(m)));
-    AudioEngine.playChord(notes, 40, 1.0);
-
+    staff.showNotes(midis);
+    AudioEngine.playChord(midis.map(midiToNote), 40, 1.0);
     prevMidis = midis;
     step++;
-    animTimer = setTimeout(passo, 1200);
+    animTimer = setTimeout(passo, 1300);
   }
 
   AudioEngine.init();
@@ -652,62 +478,56 @@ function tocarDemo() {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   PRATICAR — DETECÇÃO EXATA
+   PRATICAR — display-only, passo manual
 ══════════════════════════════════════════════════════════════ */
-function mostrarHintPratica() {
-  kb.clearHints(); kb.clearNextHints(); kb.clearHighlights();
-  const prog = progAtual();
-  const midis = getChordMidis(tonicMidi(), prog.inversoes[etapaIdx]);
-  const notes = midis.map(midiToNote);
+let prevMidisPratica = null;
 
-  // Hints
-  notes.forEach(n => modoFacil ? kb.hint(n) : kb.nextHint(n));
+function mostrarEtapa() {
+  const midis = getChordMidis(etapaIdx);
+  kb.clearHighlights();
+  midis.forEach(m => kb.highlight(midiToNote(m)));
+  staff.showNotes(midis);
+
+  if (prevMidisPratica) mostrarVL(prevMidisPratica, midis);
+  else clearVL();
 
   // Barra: destaca acorde atual
-  document.querySelectorAll('#pratica-barra .demo-acorde').forEach((el, i) =>
+  document.querySelectorAll('#pratica-barra .prog-acorde').forEach((el, i) =>
     el.classList.toggle('ativo', i === etapaIdx));
 
+  // Dots
+  const dots = document.querySelectorAll('.pratica-dot');
+  dots.forEach((d, i) => {
+    d.classList.remove('atual','feito');
+    if (i < etapaIdx)  d.classList.add('feito');
+    if (i === etapaIdx) d.classList.add('atual');
+  });
+
+  // Instrução
+  const p = PROGRESSAO[etapaIdx];
+  const t = tonicMidi();
+  const rootMidi = t + p.offsets[0];
+  const notasStr = p.offsets.map(o => nomeNota(midiToNote(t + o))).join(' + ');
+  document.getElementById('pratica-titulo').textContent =
+    p.grau + ' — ' + nomeNota(midiToNote(rootMidi)) + ' ' + p.nome;
   document.getElementById('pratica-instrucao').textContent =
-    prog.grausNomes[etapaIdx] + ' — ' + notes.map(nomeNota).join(' + ');
+    notasStr + ' · ' + p.inv + ' inversão · toque no piano real e avance';
+
+  AudioEngine.playChord(midis.map(midiToNote), 40, 1.0);
 }
 
-function checarPratica(noteStr) {
-  const prog = progAtual();
-  const alvo = getChordMidis(tonicMidi(), prog.inversoes[etapaIdx]);
-  const midi  = noteToMidi(noteStr);
+function repetirAcorde() {
+  const midis = getChordMidis(etapaIdx);
+  AudioEngine.playChord(midis.map(midiToNote), 40, 1.0);
+}
 
-  if (!alvo.includes(midi)) {
-    const keyEl = kb.getKeyElement(noteStr);
-    if (keyEl) {
-      keyEl.classList.remove('shake');
-      void keyEl.offsetWidth;
-      keyEl.classList.add('shake');
-      keyEl.addEventListener('animationend', () => keyEl.classList.remove('shake'), { once: true });
-    }
-    return;
-  }
-
-  notasTocadas.add(midi);
-  kb.highlight(noteStr);
-
-  if (notasTocadas.size >= alvo.length) {
-    notasTocadas.clear();
-
-    // Dot: atual → acerto
-    document.querySelectorAll('.pratica-dot')[etapaIdx]?.classList.replace('atual', 'acerto');
-
-    // Reforço auditivo
-    AudioEngine.playChord(alvo.map(midiToNote), 30, 1.0);
-    etapaIdx++;
-
-    if (etapaIdx >= prog.inversoes.length) {
-      setTimeout(() => { kb.clearHighlights(); irFase('celebra'); }, 800);
-    } else {
-      if (etapaIdx < document.querySelectorAll('.pratica-dot').length) {
-        document.querySelectorAll('.pratica-dot')[etapaIdx]?.classList.add('atual');
-      }
-      setTimeout(() => { kb.clearHighlights(); mostrarHintPratica(); }, 500);
-    }
+function proximoAcorde() {
+  prevMidisPratica = getChordMidis(etapaIdx);
+  etapaIdx++;
+  if (etapaIdx >= PROGRESSAO.length) {
+    irFase('celebra');
+  } else {
+    mostrarEtapa();
   }
 }
 
@@ -717,14 +537,13 @@ function checarPratica(noteStr) {
 function atualizarFaseNav() {
   const idx = FASES_ORDEM.indexOf(faseAtual);
   document.getElementById('btn-fase-prev').disabled = idx <= 0;
-  document.getElementById('btn-fase-next').disabled =
-    faseAtual === 'celebra' || faseAtual === 'praticar';
-  const dotsEl = document.getElementById('fase-dots-row');
-  dotsEl.innerHTML = '';
+  document.getElementById('btn-fase-next').disabled = faseAtual === 'celebra' || idx >= FASES_ORDEM.length - 1;
+  const row = document.getElementById('fase-dots-row');
+  row.innerHTML = '';
   FASES_ORDEM.forEach((f, i) => {
     const d = document.createElement('div');
     d.className = 'fase-dot' + (i === idx ? ' ativa' : i < idx ? ' feita' : '');
-    dotsEl.appendChild(d);
+    row.appendChild(d);
   });
 }
 
@@ -732,7 +551,6 @@ function faseAnterior() {
   const idx = FASES_ORDEM.indexOf(faseAtual);
   if (idx > 0) irFase(FASES_ORDEM[idx - 1]);
 }
-
 function faseSeguinte() {
   const idx = FASES_ORDEM.indexOf(faseAtual);
   if (idx >= 0 && idx < FASES_ORDEM.length - 1) irFase(FASES_ORDEM[idx + 1]);
@@ -741,98 +559,112 @@ function faseSeguinte() {
 /* ══════════════════════════════════════════════════════════════
    NAVEGAÇÃO DE FASES
 ══════════════════════════════════════════════════════════════ */
+function buildBarraProgressao(containerId) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = '';
+  PROGRESSAO.forEach((p, i) => {
+    if (i > 0) {
+      const seta = document.createElement('div');
+      seta.className = 'prog-seta'; seta.textContent = '→';
+      el.appendChild(seta);
+    }
+    const card = document.createElement('div');
+    card.className = 'prog-acorde';
+    card.dataset.idx = i;
+    const t = tonicMidi();
+    const rootMidi = t + p.offsets[0];
+    card.innerHTML = `<div>${p.grau}</div><div style="font-size:.8em;color:#7a8fa8;margin-top:1px">${nomeNota(midiToNote(rootMidi))}</div>`;
+    el.appendChild(card);
+  });
+}
+
 function irFase(fase) {
   if (animTimer) { clearTimeout(animTimer); animTimer = null; }
-  etapaIdx = 0; notasTocadas.clear();
-  if (kb) { kb.clearHighlights(); kb.clearHints(); kb.clearNextHints(); }
-  clearVLTags();
-  invAnterior = null;
+  kb.clearHighlights(); kb.clearHints(); kb.clearNextHints(); staff.clear(); clearVL();
+  etapaIdx = 0; prevMidisPratica = null; invAnterior = null;
 
   faseAtual = fase;
-  ['conceito','escolher','demo','praticar','celebra'].forEach(f =>
+  ['conceito','demo','praticar','celebra'].forEach(f =>
     document.getElementById('s-' + f)?.classList.remove('active'));
   document.getElementById('s-' + fase)?.classList.add('active');
 
-  const prog = progAtual();
-  const cfg  = CHAVES[chaveIdx];
+  const cfg = CHAVES[chaveIdx];
 
   if (fase === 'conceito') {
-    // Piano de conceito fixo em C4 range para as inversões
-    const container = document.getElementById('piano-prog');
-    container.innerHTML = '';
-    kb = createPianoKeyboard(container, {
-      startNote: 'B3', endNote: 'E5',
-      showLabels: true, responsive: true,
-      onNoteOn(noteStr) { AudioEngine.play(noteStr); },
-    });
     mostrarInversao(invAtiva);
-    TTS.falar('Um acorde tem 3 notas. A inversão muda qual nota fica mais baixa.');
-  }
-
-  if (fase === 'escolher') {
-    buildProgCards();
-    document.getElementById('escolher-titulo').textContent =
-      'Tonalidade: ' + cfg.label + ' Maior';
-    TTS.falar('Escolha uma progressão');
+    TTS.falar('Inversões — mesmo acorde, posições diferentes');
   }
 
   if (fase === 'demo') {
-    criarPiano(tonicMidi(), prog);
+    buildBarraProgressao('demo-barra');
     document.getElementById('demo-titulo').textContent =
-      prog.nome + ' · ' + cfg.label + ' Maior';
-    buildDemoBarra('demo-barra', prog);
-    document.getElementById('btn-tocar-demo').disabled = false;
-    document.getElementById('btn-tocar-demo').textContent = '▶ Tocar';
-    document.getElementById('btn-ir-praticar').style.display = 'none';
-    document.getElementById('demo-info').textContent = 'Veja como os dedos se movem o mínimo possível';
-    TTS.falar(prog.nome + ' em ' + cfg.label + ' Maior');
+      'I – vi – IV – V em ' + cfg.tonica + ' Maior';
+    document.getElementById('btn-demo-tocar').disabled = false;
+    document.getElementById('btn-demo-tocar').textContent = '▶ Tocar';
+    document.getElementById('btn-demo-praticar').style.display = 'none';
+    TTS.falar('I vi IV V em ' + cfg.tonica + ' Maior');
   }
 
   if (fase === 'praticar') {
-    criarPiano(tonicMidi(), prog);
-    document.getElementById('pratica-titulo').textContent =
-      prog.nome + ' · ' + cfg.label;
-    buildDemoBarra('pratica-barra', prog);
-    buildPraticaProg(prog.inversoes.length);
-    mostrarHintPratica();
-    TTS.falar('Sua vez! Toque os acordes em ordem');
+    buildBarraProgressao('pratica-barra');
+    // Dots
+    const dotsEl = document.getElementById('pratica-dots');
+    dotsEl.innerHTML = '';
+    PROGRESSAO.forEach((_, i) => {
+      const d = document.createElement('div');
+      d.className = 'pratica-dot' + (i === 0 ? ' atual' : '');
+      dotsEl.appendChild(d);
+    });
+    mostrarEtapa();
+    TTS.falar('Toque cada acorde no seu piano e avance');
   }
 
   if (fase === 'celebra') {
-    const chaveKey = prog.id + '_' + cfg.raiz;
-    salvarProgresso(chaveKey);
-    const concluidas = getProgresso()?.concluidas || [];
-    const totalConcluidas = PROGRESSOES.filter(p =>
-      CHAVES.some(c => concluidas.includes(p.id + '_' + c.raiz))
-    ).length;
-    const completo = totalConcluidas >= PROGRESSOES.length;
-
-    document.getElementById('celebra-emoji').textContent  = completo ? '🏆' : '🎉';
-    document.getElementById('celebra-titulo').textContent = prog.nome + ' ✓';
-    document.getElementById('celebra-sub').textContent    = completo
-      ? 'Você domina todas as progressões!'
-      : 'Progressão concluída em ' + cfg.label + ' Maior!';
-    document.getElementById('celebra-cont').textContent   = totalConcluidas + ' de ' + PROGRESSOES.length + ' progressões';
-
+    salvarProgresso(cfg.raiz);
     buildChaveBar();
-
-    const btn = document.getElementById('btn-proximo');
-    const proxProgIdx = (progIdx + 1) % PROGRESSOES.length;
-    if (completo) {
-      btn.textContent = '← Voltar ao curso';
-      btn.onclick = () => goTo('index.html');
-    } else {
-      btn.textContent = 'Próxima: ' + PROGRESSOES[proxProgIdx].nome + ' →';
-      btn.onclick = () => {
-        progIdx = proxProgIdx;
-        criarPiano(tonicMidi(), progAtual());
-        irFase('demo');
-      };
-    }
-    TTS.falar('Parabéns! ' + prog.nome + ' em ' + cfg.label + ' concluído!');
+    const concluidas = getProgresso()?.concluidas || [];
+    const total = concluidas.length;
+    const ultimo = chaveIdx >= CHAVES.length - 1;
+    document.getElementById('celebra-emoji').textContent  = total >= CHAVES.length ? '🏆' : '🎉';
+    document.getElementById('celebra-titulo').textContent = 'I–vi–IV–V em ' + cfg.tonica + ' ✓';
+    document.getElementById('celebra-sub').textContent    = total + ' de ' + CHAVES.length + ' tonalidades concluídas';
+    document.getElementById('btn-outra-chave').style.display = ultimo ? 'none' : '';
+    TTS.falar('Parabéns! Progressão em ' + cfg.tonica + ' concluída!');
   }
 
   atualizarFaseNav();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TONALIDADE
+══════════════════════════════════════════════════════════════ */
+function buildChaveBar() {
+  const el = document.getElementById('chave-bar');
+  el.innerHTML = '';
+  const concluidas = getProgresso()?.concluidas || [];
+  CHAVES.forEach((c, i) => {
+    const feito = concluidas.includes(c.raiz);
+    const dot = document.createElement('div');
+    dot.className = 'chave-dot' + (i === chaveIdx ? ' ativo' : feito ? ' feito' : '');
+    dot.innerHTML = `<div class="chave-dot__c"></div><div class="chave-dot__l">${c.label}</div>`;
+    dot.addEventListener('click', () => {
+      if (i === chaveIdx) return;
+      chaveIdx = i;
+      buildChaveBar();
+      if (faseAtual === 'demo' || faseAtual === 'praticar') irFase(faseAtual);
+    });
+    el.appendChild(dot);
+  });
+}
+
+function proximaChave() {
+  if (chaveIdx < CHAVES.length - 1) {
+    chaveIdx++;
+    buildChaveBar();
+    irFase('demo');
+  } else {
+    goTo('index.html');
+  }
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -841,14 +673,10 @@ function irFase(fase) {
 function getProgresso() {
   try { return JSON.parse(localStorage.getItem('piano_m5_progresso') || 'null'); } catch { return null; }
 }
-
-function salvarProgresso(chaveKey) {
+function salvarProgresso(chaveRaiz) {
   const p = getProgresso() || { concluidas: [], completo: false };
-  if (!p.concluidas.includes(chaveKey)) p.concluidas.push(chaveKey);
-  const totalConcluidas = PROGRESSOES.filter(prog =>
-    CHAVES.some(c => p.concluidas.includes(prog.id + '_' + c.raiz))
-  ).length;
-  p.completo = totalConcluidas >= PROGRESSOES.length;
+  if (!p.concluidas.includes(chaveRaiz)) p.concluidas.push(chaveRaiz);
+  p.completo = p.concluidas.length >= CHAVES.length;
   try { localStorage.setItem('piano_m5_progresso', JSON.stringify(p)); } catch {}
 }
 
@@ -857,9 +685,7 @@ function toggleEasy() {
   Settings.setEasyMode(modoFacil);
   document.getElementById('btn-easy').classList.toggle('active', modoFacil);
   document.getElementById('btn-easy').textContent = modoFacil ? '⭐' : '☆';
-  if (faseAtual === 'praticar') mostrarHintPratica();
 }
-
 function toggleSom() {
   const on = Settings.getSoundOn();
   Settings.setSoundOn(!on);
@@ -875,17 +701,6 @@ document.addEventListener('pointerdown', () => AudioEngine.init(), { once: true 
 LockMode.listenChanges(document.getElementById('btn-lock'));
 document.getElementById('btn-easy').classList.toggle('active', modoFacil);
 document.getElementById('btn-easy').textContent = modoFacil ? '⭐' : '☆';
-
-// Shake animation
-const styleTag = document.createElement('style');
-styleTag.textContent = `
-  @keyframes shake-tecla {
-    0%,100%{transform:translateX(0)} 20%{transform:translateX(-4px)}
-    40%{transform:translateX(4px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(3px)}
-  }
-  .key.shake { animation: shake-tecla .35s ease-in-out; }
-`;
-document.head.appendChild(styleTag);
 </script>
 </body>
 </html>

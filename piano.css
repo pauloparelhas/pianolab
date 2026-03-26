@@ -233,3 +233,56 @@
     --key-bk-h: 48px;
   }
 }
+
+/* ── PENTAGRAMA (createStaff) ────────────────────────────────── */
+/* Componente compartilhado — usado em todos os módulos.         */
+/* Controle visual único aqui; não estilizar staff inline.       */
+.staff-wrap {
+  position: relative;
+  flex-shrink: 0;
+  overflow: visible;        /* clef pode ultrapassar ligeiramente o topo */
+  background: transparent;
+}
+
+/* Linhas do pentagrama (5 divs posicionados por JS) */
+.staff-line {
+  position: absolute;
+  right: 4px;
+  height: 1px;
+  background: #3a5068;
+}
+
+/* Clave de Sol (𝄞) */
+.staff-clef {
+  position: absolute;
+  left: 2px;
+  font-family: 'Segoe UI Symbol', 'Symbola', serif;
+  color: #4a6274;
+  line-height: 1;
+  user-select: none;
+}
+
+/* Cabeça de nota */
+.staff-note {
+  position: absolute;
+  border-radius: 50%;
+  background: #4FC3F7;
+  box-shadow: 0 0 6px rgba(79,195,247,.65);
+  transform: translateX(-50%);
+}
+
+/* Linha adicional (ledger) — para C4, A5 etc. */
+.staff-ledger {
+  position: absolute;
+  height: 1px;
+  background: #3a5068;
+  transform: translateX(-50%);
+}
+
+/* Acidente (♯ ou ♭) */
+.staff-acc {
+  position: absolute;
+  color: #4FC3F7;
+  font-weight: 700;
+  line-height: 1;
+}

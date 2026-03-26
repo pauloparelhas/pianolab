@@ -453,7 +453,104 @@ function goTo(page) {
   window.location.href = page;
 }
 
-/* ── 8. INICIALIZAÇÃO ─────────────────────────────────────── */
+/* ── 8. PENTAGRAMA ────────────────────────────────────────── */
+// createStaff(container) — retorna { showNotes(midiArray), clear(), el }
+// Posicionamento: clave de sol (C4–B5), 5 linhas, notas com acidentes e
+// linhas suplementares automáticas. Sincronizado com o piano via showNotes().
+
+function createStaff(container) {
+  // Clave de Sol: linha 1 = Mi4, linha 2 = Sol4, 3 = Si4, 4 = Ré5, 5 = Fá5
+  // step 0 = Mi4 (L1), step 2 = Sol4 (L2), step 4 = Si4 (L3),
+  //          step 6 = Ré5 (L4), step 8 = Fá5 (L5)
+  // Abaixo: step -1 = Ré4, step -2 = Dó4 (linha suplementar)
+  // Acima:  step 9 = Sol5, step 10 = Lá5 (linha suplem.), step 11 = Si5
+  const STEP_H  = 5;   // px por passo diatônico (metade do espaço entre linhas)
+  const TOP_REF = 13;  // passo de referência no topo do container (Si5+2)
+  const HEIGHT  = 85;  // px — acomoda Dó4 (step -2) a Si5 (step 11) com margem
+  const STAFF_L = 30;  // px — início das linhas (após clave)
+  const NOTE_X  = '55%'; // centro horizontal dos acidentes e notas no staff
+  const NOTE_R  = 4;   // raio da cabeça de nota (px)
+
+  // Tabela cromático → diatônico dentro da oitava (a partir de Dó)
+  const DIAT = [0,0,1,1,2,3,3,4,4,5,5,6];
+
+  function midiToStep(midi) {
+    const oct  = Math.floor(midi / 12) - 1;     // oitava MIDI (Dó4 = 4)
+    const diat = DIAT[midi % 12];               // posição diatônica na oitava
+    return (oct - 4) * 7 + diat - 2;            // step relativo (Mi4 = 0)
+  }
+
+  function stepToY(step) {
+    return (TOP_REF - step) * STEP_H;           // y do topo da nota
+  }
+
+  function isAcc(midi) { return [1,3,6,8,10].includes(midi % 12); }
+
+  // Monta DOM
+  const wrap = document.createElement('div');
+  wrap.className = 'staff-wrap';
+  wrap.style.height = HEIGHT + 'px';
+
+  // Clave de Sol 𝄞 — posicionada para que o caracol fique na linha de Sol4 (step 2, y=55)
+  const clef = document.createElement('div');
+  clef.className = 'staff-clef';
+  clef.textContent = '𝄞';
+  clef.style.cssText = `top:${stepToY(9)}px;font-size:3rem;`;
+  wrap.appendChild(clef);
+
+  // 5 linhas
+  [0, 2, 4, 6, 8].forEach(step => {
+    const line = document.createElement('div');
+    line.className = 'staff-line';
+    line.style.cssText = `left:${STAFF_L}px;top:${stepToY(step)}px;`;
+    wrap.appendChild(line);
+  });
+
+  container.appendChild(wrap);
+
+  const active = [];
+
+  // Cria e registra elemento no wrap
+  function mk(cls, cssText, text) {
+    const el = document.createElement('div');
+    el.className = cls;
+    el.style.cssText = 'position:absolute;' + cssText;
+    if (text) el.textContent = text;
+    wrap.appendChild(el);
+    active.push(el);
+    return el;
+  }
+
+  return {
+    showNotes(midis) {
+      this.clear();
+      midis.forEach(midi => {
+        const step = midiToStep(midi);
+        const y    = stepToY(step);
+        const acc  = isAcc(midi);
+
+        // Linha suplementar inferior: Dó4 (step -2)
+        if (step <= -2)
+          mk('staff-ledger', `left:calc(${NOTE_X} - 10px);width:20px;height:1px;background:#3a5068;top:${stepToY(-2)}px;`);
+
+        // Linha suplementar superior: Lá5+ (step >= 10)
+        if (step >= 10)
+          mk('staff-ledger', `left:calc(${NOTE_X} - 10px);width:20px;height:1px;background:#3a5068;top:${stepToY(10)}px;`);
+
+        // Acidente ♯
+        if (acc)
+          mk('staff-acc', `left:calc(${NOTE_X} - 16px);top:${y - 8}px;font-size:.65rem;`, '♯');
+
+        // Cabeça de nota
+        mk('staff-note', `width:${NOTE_R*2}px;height:${NOTE_R*2}px;left:${NOTE_X};top:${y - NOTE_R}px;`);
+      });
+    },
+    clear() { active.forEach(el => el.remove()); active.length = 0; },
+    el: wrap,
+  };
+}
+
+/* ── 9. INICIALIZAÇÃO ─────────────────────────────────────── */
 
 document.addEventListener('DOMContentLoaded', () => {
   Settings.init();
