@@ -224,6 +224,15 @@
 // Currículo — módulos ativos
 const MODULOS = [
   {
+    n: 0,
+    href: 'm0_bebe.html',
+    nome: 'Piano Bebê',
+    desc: '🐱 Sons de animais · músicas tradicionais',
+    cor: '#FFD700',
+    keys: [],
+    completavel: false,
+  },
+  {
     n: 1,
     href: 'm1.html',
     nome: 'Conhecendo as Teclas',
@@ -266,23 +275,25 @@ const MODULOS = [
 ];
 
 // Módulos com arquivo real publicado
-const PUBLICADOS = new Set([1, 2, 3, 4, 5]);
+const PUBLICADOS = new Set([0, 1, 2, 3, 4, 5]);
 
 function getProgresso(key) {
   try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch { return null; }
 }
 
 function isCompleto(modulo) {
-  return modulo.keys.every(k => getProgresso(k)?.completo === true);
+  if (modulo.completavel === false) return false;
+  return modulo.keys.length > 0 && modulo.keys.every(k => getProgresso(k)?.completo === true);
 }
 
 function build() {
   const lista = document.getElementById('lista-modulos');
   let concluidos = 0;
+  const modulosContados = MODULOS.filter(m => m.completavel !== false);
 
   MODULOS.forEach((m, i) => {
     const done     = isCompleto(m);
-    const prevDone = i === 0 || isCompleto(MODULOS[i - 1]);
+    const prevDone = i === 0 || isCompleto(MODULOS[i - 1]) || MODULOS[i - 1]?.completavel === false;
     const pub      = PUBLICADOS.has(m.n);
     const livre    = pub || prevDone || done;
 
@@ -307,10 +318,10 @@ function build() {
     lista.appendChild(el);
   });
 
-  const pct = Math.round((concluidos / MODULOS.length) * 100);
+  const pct = Math.round((concluidos / modulosContados.length) * 100);
   document.getElementById('prog-bar').style.width = pct + '%';
   document.getElementById('prog-label').textContent =
-    `${concluidos} / ${MODULOS.length} módulos`;
+    `${concluidos} / ${modulosContados.length} módulos`;
 }
 
 build();
