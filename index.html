@@ -207,7 +207,7 @@
     <div class="hero__sub">Aprenda piano do zero — notas, escalas, acordes e muito mais.</div>
     <div class="hero__progresso">
       <div class="prog-wrap"><div class="prog-bar" id="prog-bar"></div></div>
-      <span class="prog-label" id="prog-label">0 / 3 módulos</span>
+      <span class="prog-label" id="prog-label">0 / 5 módulos</span>
     </div>
   </div>
 
@@ -223,6 +223,14 @@
 
 // Currículo — módulos ativos
 const MODULOS = [
+  {
+    n: 1,
+    href: 'm1.html',
+    nome: 'Conhecendo as Teclas',
+    desc: '7 notas naturais · Dó a Si',
+    cor: 'var(--nota-do)',
+    keys: [],
+  },
   {
     n: 2,
     href: 'm2_escalas.html',
@@ -258,7 +266,7 @@ const MODULOS = [
 ];
 
 // Módulos com arquivo real publicado
-const PUBLICADOS = new Set([2, 3, 4, 5]);
+const PUBLICADOS = new Set([1, 2, 3, 4, 5]);
 
 function getProgresso(key) {
   try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch { return null; }

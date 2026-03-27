@@ -3,339 +3,493 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>PianoLab — M1: O Dó Central</title>
+  <title>PianoLab — M1: Conhecendo as Teclas</title>
   <link rel="stylesheet" href="base.css">
   <link rel="stylesheet" href="piano.css">
   <style>
-    /* ── Layout M1 (360px) ─────────────────────────────────────
-       header 48 + nav-fases 56 + screen pad 16 + conteúdo = 100dvh
-       Teclado override: --key-h 130px para caber no mobile       */
-    :root { --key-h: 120px; --key-bk-h: 72px; }
+    html, body { height: 100%; overflow: hidden; }
 
-    /* Botão ouvir menor em mobile */
-    #btn-ouvir { min-height: 56px; font-size: var(--md); }
-
-    .layout {
-      display: flex;
-      flex-direction: column;
-      height: 100dvh;
-      max-width: 480px;
-      margin: 0 auto;
+    .piano-body {
+      display: flex; flex-direction: column;
+      height: 100dvh; background: #111827;
+      max-width: 960px; margin: 0 auto;
     }
 
-    /* ── TELA 1 — Apresentação ─────────────────────────────── */
-    .nota-hero {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 0;
+    /* ── PAINEL ──────────────────────────────────────────────── */
+    .digital-panel {
+      flex: 1; min-height: 0; background: #0d1117;
+      display: flex; flex-direction: column;
+      border-bottom: 3px solid #000; overflow: hidden;
+    }
+    @media (orientation: landscape) {
+      .digital-panel { flex: 0 0 auto; max-height: 40dvh; overflow-y: auto; border-bottom: 1px solid #1a2535; }
     }
 
-    .nota-circulo {
-      width: clamp(56px, 15vw, 80px);
-      height: clamp(56px, 15vw, 80px);
-      border-radius: 50%;
-      background: var(--nota-do);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: clamp(1.4rem, 4vw, 2.4rem);
-      font-weight: 900;
-      color: #fff;
-      box-shadow: 0 4px 20px color-mix(in srgb, var(--nota-do) 50%, transparent);
-      animation: bounce-in .4s ease-out;
+    /* ── TOPBAR ──────────────────────────────────────────────── */
+    .panel-topbar {
+      display: flex; align-items: center; padding: 4px 6px; gap: 3px;
+      background: #070d14; border-bottom: 1px solid #1a2535; flex-shrink: 0;
+    }
+    .panel-title {
+      flex: 1; text-align: center; font-size: 0.6rem; letter-spacing: 2px;
+      color: #4FC3F7; font-weight: 700; text-transform: uppercase;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
+    }
+    .panel-btn {
+      width: 30px; height: 30px; background: #141e2e;
+      border: 1px solid #263045; border-radius: 6px; color: #7a8fa8;
+      font-size: 0.82rem; cursor: pointer; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      touch-action: manipulation;
+    }
+    .panel-btn:active { background: #1e2e44; }
+    .panel-btn:disabled { opacity: .3; pointer-events: none; }
+    .fase-dots-row { display: flex; gap: 4px; align-items: center; flex-shrink: 0; }
+    .fase-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: #2a3a4a; border: 1px solid #3a4a5a; transition: background .2s;
+    }
+    .fase-dot.ativa { background: #4FC3F7; }
+    .fase-dot.feita { background: #4CAF50; }
+
+    /* ── CONTEÚDO ────────────────────────────────────────────── */
+    .panel-content {
+      flex: 1; min-height: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 8px 10px; gap: 7px; overflow: hidden;
+    }
+    .screen { display: none; flex-direction: column; align-items: center; gap: 6px; width: 100%; }
+    .screen.active { display: flex; }
+
+    .fase-label {
+      font-size: 0.55rem; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; color: #4a6274; align-self: flex-start;
+    }
+    .fase-titulo {
+      font-size: clamp(1rem, 4vw, 1.4rem); font-weight: 900;
+      color: #e8eaed; text-align: center; line-height: 1.2;
+    }
+    .fase-texto {
+      font-size: clamp(0.66rem, 2.2vw, 0.80rem);
+      color: #7a8fa8; text-align: center; line-height: 1.5;
     }
 
-    .nota-subtitulo {
-      font-size: var(--sm);
-      color: var(--text-soft);
-      text-align: center;
+    /* ── VISUALIZADOR DE NOTAS ───────────────────────────────── */
+    .notas-vis {
+      display: flex; align-items: center; gap: 4px; justify-content: center; flex-wrap: wrap;
+    }
+    .nota-item {
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+    }
+    .nota-item__circulo {
+      width: clamp(28px, 7vw, 38px); height: clamp(28px, 7vw, 38px);
+      border-radius: 50%; background: #1e2a3a; border: 2px solid #2a3a4a;
+      display: flex; align-items: center; justify-content: center;
+      font-size: clamp(0.40rem, 1.4vw, 0.60rem); font-weight: 700; color: #4a6274;
+      transition: background .18s, border-color .18s, color .18s, transform .12s;
+    }
+    .nota-item.ativa .nota-item__circulo {
+      background: #4FC3F7; border-color: #4FC3F7; color: #000; transform: scale(1.2);
+    }
+    .nota-item.feita .nota-item__circulo {
+      background: #2a4a2a; border-color: #4CAF50; color: #4CAF50;
     }
 
-    /* ── TELA 2 — Identificação ────────────────────────────── */
-    .pergunta {
-      text-align: center;
-      font-size: var(--lg);
-      font-weight: 800;
-      line-height: 1.2;
+    /* ── PROGRESSO PRATICAR ──────────────────────────────────── */
+    .pratica-prog {
+      display: flex; gap: 6px; justify-content: center;
+    }
+    .pratica-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: #1e2a3a; border: 1.5px solid #2a3a4a;
+      transition: background .18s;
+    }
+    .pratica-dot.atual  { background: #4FC3F7; border-color: #4FC3F7; animation: pulsar .9s ease-in-out infinite; }
+    .pratica-dot.acerto { background: #4CAF50; border-color: #4CAF50; animation: none; }
+
+    .pratica-status {
+      font-size: clamp(0.72rem, 2.4vw, 0.88rem); font-weight: 700;
+      color: #4FC3F7; text-align: center; min-height: 1.3em;
     }
 
-    .tentativas {
-      display: flex;
-      justify-content: center;
-      gap: 8px;
-    }
+    /* ── CELEBRAÇÃO ──────────────────────────────────────────── */
+    .celebra-emoji { font-size: clamp(2rem, 9vw, 3rem); }
+    .celebra-titulo { font-size: clamp(1.1rem, 4vw, 1.5rem); font-weight: 900; color: #fff; text-align: center; }
+    .celebra-sub    { font-size: clamp(0.72rem, 2.4vw, 0.88rem); color: #7a8fa8; text-align: center; }
 
-    .tentativa-dot {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background: var(--border);
-      transition: background .2s, transform .2s;
+    /* ── BOTÕES ──────────────────────────────────────────────── */
+    .btn-acao {
+      padding: 10px 20px; background: #141e2e;
+      border: 1.5px solid #263045; border-radius: 10px;
+      color: #4FC3F7; font-size: clamp(0.78rem, 2.4vw, 0.92rem);
+      font-weight: 700; cursor: pointer; touch-action: manipulation;
+      transition: background .15s;
     }
+    .btn-acao:active { background: #1e2e44; border-color: #4FC3F7; }
+    .btn-acao.destaque { background: #4FC3F7; color: #000; border-color: #4FC3F7; }
+    .btn-acao:disabled { opacity: .35; cursor: default; pointer-events: none; }
+    .btn-acao.sec { color: #7a8fa8; border-color: #1e2a3a; font-size: clamp(0.65rem, 2vw, 0.78rem); padding: 7px 14px; }
 
-    .tentativa-dot.acerto {
-      background: var(--nota-do);
-      transform: scale(1.3);
+    /* ── PIANO + PARTITURA ───────────────────────────────────── */
+    .piano-stage {
+      background: #111827; border-top: 3px solid #000; flex: 0 0 50dvh;
+      display: flex; flex-direction: column;
+      --key-h:    clamp(90px, 28dvh, 240px);
+      --key-bk-h: clamp(54px, 17dvh, 144px);
     }
-
-    /* ── TELA 3 — Celebração ───────────────────────────────── */
-    .celebracao {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
-      text-align: center;
+    @media (orientation: landscape) {
+      .piano-stage {
+        flex: 1; min-height: 0; border-top: none;
+        --key-h:    clamp(55px, 42dvh, 180px);
+        --key-bk-h: clamp(33px, 25dvh, 108px);
+      }
     }
+    #staff-container { flex-shrink: 0; padding: 2px 8px 0; background: #0d1117; border-bottom: 1px solid #1a2535; overflow-x: auto; }
+    #piano-wrap { flex: 1; min-height: 0; display: flex; align-items: center; overflow: hidden; }
+    #piano-m1 { width: 100%; }
+    .piano-stage .piano-wrap.responsive { overflow: visible; padding-bottom: 0; }
+    .piano-stage .piano.responsive { width: 100%; }
+    .piano-stage .key__label { font-size: clamp(0.38rem, 1.1vw, 0.54rem); font-weight: 700; color: #888; }
+    .piano-stage .key { border-color: #444; }
 
-    .celebracao__emoji {
-      font-size: 4rem;
-      animation: bounce-in .5s ease-out;
-    }
-
-    .celebracao__titulo {
-      font-size: var(--xl);
-      font-weight: 900;
-      color: var(--nota-do);
-    }
-
-    .celebracao__sub {
-      font-size: var(--md);
-      color: var(--text-soft);
-    }
-
-    /* ── NAV FASES (fixa no rodapé) ─────────────────────────── */
-    .nav-fases {
-      height: 56px;
-      padding: 0 16px;
-      flex-shrink: 0;
-      border-top: 1px solid var(--border);
-      background: var(--surface);
-    }
-
-    /* ── FEEDBACK ───────────────────────────────────────────── */
-    .feedback { min-height: 1.6rem; }
+    @keyframes pulsar { 0%,100%{opacity:1} 50%{opacity:.5} }
   </style>
 </head>
 <body>
-  <div class="layout">
+<div class="piano-body">
 
-    <!-- Cabeçalho -->
-    <header class="header">
-      <button class="btn btn--icon" onclick="goToIndex()" title="Voltar">←</button>
-      <span class="header__title">M1 — O Dó Central</span>
-      <button class="btn btn--icon" id="btn-sound" title="Som">🔊</button>
-    </header>
+  <div class="digital-panel">
+    <div class="panel-topbar">
+      <button class="panel-btn" onclick="goTo('index.html')" title="Menu do curso">⌂</button>
+      <span class="panel-title">M1 · CONHECENDO AS TECLAS</span>
+      <button class="panel-btn" id="btn-fase-prev" onclick="faseAnterior()">‹</button>
+      <div class="fase-dots-row" id="fase-dots-row"></div>
+      <button class="panel-btn" id="btn-fase-next" onclick="faseSeguinte()">›</button>
+      <button class="panel-btn" onclick="showHelp(HELP_FASES[faseAtual])" title="Ajuda">?</button>
+      <button class="panel-btn" onclick="cycleFontSize(this)" title="Tamanho do texto">A</button>
+      <button class="panel-btn" id="btn-lock" onclick="LockMode.toggle(this)" title="Tela cheia">🔓</button>
+      <button class="panel-btn" id="btn-sound" onclick="toggleSom()">🔊</button>
+    </div>
 
-    <!-- Conteúdo (screens) -->
-    <main class="content">
+    <div class="panel-content">
 
-      <!-- Tela 1: Apresentação -->
-      <div class="screen active" id="s1">
-        <div class="nota-hero">
-          <div class="nota-circulo">Dó</div>
-          <p class="nota-subtitulo">A primeira nota do piano</p>
+      <!-- Intro -->
+      <div class="screen" id="s-intro">
+        <span class="fase-label">Aprenda</span>
+        <div class="fase-titulo">As 7 Notas Naturais</div>
+        <div class="notas-vis" id="notas-vis-intro"></div>
+        <div class="fase-texto">Cada tecla branca tem um nome.<br>São 7 notas que se repetem pelo piano.</div>
+        <button class="btn-acao" onclick="irFase('demo')">▶ Demonstração</button>
+      </div>
+
+      <!-- Demo -->
+      <div class="screen" id="s-demo">
+        <span class="fase-label" id="demo-label">Ouça!</span>
+        <div class="fase-titulo" id="demo-titulo"></div>
+        <div class="notas-vis" id="notas-vis-demo"></div>
+        <div class="fase-texto" id="demo-texto">As notas acendem uma a uma ✨</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
+          <button class="btn-acao" id="btn-demo" onclick="iniciarDemo()">▶ Tocar</button>
+          <button class="btn-acao sec" id="btn-demo-next" style="display:none" onclick="demoAvancar()">Próxima nota →</button>
         </div>
-        <div id="piano-s1"></div>
-        <button class="btn btn--primary" id="btn-ouvir" style="flex-shrink:0">
-          ▶ Ouvir o Dó
-        </button>
+        <button class="btn-acao destaque" id="btn-ir-pratica" style="display:none" onclick="irFase('praticar')">Praticar →</button>
       </div>
 
-      <!-- Tela 2: Identificação -->
-      <div class="screen" id="s2">
-        <p class="pergunta">Onde está o Dó?</p>
-        <div class="tentativas" id="tentativas"></div>
-        <div class="feedback text-center" id="feedback-s2"></div>
-        <div id="piano-s2"></div>
+      <!-- Praticar -->
+      <div class="screen" id="s-praticar">
+        <span class="fase-label">Sua vez!</span>
+        <div class="fase-titulo">Encontre cada nota</div>
+        <div class="notas-vis" id="notas-vis-pratica"></div>
+        <div class="pratica-prog" id="pratica-prog"></div>
+        <div class="pratica-status" id="pratica-status">Observe a nota acesa e toque no seu piano</div>
+        <button class="btn-acao destaque" id="btn-pratica-next" onclick="praticaAvancar()">Próximo →</button>
       </div>
 
-      <!-- Tela 3: Celebração -->
-      <div class="screen" id="s3">
-        <div class="celebracao">
-          <div class="celebracao__emoji">🎉</div>
-          <div class="celebracao__titulo">Você encontrou o Dó!</div>
-          <div class="celebracao__sub">Dó é a nota vermelha.<br>Ela aparece várias vezes no piano!</div>
-          <button class="btn btn--primary" onclick="goTo('m2.html')">
-            Próxima aula →
-          </button>
-        </div>
+      <!-- Celebração -->
+      <div class="screen" id="s-celebra">
+        <div class="celebra-emoji">🌟</div>
+        <div class="celebra-titulo">Você conhece as 7 notas!</div>
+        <div class="celebra-sub">Dó · Ré · Mi · Fá · Sol · Lá · Si</div>
+        <button class="btn-acao destaque" onclick="goTo('m2_escalas.html')">Escalas Maiores →</button>
+        <button class="btn-acao sec" onclick="irFase('intro')">Repetir</button>
       </div>
 
-    </main>
-
-    <!-- Navegação entre fases -->
-    <nav class="nav-fases">
-      <button class="nav-fases__btn" id="btn-prev" disabled>◀</button>
-      <div class="nav-fases__dots" id="dots"></div>
-      <button class="nav-fases__btn" id="btn-next">▶</button>
-    </nav>
-
+    </div>
   </div>
 
-  <script src="base.js"></script>
-  <script>
-    'use strict';
+  <div class="piano-stage" id="piano-stage">
+    <div id="staff-container"></div>
+    <div id="piano-wrap">
+      <div id="piano-m1"></div>
+    </div>
+  </div>
 
-    /* ── ESTADO ─────────────────────────────────────────────── */
-    const TOTAL_FASES = 3;
-    let faseAtual = 1;
-    let acertos   = 0;
-    const ACERTOS_PARA_AVANÇAR = 3;
+</div>
+<script src="base.js"></script>
+<script>
+'use strict';
 
-    /* ── TECLADOS ───────────────────────────────────────────── */
-    // Tela 1: C4 destacado, somente visualização
-    const kb1 = createPianoKeyboard(document.getElementById('piano-s1'), {
-      startNote: 'C4', endNote: 'B5',
-      showLabels: true,
-      onNoteOn(note) { AudioEngine.play(note); }
-    });
-    kb1.highlight('C4');
+/* ══════════════════════════════════════════════════════════════
+   M1 — AS 7 NOTAS NATURAIS (Dó a Si)
+══════════════════════════════════════════════════════════════ */
 
-    // Tela 2: interativo para identificação
-    const kb2 = createPianoKeyboard(document.getElementById('piano-s2'), {
-      startNote: 'C4', endNote: 'B5',
-      showLabels: true,
-      onNoteOn(note) { avaliarResposta(note); }
-    });
+const NOTAS = [
+  { midi: 60, label: 'Dó'  },
+  { midi: 62, label: 'Ré'  },
+  { midi: 64, label: 'Mi'  },
+  { midi: 65, label: 'Fá'  },
+  { midi: 67, label: 'Sol' },
+  { midi: 69, label: 'Lá'  },
+  { midi: 71, label: 'Si'  },
+];
 
-    /* ── DOTS DE PROGRESSO ──────────────────────────────────── */
-    const dotsEl = document.getElementById('dots');
-    for (let i = 1; i <= TOTAL_FASES; i++) {
-      const d = document.createElement('div');
-      d.className = 'nav-fases__dot' + (i === 1 ? ' active' : '');
-      d.dataset.fase = i;
-      dotsEl.appendChild(d);
+const FASES_ORDEM = ['intro', 'demo', 'praticar', 'celebra'];
+
+const HELP_FASES = {
+  intro:    '<b>As 7 notas</b><br>Veja os nomes das 7 teclas brancas: Dó, Ré, Mi, Fá, Sol, Lá e Si. Clique em "Demonstração" para ouvi-las.',
+  demo:     '<b>Ouça as notas</b><br>As notas acendem uma a uma no piano. Na 1ª vez é automático. Depois você avança no seu ritmo com "Próxima nota →".',
+  praticar: '<b>Sua vez!</b><br>Observe a nota que acende no piano. Encontre e toque a mesma nota no seu piano real, depois clique "Próximo →".',
+  celebra:  '<b>Parabéns!</b><br>Você já conhece as 7 notas naturais! Continue para aprender as escalas.',
+};
+
+/* ── Estado ───────────────────────────────────────────────── */
+let faseAtual   = 'intro';
+let praticaStep = 0;
+let demoTimer   = null;
+let demoJaRodou = false;
+let demoStep    = 0;
+
+/* ── Piano (fixo C4-B5, criado uma vez) ──────────────────── */
+const kb = createPianoKeyboard(
+  document.getElementById('piano-m1'),
+  {
+    startNote: 'C4', endNote: 'B5',
+    showLabels: true, responsive: true,
+    onNoteOn(noteStr) {
+      if (Settings.getSoundOn()) AudioEngine.play(noteStr);
     }
+  }
+);
 
-    function atualizarDots() {
-      document.querySelectorAll('.nav-fases__dot').forEach(d => {
-        const f = parseInt(d.dataset.fase);
-        d.className = 'nav-fases__dot' +
-          (f === faseAtual ? ' active' : f < faseAtual ? ' done' : '');
-      });
-    }
+/* ── Staff ────────────────────────────────────────────────── */
+const score = createStaffScore(document.getElementById('staff-container'));
 
-    /* ── NAVEGAÇÃO ──────────────────────────────────────────── */
-    const screens = [null,
-      document.getElementById('s1'),
-      document.getElementById('s2'),
-      document.getElementById('s3'),
-    ];
-    const btnPrev = document.getElementById('btn-prev');
-    const btnNext = document.getElementById('btn-next');
+/* ── Ajuste dinâmico do teclado ──────────────────────────── */
+function ajustarTeclado() {
+  const stage   = document.getElementById('piano-stage');
+  const staffEl = document.getElementById('staff-container');
+  if (!stage) return;
+  const disponivel = stage.clientHeight - (staffEl ? staffEl.offsetHeight : 0) - 4;
+  if (disponivel < 40) return;
+  const keyH   = Math.max(60, Math.min(disponivel, 280));
+  const keyBkH = Math.round(keyH * 0.62);
+  stage.style.setProperty('--key-h',    keyH   + 'px');
+  stage.style.setProperty('--key-bk-h', keyBkH + 'px');
+}
+window.addEventListener('resize', ajustarTeclado);
+window.addEventListener('orientationchange', () => setTimeout(ajustarTeclado, 150));
+requestAnimationFrame(() => requestAnimationFrame(ajustarTeclado));
 
-    function irParaFase(n) {
-      if (n < 1 || n > TOTAL_FASES) return;
-      screens[faseAtual].classList.remove('active');
-      faseAtual = n;
-      screens[faseAtual].classList.add('active');
-      btnPrev.disabled = faseAtual === 1;
-      btnNext.disabled = faseAtual === TOTAL_FASES;
-      atualizarDots();
-      aoEntrarFase(faseAtual);
-    }
+/* ── Partitura ────────────────────────────────────────────── */
+function buildScore() {
+  score.loadScore(NOTAS.map(n => ({ midis: [n.midi], duration: 'q', label: n.label })));
+}
 
-    btnPrev.addEventListener('click', () => irParaFase(faseAtual - 1));
-    btnNext.addEventListener('click', () => irParaFase(faseAtual + 1));
+/* ── Visualizador de notas ────────────────────────────────── */
+function buildVis(id, activeIdx = -1) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = '';
+  NOTAS.forEach((n, i) => {
+    const item = document.createElement('div');
+    item.className = 'nota-item' + (i === activeIdx ? ' ativa' : '');
+    item.innerHTML = `<div class="nota-item__circulo">${n.label}</div>`;
+    el.appendChild(item);
+  });
+}
 
-    /* ── LÓGICA POR FASE ─────────────────────────────────────── */
-    function aoEntrarFase(f) {
-      if (f === 1) {
-        kb1.releaseAll();
-        kb1.highlight('C4');
-        TTS.falar('Este é o Dó!');
+/* ── Fase Nav ─────────────────────────────────────────────── */
+function atualizarFaseNav() {
+  const idx = FASES_ORDEM.indexOf(faseAtual);
+  document.getElementById('btn-fase-prev').disabled = idx <= 0;
+  document.getElementById('btn-fase-next').disabled = idx >= FASES_ORDEM.length - 1;
+  const row = document.getElementById('fase-dots-row');
+  row.innerHTML = '';
+  FASES_ORDEM.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'fase-dot' + (i === idx ? ' ativa' : '') + (i < idx ? ' feita' : '');
+    row.appendChild(d);
+  });
+}
+function faseAnterior() { const i = FASES_ORDEM.indexOf(faseAtual); if (i > 0) irFase(FASES_ORDEM[i-1]); }
+function faseSeguinte() { const i = FASES_ORDEM.indexOf(faseAtual); if (i < FASES_ORDEM.length-1) irFase(FASES_ORDEM[i+1]); }
+
+/* ── Som ──────────────────────────────────────────────────── */
+function toggleSom() {
+  const on = !Settings.getSoundOn();
+  Settings.setSoundOn(on);
+  document.getElementById('btn-sound').textContent = on ? '🔊' : '🔇';
+}
+
+/* ══════════════════════════════════════════════════════════════
+   DEMO — automático 1ª vez, manual depois
+══════════════════════════════════════════════════════════════ */
+
+function mostrarNotaDemo(idx) {
+  if (idx < 0 || idx >= NOTAS.length) return;
+  const nota = midiToNote(NOTAS[idx].midi);
+  kb.clearHighlights();
+  kb.highlight(nota);
+  score.highlight(idx);
+  buildVis('notas-vis-demo', idx);
+  document.getElementById('demo-titulo').textContent = NOTAS[idx].label;
+  if (Settings.getSoundOn()) AudioEngine.play(nota, 0.7);
+}
+
+function iniciarDemo() {
+  if (demoTimer) { clearTimeout(demoTimer); demoTimer = null; }
+  kb.clearHighlights(); score.highlight(-1);
+
+  if (!demoJaRodou) {
+    demoJaRodou = true;
+    document.getElementById('btn-demo').disabled = true;
+    document.getElementById('btn-demo-next').style.display = 'none';
+    document.getElementById('btn-ir-pratica').style.display = 'none';
+    document.getElementById('demo-texto').textContent = 'Ouça todas as notas…';
+
+    let i = 0;
+    function passo() {
+      if (i >= NOTAS.length) {
+        kb.clearHighlights(); score.highlight(-1); buildVis('notas-vis-demo');
+        document.getElementById('demo-titulo').textContent = 'As 7 Notas';
+        document.getElementById('btn-demo').disabled = false;
+        document.getElementById('btn-demo').textContent = '▶ Nota a nota';
+        document.getElementById('demo-texto').textContent = 'Agora no seu ritmo — nota a nota';
+        document.getElementById('btn-ir-pratica').style.display = '';
+        return;
       }
-      if (f === 2) {
-        acertos = 0;
-        renderTentativas();
-        document.getElementById('feedback-s2').textContent = '';
-        kb2.releaseAll();
-        TTS.falar('Onde está o Dó?');
-      }
-      if (f === 3) {
-        AudioEngine.playChord(['C4', 'E4', 'G4'], 120, 1.5);
-        TTS.falar('Parabéns! Você encontrou o Dó!');
-        salvarProgresso();
-      }
+      mostrarNotaDemo(i);
+      i++;
+      demoTimer = setTimeout(passo, 950);
     }
+    passo();
 
-    /* ── TELA 2: IDENTIFICAÇÃO ───────────────────────────────── */
-    function renderTentativas() {
-      const el = document.getElementById('tentativas');
-      el.innerHTML = '';
-      for (let i = 0; i < ACERTOS_PARA_AVANÇAR; i++) {
-        const d = document.createElement('div');
-        d.className = 'tentativa-dot' + (i < acertos ? ' acerto' : '');
-        el.appendChild(d);
-      }
-    }
+  } else {
+    demoStep = 0;
+    document.getElementById('btn-demo').style.display = 'none';
+    document.getElementById('btn-demo-next').style.display = '';
+    document.getElementById('btn-ir-pratica').style.display = 'none';
+    document.getElementById('demo-texto').textContent = 'Toque cada nota antes de avançar';
+    mostrarNotaDemo(0);
+  }
+}
 
-    function avaliarResposta(noteStr) {
-      const base = noteStr.replace(/[#\d]/g, '');
-      const feedbackEl = document.getElementById('feedback-s2');
+function demoAvancar() {
+  demoStep++;
+  if (demoStep >= NOTAS.length) {
+    kb.clearHighlights(); score.highlight(-1); buildVis('notas-vis-demo');
+    document.getElementById('demo-titulo').textContent = 'As 7 Notas';
+    document.getElementById('btn-demo-next').style.display = 'none';
+    document.getElementById('btn-demo').style.display = '';
+    document.getElementById('btn-demo').textContent = '▶ Repetir';
+    document.getElementById('demo-texto').textContent = 'Notas completas!';
+    document.getElementById('btn-ir-pratica').style.display = '';
+  } else {
+    mostrarNotaDemo(demoStep);
+  }
+}
 
-      if (base === 'C') {
-        // Acertou
-        acertos++;
-        AudioEngine.play(noteStr, 0.8);
-        kb2.releaseAll();
-        kb2.highlight(noteStr);
-        feedbackEl.textContent = ['Isso!', 'Boa!', 'Muito bem!'][Math.min(acertos - 1, 2)];
-        feedbackEl.className = 'feedback text-center feedback--acerto anim-bounce';
-        TTS.falar('Isso!');
-        renderTentativas();
+/* ── Praticar (display-only) ──────────────────────────────── */
+function iniciarPratica() {
+  praticaStep = 0;
+  kb.clearHighlights();
+  mostrarPratica(); buildProgDots();
+  document.getElementById('pratica-status').textContent = `Nota 1 de ${NOTAS.length}`;
+  document.getElementById('btn-pratica-next').style.display = '';
+}
 
-        if (acertos >= ACERTOS_PARA_AVANÇAR) {
-          setTimeout(() => irParaFase(3), 900);
-        } else {
-          setTimeout(() => {
-            kb2.releaseAll();
-            feedbackEl.textContent = '';
-            feedbackEl.className = 'feedback text-center';
-          }, 800);
-        }
-      } else {
-        // Errou — neutro, sem punição
-        AudioEngine.play(noteStr, 0.5);
-        feedbackEl.textContent = 'Tente de novo!';
-        feedbackEl.className = 'feedback text-center feedback--neutro anim-shake';
-        setTimeout(() => {
-          feedbackEl.textContent = '';
-          feedbackEl.className = 'feedback text-center';
-        }, 900);
-      }
-    }
+function mostrarPratica() {
+  kb.clearHighlights();
+  if (praticaStep < NOTAS.length) {
+    const nota = midiToNote(NOTAS[praticaStep].midi);
+    kb.highlight(nota);
+    score.highlight(praticaStep);
+    buildVis('notas-vis-pratica', praticaStep);
+  }
+}
 
-    /* ── TELA 1: OUVIR ──────────────────────────────────────── */
-    document.getElementById('btn-ouvir').addEventListener('click', () => {
-      AudioEngine.play('C4', 1.2);
-      kb1.releaseAll();
-      kb1.highlight('C4');
-      TTS.falar('Dó');
-    });
+function buildProgDots() {
+  const prog = document.getElementById('pratica-prog');
+  prog.innerHTML = '';
+  NOTAS.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'pratica-dot' +
+      (i === praticaStep ? ' atual'  : '') +
+      (i <  praticaStep  ? ' acerto' : '');
+    prog.appendChild(d);
+  });
+}
 
-    /* ── SOM TOGGLE ─────────────────────────────────────────── */
-    const btnSound = document.getElementById('btn-sound');
-    btnSound.addEventListener('click', () => {
-      Settings.setSoundOn(!Settings.getSoundOn());
-      btnSound.textContent = Settings.getSoundOn() ? '🔊' : '🔇';
-    });
-    btnSound.textContent = Settings.getSoundOn() ? '🔊' : '🔇';
+function praticaAvancar() {
+  praticaStep++;
+  buildProgDots();
+  if (praticaStep >= NOTAS.length) {
+    kb.clearHighlights(); score.highlight(-1);
+    document.getElementById('pratica-status').textContent = '✓ Todas as notas!';
+    document.getElementById('btn-pratica-next').style.display = 'none';
+    setTimeout(() => irFase('celebra'), 600);
+  } else {
+    mostrarPratica();
+    document.getElementById('pratica-status').textContent = `Nota ${praticaStep + 1} de ${NOTAS.length}`;
+  }
+}
 
-    /* ── PROGRESSO ──────────────────────────────────────────── */
-    function salvarProgresso() {
-      localStorage.setItem('piano_m1_progresso', JSON.stringify({
-        completo: true, data: new Date().toISOString()
-      }));
-    }
+/* ── irFase ───────────────────────────────────────────────── */
+function irFase(fase) {
+  if (demoTimer) { clearTimeout(demoTimer); demoTimer = null; }
+  faseAtual = fase;
+  kb.clearHighlights(); score.highlight(-1);
 
-    /* ── INIT ───────────────────────────────────────────────── */
-    document.addEventListener('pointerdown', () => AudioEngine.init(), { once: true });
-    aoEntrarFase(1);
-  </script>
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('s-' + fase).classList.add('active');
+
+  buildScore(); atualizarFaseNav();
+  requestAnimationFrame(ajustarTeclado);
+
+  if (fase === 'intro') {
+    demoJaRodou = false;
+    buildVis('notas-vis-intro');
+    score.highlight(0);
+    kb.hint(midiToNote(NOTAS[0].midi));
+  }
+
+  if (fase === 'demo') {
+    document.getElementById('demo-titulo').textContent = 'As 7 Notas';
+    document.getElementById('demo-label').textContent  = 'Ouça!';
+    document.getElementById('demo-texto').textContent  = demoJaRodou
+      ? 'Toque cada nota antes de avançar'
+      : 'As notas acendem uma a uma ✨';
+    document.getElementById('btn-demo').textContent    = demoJaRodou ? '▶ Repetir' : '▶ Tocar';
+    document.getElementById('btn-demo').style.display  = '';
+    document.getElementById('btn-demo').disabled       = false;
+    document.getElementById('btn-demo-next').style.display = 'none';
+    document.getElementById('btn-ir-pratica').style.display = 'none';
+    buildVis('notas-vis-demo');
+    if (!demoJaRodou) iniciarDemo();
+  }
+
+  if (fase === 'praticar') {
+    iniciarPratica();
+  }
+}
+
+/* ── Init ─────────────────────────────────────────────────── */
+(function() {
+  document.getElementById('btn-sound').textContent = Settings.getSoundOn() ? '🔊' : '🔇';
+  LockMode.listenChanges(document.getElementById('btn-lock'));
+  irFase('intro');
+})();
+</script>
 </body>
 </html>
