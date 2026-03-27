@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>M0 · Piano Bebê — PianoLab</title>
+  <link rel="stylesheet" href="base.css">
+  <link rel="stylesheet" href="piano.css">
+  <style>
+    html, body {
+      height: 100dvh; max-height: 100dvh;
+      margin: 0; overflow: hidden;
+      background: #0d1117;
+      display: flex; flex-direction: column;
+    }
+
+    /* ── Topo ── */
+    .topo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px 6px;
+      flex-shrink: 0;
+    }
+    .btn-voltar {
+      background: none; border: none;
+      color: #4FC3F7; font-size: 1.3rem;
+      cursor: pointer; padding: 4px;
+      line-height: 1;
+    }
+    .titulo-bebe {
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: #FFD700;
+      letter-spacing: -0.5px;
+    }
+
+    /* ── Linha de instrumentos ── */
+    .instrumento-row {
+      display: flex;
+      gap: 8px;
+      padding: 4px 14px;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+    .instrumento-btn {
+      padding: 8px 16px;
+      border-radius: 99px;
+      border: 2px solid #1e2a3a;
+      background: #111827;
+      color: #e8eaed;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .instrumento-btn.ativo {
+      border-color: #FFD700;
+      background: #1e2a1a;
+      color: #FFD700;
+    }
+
+    /* ── Linha de músicas ── */
+    .musicas-row {
+      display: flex;
+      gap: 6px;
+      padding: 4px 14px;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .musica-btn {
+      padding: 8px 14px;
+      border-radius: 99px;
+      border: none;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.12s, opacity 0.12s;
+      white-space: nowrap;
+    }
+    .musica-btn:nth-child(1) { background: #FF6B6B; color: #fff; }
+    .musica-btn:nth-child(2) { background: #81C784; color: #fff; }
+    .musica-btn:nth-child(3) { background: #4FC3F7; color: #111; }
+    .musica-btn:nth-child(4) { background: #FFB74D; color: #111; }
+    .musica-btn:hover { opacity: 0.85; }
+    .musica-btn.tocando { animation: pulsebebe 0.5s ease-in-out infinite alternate; }
+    @keyframes pulsebebe { from { transform: scale(1); } to { transform: scale(1.06); } }
+
+    .btn-parar {
+      padding: 6px 14px;
+      border-radius: 99px;
+      border: none;
+      background: #F44336;
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: none;
+    }
+
+    /* ── Piano ── */
+    .piano-area {
+      flex: 1;
+      display: flex;
+      align-items: stretch;
+      padding: 6px 8px 8px;
+      min-height: 0;
+    }
+    #piano-container {
+      width: 100%;
+      display: flex;
+      align-items: center;
+    }
+    .piano-wrap.responsive { width: 100%; }
+    .piano.responsive { width: 100%; }
+
+    /* Cores vivas nas teclas brancas */
+    #piano-container .key.nota-do  { --key-base: #FF6B6B; }
+    #piano-container .key.nota-re  { --key-base: #FFA040; }
+    #piano-container .key.nota-mi  { --key-base: #FFD700; }
+    #piano-container .key.nota-fa  { --key-base: #66BB6A; }
+    #piano-container .key.nota-sol { --key-base: #4FC3F7; }
+    #piano-container .key.nota-la  { --key-base: #9575CD; }
+    #piano-container .key.nota-si  { --key-base: #F06292; }
+
+    #piano-container .key:not(.key--black) {
+      background: linear-gradient(to bottom, var(--key-base, #fff), color-mix(in srgb, var(--key-base, #fff) 60%, #333)) !important;
+      border-color: rgba(0,0,0,0.3) !important;
+    }
+    #piano-container .key:not(.key--black).active,
+    #piano-container .key:not(.key--black).pressed {
+      filter: brightness(1.35);
+    }
+    #piano-container .key:not(.key--black) .key__label {
+      color: rgba(0,0,0,0.6);
+      font-weight: 900;
+    }
+
+    /* Landscape: mais compacto */
+    @media (orientation: landscape) and (max-height: 500px) {
+      .topo { padding: 4px 12px 2px; }
+      .titulo-bebe { font-size: 1.1rem; }
+      .instrumento-row { padding: 2px 12px; gap: 6px; }
+      .instrumento-btn { padding: 5px 12px; font-size: 0.95rem; }
+      .musicas-row { padding: 2px 12px; gap: 5px; }
+      .musica-btn { padding: 5px 10px; font-size: 0.78rem; }
+      .piano-area { padding: 4px 6px 6px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="topo">
+    <button class="btn-voltar" onclick="location.href='index.html'">←</button>
+    <div class="titulo-bebe">🎹 Piano Bebê</div>
+  </div>
+
+  <div class="instrumento-row">
+    <button class="instrumento-btn ativo" data-inst="piano">🎹 Piano</button>
+    <button class="instrumento-btn" data-inst="cat">🐱 Gatinho</button>
+    <button class="instrumento-btn" data-inst="duck">🐣 Patinho</button>
+  </div>
+
+  <div class="musicas-row">
+    <button class="musica-btn" data-song="twinkle">⭐ Twinkle Twinkle</button>
+    <button class="musica-btn" data-song="mary">🐑 Mary Had a Little Lamb</button>
+    <button class="musica-btn" data-song="birthday">🎂 Happy Birthday</button>
+    <button class="musica-btn" data-song="macdonald">🐄 Old MacDonald</button>
+    <button class="btn-parar" id="btn-parar">⏹ Parar</button>
+  </div>
+
+  <div class="piano-area">
+    <div id="piano-container"></div>
+  </div>
+
+  <script src="base.js"></script>
+  <script>
+  'use strict';
+
+  /* ══════════════════════════════════════════════
+     Síntese de sons de animais via Web Audio API
+  ══════════════════════════════════════════════ */
+  let actx = null;
+
+  function getActx() {
+    if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+    if (actx.state === 'suspended') actx.resume();
+    return actx;
+  }
+
+  function midiHz(midi) {
+    return 440 * Math.pow(2, (midi - 69) / 12);
+  }
+
+  const AnimalSynth = {
+    // Gato: portamento descendente + vibrato suave + sawtooth
+    cat(midi) {
+      const ctx = getActx();
+      const now = ctx.currentTime;
+      const hz  = midiHz(midi);
+
+      const osc    = ctx.createOscillator();
+      const lfo    = ctx.createOscillator();
+      const lfoGain= ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+      const gain   = ctx.createGain();
+
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(hz * 1.4, now);
+      osc.frequency.exponentialRampToValueAtTime(hz, now + 0.08);
+      osc.frequency.linearRampToValueAtTime(hz * 0.93, now + 0.55);
+
+      lfo.frequency.value = 7;
+      lfoGain.gain.value  = hz * 0.025;
+      lfo.connect(lfoGain);
+      lfoGain.connect(osc.frequency);
+
+      filter.type      = 'bandpass';
+      filter.frequency.value = hz * 2.5;
+      filter.Q.value   = 2;
+
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(0.45, now + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.2,  now + 0.15);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.65);
+
+      osc.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+      lfo.start(now); osc.start(now);
+      lfo.stop(now + 0.8); osc.stop(now + 0.8);
+    },
+
+    // Pato: sweep rápido + onda quadrada
+    duck(midi) {
+      const ctx = getActx();
+      const now = ctx.currentTime;
+      const hz  = midiHz(midi);
+
+      const osc  = ctx.createOscillator();
+      const filt = ctx.createBiquadFilter();
+      const gain = ctx.createGain();
+
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(hz * 0.7, now);
+      osc.frequency.exponentialRampToValueAtTime(hz * 1.35, now + 0.04);
+      osc.frequency.exponentialRampToValueAtTime(hz * 0.8, now + 0.18);
+
+      filt.type = 'highpass';
+      filt.frequency.value = 300;
+
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(0.55, now + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
+
+      osc.connect(filt); filt.connect(gain); gain.connect(ctx.destination);
+      osc.start(now); osc.stop(now + 0.4);
+    },
+  };
+
+  /* ══════════════════════════════════════════════
+     Estado do instrumento
+  ══════════════════════════════════════════════ */
+  let instrumento = 'piano';
+
+  function tocarNota(noteStr) {
+    const midi = noteToMidi(noteStr);
+    if (midi === null) return;
+    if (instrumento === 'piano') {
+      AudioEngine.play(noteStr, 0.8);
+    } else {
+      AnimalSynth[instrumento](midi);
+    }
+  }
+
+  /* ══════════════════════════════════════════════
+     Músicas tradicionais
+  ══════════════════════════════════════════════ */
+  const MUSICAS = {
+    twinkle: {
+      nome: 'Twinkle Twinkle Little Star',
+      notas: [
+        'C4','C4','G4','G4','A4','A4','G4',
+        'F4','F4','E4','E4','D4','D4','C4',
+        'G4','G4','F4','F4','E4','E4','D4',
+        'G4','G4','F4','F4','E4','E4','D4',
+        'C4','C4','G4','G4','A4','A4','G4',
+        'F4','F4','E4','E4','D4','D4','C4',
+      ],
+      dur: [
+        .4,.4,.4,.4,.4,.4,.8,
+        .4,.4,.4,.4,.4,.4,.8,
+        .4,.4,.4,.4,.4,.4,.8,
+        .4,.4,.4,.4,.4,.4,.8,
+        .4,.4,.4,.4,.4,.4,.8,
+        .4,.4,.4,.4,.4,.4,.8,
+      ],
+    },
+    mary: {
+      nome: 'Mary Had a Little Lamb',
+      notas: [
+        'E4','D4','C4','D4','E4','E4','E4',
+        'D4','D4','D4',
+        'E4','G4','G4',
+        'E4','D4','C4','D4','E4','E4','E4','E4',
+        'D4','D4','E4','D4','C4',
+      ],
+      dur: [
+        .4,.4,.4,.4,.4,.4,.8,
+        .4,.4,.8,
+        .4,.4,.8,
+        .4,.4,.4,.4,.4,.4,.4,.4,
+        .4,.4,.4,.4,.8,
+      ],
+    },
+    birthday: {
+      nome: 'Happy Birthday',
+      notas: [
+        'C4','C4','D4','C4','F4','E4',
+        'C4','C4','D4','C4','G4','F4',
+        'C4','C4','C5','A4','F4','E4','D4',
+        'A#4','A#4','A4','F4','G4','F4',
+      ],
+      dur: [
+        .3,.15,.45,.45,.45,.9,
+        .3,.15,.45,.45,.45,.9,
+        .3,.15,.45,.45,.45,.45,.9,
+        .3,.15,.45,.45,.45,.9,
+      ],
+    },
+    macdonald: {
+      nome: 'Old MacDonald Had a Farm',
+      notas: [
+        'G4','G4','G4','D4','E4','E4','D4',
+        'B4','B4','A4','A4','G4',
+        'D4','E4','E4','D4',
+        'G4','G4','G4','G4','D4','E4','E4','D4',
+        'B4','B4','A4','A4','G4',
+      ],
+      dur: [
+        .4,.4,.4,.4,.4,.4,.8,
+        .4,.4,.4,.4,.8,
+        .4,.4,.4,.8,
+        .4,.4,.4,.4,.4,.4,.4,.8,
+        .4,.4,.4,.4,.8,
+      ],
+    },
+  };
+
+  let songTimer   = null;
+  let tocandoBtn  = null;
+  let tocando     = false;
+
+  function pararMusica() {
+    if (songTimer) { clearTimeout(songTimer); songTimer = null; }
+    tocando = false;
+    if (tocandoBtn) { tocandoBtn.classList.remove('tocando'); tocandoBtn = null; }
+    document.getElementById('btn-parar').style.display = 'none';
+    kb.releaseAll();
+  }
+
+  function tocarMusica(chave, btn) {
+    pararMusica();
+    const m = MUSICAS[chave];
+    if (!m) return;
+
+    // garantir que o audio está inicializado
+    if (instrumento === 'piano') AudioEngine.init();
+    else getActx();
+
+    tocando = true;
+    tocandoBtn = btn;
+    btn.classList.add('tocando');
+    document.getElementById('btn-parar').style.display = 'inline-block';
+
+    let i = 0;
+    function proxima() {
+      if (!tocando || i >= m.notas.length) { pararMusica(); return; }
+      const nota = m.notas[i];
+      const dur  = m.dur[i];
+      kb.releaseAll();
+      kb.highlight(nota);
+      tocarNota(nota);
+      i++;
+      songTimer = setTimeout(proxima, dur * 1000);
+    }
+    proxima();
+  }
+
+  /* ══════════════════════════════════════════════
+     Teclado de piano
+  ══════════════════════════════════════════════ */
+  AudioEngine.init();
+
+  const kb = createPianoKeyboard(document.getElementById('piano-container'), {
+    startNote: 'C4', endNote: 'B5',
+    showLabels: true,
+    responsive: true,
+    onNoteOn(noteStr) {
+      // AudioEngine.play() já chamado internamente pelo createPianoKeyboard;
+      // para animais, precisa suprimir o piano e tocar o bicho
+      if (instrumento !== 'piano') {
+        AnimalSynth[instrumento](noteToMidi(noteStr));
+      }
+    },
+  });
+
+  /* ══════════════════════════════════════════════
+     Botões de instrumento
+  ══════════════════════════════════════════════ */
+  document.querySelectorAll('.instrumento-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.instrumento-btn').forEach(b => b.classList.remove('ativo'));
+      btn.classList.add('ativo');
+      instrumento = btn.dataset.inst;
+
+      // Silencia o AudioEngine nas teclas quando animal está ativo
+      Settings.setSoundOn(instrumento === 'piano');
+
+      if (instrumento !== 'piano') getActx();
+      else AudioEngine.init();
+      pararMusica();
+    });
+  });
+
+  /* ══════════════════════════════════════════════
+     Botões de músicas
+  ══════════════════════════════════════════════ */
+  document.querySelectorAll('.musica-btn').forEach(btn => {
+    btn.addEventListener('click', () => tocarMusica(btn.dataset.song, btn));
+  });
+  document.getElementById('btn-parar').addEventListener('click', pararMusica);
+
+  /* ── Restaurar som ao sair da página ── */
+  window.addEventListener('pagehide', () => Settings.setSoundOn(true));
+  window.addEventListener('beforeunload', () => Settings.setSoundOn(true));
+  </script>
+</body>
+</html>
