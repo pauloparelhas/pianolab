@@ -16,12 +16,12 @@
     }
     /* ── PAINEL ─────────────────────────────────────────────── */
     .digital-panel {
-      flex: 1; min-height: 0; background: #0d1117;
+      flex: 0 0 auto; background: #0d1117;
       display: flex; flex-direction: column;
       border-bottom: 3px solid #000; overflow: hidden;
     }
     @media (orientation: landscape) {
-      .digital-panel { flex: 0 0 auto; max-height: 40dvh; overflow-y: auto; border-bottom: 1px solid #1a2535; }
+      .digital-panel { max-height: 40dvh; overflow-y: auto; border-bottom: 1px solid #1a2535; }
     }
 
     /* ── TOPBAR (unificada) ──────────────────────────────────── */
@@ -54,27 +54,27 @@
 
     /* ── BARRA DE TONALIDADE — maior com instrução ───────────── */
     .chave-bar-wrap {
-      background: #070d14; border-bottom: 1px solid #1a2535; flex-shrink: 0;
-      padding: 4px 8px 5px;
+      background: #070d14; flex-shrink: 0;
+      padding: 3px 8px 4px;
     }
     .chave-instr {
       font-size: 0.5rem; color: #4a6274; text-align: center;
-      letter-spacing: .5px; margin-bottom: 4px; font-weight: 600;
+      letter-spacing: .5px; margin-bottom: 2px; font-weight: 600;
     }
     .chave-bar {
-      display: flex; align-items: center; justify-content: center; gap: 4px;
+      display: flex; align-items: center; justify-content: center; gap: 2px;
     }
     .chave-dot {
-      display: flex; flex-direction: column; align-items: center; gap: 2px;
-      padding: 5px 7px; border-radius: 7px; cursor: pointer; touch-action: manipulation;
+      display: flex; flex-direction: column; align-items: center; gap: 1px;
+      padding: 3px 5px; border-radius: 7px; cursor: pointer; touch-action: manipulation;
       transition: background .15s;
     }
     .chave-dot:active { background: rgba(79,195,247,.12); }
     .chave-dot__c {
-      width: 11px; height: 11px; border-radius: 50%;
+      width: 9px; height: 9px; border-radius: 50%;
       background: #2a3a4a; border: 1.5px solid #3a4a5a; transition: background .2s;
     }
-    .chave-dot__l { font-size: 0.48rem; font-weight: 700; color: #3a4a5a; transition: color .2s; }
+    .chave-dot__l { font-size: 0.44rem; font-weight: 700; color: #3a4a5a; transition: color .2s; }
     .chave-dot.ativo .chave-dot__c { background: #4FC3F7; border-color: #4FC3F7; }
     .chave-dot.ativo .chave-dot__l { color: #4FC3F7; }
     .chave-dot.feito .chave-dot__c { background: #4CAF50; border-color: #4CAF50; }
@@ -83,37 +83,80 @@
     /* ── SELETOR DE INVERSÃO ─────────────────────────────────── */
     .inv-sel {
       display: flex; gap: 4px; justify-content: center; flex-shrink: 0;
-      padding: 4px 8px; background: #070d14; border-bottom: 1px solid #1a2535;
+      padding: 3px 8px; background: #070d14;
     }
     .inv-sel-btn {
-      padding: 3px 9px; background: #141e2e; border: 1.5px solid #263045;
-      border-radius: 6px; color: #7a8fa8; font-size: 0.5rem;
+      padding: 2px 7px; background: #141e2e; border: 1.5px solid #263045;
+      border-radius: 6px; color: #7a8fa8; font-size: 0.48rem;
       font-weight: 700; cursor: pointer; touch-action: manipulation;
       transition: border-color .15s, color .15s;
     }
     .inv-sel-btn.ativo { border-color: #4FC3F7; color: #4FC3F7; background: rgba(79,195,247,.07); }
     .inv-sel-btn:active { background: rgba(79,195,247,.15); }
 
+    /* ── WRAPPER: chave + inversão numa linha em paisagem ──────── */
+    .sel-row2 {
+      display: flex; flex-direction: column; flex-shrink: 0;
+      background: #070d14; border-bottom: 1px solid #1a2535;
+    }
+    .sel-row2 .chave-bar-wrap { border-bottom: none; }
+    .sel-row2 .inv-sel { border-bottom: none; padding-bottom: 4px; }
+    @media (orientation: landscape) {
+      .sel-row2 { flex-direction: row; align-items: center; }
+      .sel-row2 .chave-bar-wrap {
+        flex: 1; border-right: 1px solid #1a2535; padding: 2px 8px 3px;
+      }
+      .sel-row2 .chave-instr { display: none; }
+      .sel-row2 .inv-sel { flex-shrink: 0; padding: 2px 8px; }
+    }
+
     /* ── CONTEÚDO ───────────────────────────────────────────── */
     .panel-content {
       flex: 1; min-height: 0;
       display: flex; flex-direction: column; align-items: center;
-      padding: 8px 10px; gap: 6px; overflow-y: auto;
+      padding: 6px 10px; gap: 5px; overflow-y: auto;
     }
-    .screen { display: none; flex-direction: column; align-items: center; gap: 6px; width: 100%; }
+    .screen { display: none; flex-direction: column; align-items: center; gap: 5px; width: 100%; }
     .screen.active { display: flex; }
 
     .fase-label {
-      font-size: 0.55rem; font-weight: 700; letter-spacing: 2px;
+      font-size: 0.5rem; font-weight: 700; letter-spacing: 2px;
       text-transform: uppercase; color: #4a6274; align-self: flex-start;
     }
     .fase-titulo {
-      font-size: clamp(0.9rem, 3.2vw, 1.2rem); font-weight: 900;
+      font-size: clamp(0.85rem, 2.8vw, 1.1rem); font-weight: 900;
       color: #e8eaed; text-align: center; line-height: 1.2; width: 100%;
     }
     .fase-texto {
-      font-size: clamp(0.65rem, 2.2vw, 0.82rem);
+      font-size: clamp(0.62rem, 2vw, 0.78rem);
       color: #7a8fa8; text-align: center; line-height: 1.5;
+    }
+    /* Paisagem: layout ultra-compacto — tudo visível sem rolagem */
+    @media (orientation: landscape) {
+      .fase-label   { display: none !important; }
+      .fase-texto   { display: none !important; }
+      .pratica-dots { display: none !important; }
+      .panel-content { padding: 2px 8px; gap: 2px; }
+      .screen { gap: 2px; padding: 0; min-height: 0; }
+      .fase-titulo { font-size: clamp(0.65rem, 1.7vw, 0.8rem); line-height: 1.1; margin: 0; }
+      .btn-acao { padding: 4px 10px; font-size: clamp(0.58rem, 1.6vw, 0.72rem); border-radius: 7px; }
+      .btns-row { gap: 4px; flex-wrap: nowrap; }
+      /* Demo e praticar ativos: título full-width, depois barra + botões lado a lado */
+      #s-demo.active,
+      #s-praticar.active {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        column-gap: 8px; row-gap: 2px;
+        align-items: center;
+      }
+      #s-demo.active .fase-titulo,
+      #s-praticar.active .fase-titulo { grid-column: 1 / -1; }
+      #s-demo.active .prog-barra,
+      #s-praticar.active .prog-barra  { grid-column: 1; grid-row: 2; }
+      #s-demo.active .btns-row,
+      #s-praticar.active .btns-row    { grid-column: 2; grid-row: 2; }
+      /* Em paisagem: oculta botão secundário para caber na tela */
+      #s-praticar #btn-repetir        { display: none !important; }
     }
 
     /* ── INVERSÕES (conceito) ───────────────────────────────── */
@@ -136,17 +179,28 @@
     /* ── BARRA DE PROGRESSÃO (demo / praticar) ──────────────── */
     .prog-barra {
       display: flex; align-items: center; gap: 4px;
-      justify-content: center; flex-wrap: wrap; width: 100%;
+      justify-content: center; flex-wrap: nowrap; width: 100%;
     }
     .prog-acorde {
-      padding: 5px 8px; border-radius: 7px;
+      padding: 3px 6px; border-radius: 7px;
       background: #1a2535; border: 1.5px solid #2a3a4a;
-      font-size: clamp(0.58rem, 1.8vw, 0.74rem); font-weight: 700;
-      color: #7a8fa8; text-align: center;
-      transition: border-color .2s, background .2s, color .2s;
+      text-align: center; flex-shrink: 0;
+      display: flex; flex-direction: column; align-items: center; gap: 1px;
+      transition: border-color .2s, background .2s;
     }
-    .prog-acorde.ativo { border-color: #4FC3F7; background: rgba(79,195,247,.13); color: #e8eaed; }
-    .prog-seta { color: #2a3a4a; font-size: 0.8rem; }
+    .prog-acorde.ativo { border-color: #4FC3F7; background: rgba(79,195,247,.13); }
+    .prog-seta { color: #2a3a4a; font-size: 0.8rem; flex-shrink: 0; }
+    /* Itens dentro do card */
+    .pa-top { display: flex; align-items: center; gap: 2px; }
+    .pa-grau { font-size: clamp(0.6rem, 1.8vw, 0.76rem); font-weight: 900; color: #e8eaed; }
+    .pa-nota { font-size: clamp(0.52rem, 1.5vw, 0.64rem); color: #6a8a9a; }
+    .pa-nota::before { content: '·'; color: #3a5a6a; margin-right: 2px; }
+    .pa-func { font-size: clamp(0.44rem, 1.3vw, 0.56rem); color: #4FC3F7; font-weight: 700; letter-spacing: .4px; }
+    /* Paisagem: card horizontal — 1 linha */
+    @media (orientation: landscape) {
+      .prog-acorde { flex-direction: row; padding: 2px 5px; gap: 2px; }
+      .pa-func::before { content: '·'; color: #3a5a6a; margin-right: 1px; }
+    }
 
     /* ── PROGRESSO (praticar) ───────────────────────────────── */
     .pratica-dots { display: flex; gap: 6px; justify-content: center; }
@@ -179,11 +233,11 @@
     /* REGRA: piano sempre C4-B5 (2 oitavas). Staff acima. Não alterar. */
     .piano-stage {
       background: #111827; border-top: 3px solid #000;
-      flex: 0 0 50dvh;
+      flex: 1; min-height: clamp(180px, 45dvh, 420px);
       display: flex; flex-direction: column;
       align-items: stretch;
-      --key-h:    clamp(90px, 28dvh, 240px);
-      --key-bk-h: clamp(54px, 17dvh, 144px);
+      --key-h:    clamp(90px, 28dvh, 280px);
+      --key-bk-h: clamp(54px, 17dvh, 168px);
     }
     @media (orientation: landscape) {
       .piano-stage {
@@ -250,16 +304,16 @@
     <!-- Seletor de progressão -->
     <div class="inv-sel" id="prog-sel"></div>
 
-    <div class="chave-bar-wrap">
-      <div class="chave-instr">Escolha a tonalidade:</div>
-      <div class="chave-bar" id="chave-bar"></div>
-    </div>
-
-    <!-- Seletor de inversão: muda a posição dos acordes na progressão -->
-    <div class="inv-sel" id="inv-sel">
-      <button class="inv-sel-btn ativo" onclick="setInversao(0)">Posição raiz</button>
-      <button class="inv-sel-btn"       onclick="setInversao(1)">1ª inversão</button>
-      <button class="inv-sel-btn"       onclick="setInversao(2)">2ª inversão</button>
+    <div class="sel-row2">
+      <div class="chave-bar-wrap">
+        <div class="chave-instr">Escolha a tonalidade:</div>
+        <div class="chave-bar" id="chave-bar"></div>
+      </div>
+      <div class="inv-sel" id="inv-sel">
+        <button class="inv-sel-btn ativo" onclick="setInversao(0)">Raiz</button>
+        <button class="inv-sel-btn"       onclick="setInversao(1)">1ª inv</button>
+        <button class="inv-sel-btn"       onclick="setInversao(2)">2ª inv</button>
+      </div>
     </div>
 
     <div class="panel-content">
@@ -368,7 +422,7 @@ const PROGRESSOES = [
     acordes: [
       { grau:'ii', nome:'menor', rootOffset:2, pos:[[ 2, 5, 9],[ 5, 9,14],[ 9,14,17]] },
       { grau:'V',  nome:'Maior', rootOffset:7, pos:[[ 2, 7,11],[ 7,11,14],[11,14,19]] },
-      { grau:'I',  nome:'Maior', rootOffset:0, pos:[[ 4, 7,12],[ 7,12,16],[12,16,19]] },
+      { grau:'I',  nome:'Maior', rootOffset:0, pos:[[ 0, 4, 7],[ 4, 7,12],[ 7,12,16]] },
     ],
   },
   {
@@ -697,6 +751,8 @@ function faseSeguinte() {
 /* ══════════════════════════════════════════════════════════════
    NAVEGAÇÃO DE FASES
 ══════════════════════════════════════════════════════════════ */
+const GRAU_FUNCAO = {'I':'T','ii':'SD','iii':'T','IV':'SD','V':'D','vi':'T','vii°':'D','vii':'D'};
+
 function buildBarraProgressao(containerId) {
   const el = document.getElementById(containerId);
   el.innerHTML = '';
@@ -710,10 +766,12 @@ function buildBarraProgressao(containerId) {
     const card = document.createElement('div');
     card.className = 'prog-acorde';
     card.dataset.idx = i;
-    const t = tonicMidi();
-    const rootMidi = t + p.rootOffset;
-    const qual = p.nome === 'menor' ? ' m' : '';
-    card.innerHTML = `<div>${p.grau}</div><div style="font-size:.75em;color:#7a8fa8;margin-top:1px">${nomeNota(midiToNote(rootMidi))}${qual}</div>`;
+    const rootMidi = tonicMidi() + p.rootOffset;
+    const qualStr = p.nome === 'menor' ? ' m' : '';
+    const funcao  = GRAU_FUNCAO[p.grau] || '';
+    card.innerHTML =
+      `<div class="pa-top"><span class="pa-grau">${p.grau}</span><span class="pa-nota">${nomeNota(midiToNote(rootMidi))}${qualStr}</span></div>` +
+      `<span class="pa-func">${funcao}</span>`;
     el.appendChild(card);
   });
 }
