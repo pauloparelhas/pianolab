@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>M0 · Bateria — PianoLab</title>
+  <link rel="stylesheet" href="base.css">
+  <style>
+    html, body {
+      height: 100dvh; max-height: 100dvh;
+      margin: 0; overflow: hidden;
+      background: #0d1117;
+      display: flex; flex-direction: column;
+      user-select: none;
+    }
+
+    /* ── Topo ── */
+    .topo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px 4px;
+      flex-shrink: 0;
+    }
+    .btn-voltar {
+      background: none; border: none;
+      color: #4FC3F7; font-size: 1.3rem;
+      cursor: pointer; padding: 4px;
+      line-height: 1;
+    }
+    .titulo {
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: #F9A825;
+      letter-spacing: -0.5px;
+    }
+
+    /* ── Palco da bateria ── */
+    .stage {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 16px 12px;
+      gap: 10px;
+      min-height: 0;
+    }
+
+    /* ── Linha de peças ── */
+    .row {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+      justify-content: center;
+      width: 100%;
+    }
+
+    /* ── Peça genérica ── */
+    .peca {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+    .peca-nome {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: #5a7a9a;
+    }
+    .peca.hit .peca-nome { color: #fff; }
+
+    /* ── SVG das peças ── */
+    .peca svg {
+      display: block;
+      transition: transform 0.06s, filter 0.06s;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
+    }
+    .peca.hit svg {
+      transform: scale(0.92);
+      filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3)) brightness(1.4);
+    }
+
+    /* Landscape */
+    @media (orientation: landscape) and (max-height: 500px) {
+      .topo { padding: 4px 12px 2px; }
+      .titulo { font-size: 1.1rem; }
+      .stage { padding: 4px 12px 8px; gap: 8px; }
+      .row { gap: 8px; }
+      .peca-nome { font-size: 0.65rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="topo">
+    <button class="btn-voltar" onclick="location.href='m0_bebe.html'">←</button>
+    <div class="titulo">🥁 Bateria</div>
+  </div>
+
+  <div class="stage">
+    <!-- Linha 1: pratos -->
+    <div class="row" id="row-pratos"></div>
+    <!-- Linha 2: tambores -->
+    <div class="row" id="row-tambores"></div>
+    <!-- Linha 3: bumbo (chão) -->
+    <div class="row" id="row-bumbo"></div>
+  </div>
+
+  <script src="base.js"></script>
+  <script>
+  'use strict';
+
+  /* ══════════════════════════════════════════════
+     Síntese de bateria via Web Audio API
+  ══════════════════════════════════════════════ */
+  let ctx = null;
+  function getCtx() {
+    if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (ctx.state === 'suspended') ctx.resume();
+    return ctx;
+  }
+
+  const Drum = {
+    // Bumbo: impulso grave
+    kick() {
+      const c = getCtx(); const now = c.currentTime;
+      const osc  = c.createOscillator();
+      const gain = c.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(150, now);
+      osc.frequency.exponentialRampToValueAtTime(30, now + 0.25);
+      gain.gain.setValueAtTime(1.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+      osc.connect(gain); gain.connect(c.destination);
+      osc.start(now); osc.stop(now + 0.4);
+    },
+
+    // Caixa: ruído + tonal
+    snare() {
+      const c = getCtx(); const now = c.currentTime;
+      // ruído
+      const buf = c.createBuffer(1, c.sampleRate * 0.15, c.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+      const src  = c.createBufferSource();
+      src.buffer = buf;
+      const filt = c.createBiquadFilter();
+      filt.type = 'bandpass'; filt.frequency.value = 3000; filt.Q.value = 0.5;
+      const nGain = c.createGain();
+      nGain.gain.setValueAtTime(0.6, now);
+      nGain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+      // tonal
+      const osc  = c.createOscillator();
+      const oGain= c.createGain();
+      osc.type = 'triangle'; osc.frequency.value = 200;
+      oGain.gain.setValueAtTime(0.5, now);
+      oGain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+
+      src.connect(filt); filt.connect(nGain); nGain.connect(c.destination);
+      osc.connect(oGain); oGain.connect(c.destination);
+      src.start(now); osc.start(now); osc.stop(now + 0.2);
+    },
+
+    // Hi-hat fechado: ruído filtrado, curto
+    hihat(open = false) {
+      const c = getCtx(); const now = c.currentTime;
+      const dur  = open ? 0.4 : 0.08;
+      const buf  = c.createBuffer(1, c.sampleRate * dur, c.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+      const src  = c.createBufferSource();
+      src.buffer = buf;
+      const filt = c.createBiquadFilter();
+      filt.type = 'highpass'; filt.frequency.value = 7000;
+      const gain = c.createGain();
+      gain.gain.setValueAtTime(0.5, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+      src.connect(filt); filt.connect(gain); gain.connect(c.destination);
+      src.start(now);
+    },
+
+    // Tom: tambor médio/grave com pitch definido
+    tom(hz = 120) {
+      const c = getCtx(); const now = c.currentTime;
+      const osc  = c.createOscillator();
+      const gain = c.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(hz, now);
+      osc.frequency.exponentialRampToValueAtTime(hz * 0.5, now + 0.2);
+      gain.gain.setValueAtTime(0.9, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+      osc.connect(gain); gain.connect(c.destination);
+      osc.start(now); osc.stop(now + 0.3);
+    },
+
+    // Prato (ride/crash): ruído metálico longo
+    cymbal(short = false) {
+      const c = getCtx(); const now = c.currentTime;
+      const dur = short ? 0.3 : 1.2;
+      const buf  = c.createBuffer(1, c.sampleRate * dur, c.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+      const src  = c.createBufferSource();
+      src.buffer = buf;
+      const f1 = c.createBiquadFilter(); f1.type='bandpass'; f1.frequency.value=4000; f1.Q.value=0.3;
+      const f2 = c.createBiquadFilter(); f2.type='highpass'; f2.frequency.value=6000;
+      const gain = c.createGain();
+      gain.gain.setValueAtTime(0.4, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+      src.connect(f1); f1.connect(f2); f2.connect(gain); gain.connect(c.destination);
+      src.start(now);
+    },
+  };
+
+  /* ══════════════════════════════════════════════
+     Definição das peças
+  ══════════════════════════════════════════════ */
+  // w, h = dimensões base do SVG
+  // row  = em qual linha aparece
+  // hit  = função de som
+  // cor  = cor principal da peça
+  const PECAS = [
+    {
+      id: 'crash', nome: 'Crash', row: 'pratos',
+      hit: () => Drum.cymbal(false),
+      cor: '#c0a020', cor2: '#806010',
+      svg: (w, h) => `
+        <svg width="${w}" height="${h}" viewBox="0 0 120 30">
+          <ellipse cx="60" cy="8"  rx="55" ry="8" fill="#c0a020" stroke="#806010" stroke-width="2"/>
+          <ellipse cx="60" cy="8"  rx="20" ry="4" fill="#d4b428"/>
+          <line x1="60" y1="16" x2="60" y2="30" stroke="#555" stroke-width="3" stroke-linecap="round"/>
+        </svg>`,
+    },
+    {
+      id: 'hihat', nome: 'Hi-Hat', row: 'pratos',
+      hit: () => Drum.hihat(false),
+      cor: '#c0a020', cor2: '#806010',
+      svg: (w, h) => `
+        <svg width="${w}" height="${h}" viewBox="0 0 100 40">
+          <ellipse cx="50" cy="6"  rx="44" ry="6" fill="#c0a020" stroke="#806010" stroke-width="2"/>
+          <ellipse cx="50" cy="18" rx="44" ry="6" fill="#b09018" stroke="#806010" stroke-width="2"/>
+          <line x1="50" y1="24" x2="50" y2="40" stroke="#555" stroke-width="3" stroke-linecap="round"/>
+        </svg>`,
+    },
+    {
+      id: 'ride', nome: 'Ride', row: 'pratos',
+      hit: () => Drum.cymbal(true),
+      cor: '#c0a020', cor2: '#806010',
+      svg: (w, h) => `
+        <svg width="${w}" height="${h}" viewBox="0 0 140 30">
+          <ellipse cx="70" cy="8"  rx="65" ry="8" fill="#c0a020" stroke="#806010" stroke-width="2"/>
+          <ellipse cx="70" cy="8"  rx="22" ry="4" fill="#d4b428"/>
+          <line x1="70" y1="16" x2="70" y2="30" stroke="#555" stroke-width="3" stroke-linecap="round"/>
+        </svg>`,
+    },
+    {
+      id: 'tom1', nome: 'Tom 1', row: 'tambores',
+      hit: () => Drum.tom(180),
+      cor: '#c0392b', cor2: '#7a1a10',
+      svg: (w, h) => `
+        <svg width="${w}" height="${h}" viewBox="0 0 90 80">
+          <ellipse cx="45" cy="12" rx="40" ry="12" fill="#e55" stroke="#c0392b" stroke-width="2"/>
+          <rect x="5" y="12" width="80" height="45" rx="4" fill="#c0392b" stroke="#7a1a10" stroke-width="2"/>
+          <ellipse cx="45" cy="57" rx="40" ry="12" fill="#b03020"/>
+          <line x1="45" y1="69" x2="45" y2="80" stroke="#555" stroke-width="3" stroke-linecap="round"/>
+        </svg>`,
+    },
+    {
+      id: 'tom2', nome: 'Tom 2', row: 'tambores',
+      hit: () => Drum.tom(130),
+      cor: '#1565c0', cor2: '#0d3a75',
+      svg: (w, h) => `
+        <svg width="${w}" height="${h}" viewBox="0 0 110 95">
+          <ellipse cx="55" cy="14" rx="50" ry="14" fill="#3a7fff" stroke="#1565c0" stroke-width="2"/>
+          <rect x="5" y="14" width="100" height="55" rx="4" fill="#1565c0" stroke="#0d3a75" stroke-width="2"/>
+          <ellipse cx="55" cy="69" rx="50" ry="14" fill="#0d4a9a"/>
+          <line x1="55" y1="83" x2="55" y2="95" stroke="#555" stroke-width="3" stroke-linecap="round"/>
+        </svg>`,
+    },
+    {
+      id: 'snare', nome: 'Caixa', row: 'tambores',
+      hit: () => Drum.snare(),
+      cor: '#555', cor2: '#333',
+      svg: (w, h) => `
+        <svg width="${w}" height="${h}" viewBox="0 0 130 70">
+          <ellipse cx="65" cy="14" rx="60" ry="14" fill="#ccc" stroke="#888" stroke-width="2"/>
+          <rect x="5" y="14" width="120" height="30" rx="2" fill="#666" stroke="#444" stroke-width="2"/>
+          <!-- molas da caixa -->
+          <path d="M15 32 Q25 28 35 32 Q45 36 55 32 Q65 28 75 32 Q85 36 95 32 Q105 28 115 32" stroke="#aaa" stroke-width="1.5" fill="none"/>
+          <ellipse cx="65" cy="44" rx="60" ry="14" fill="#aaa"/>
+          <line x1="65" y1="58" x2="65" y2="70" stroke="#555" stroke-width="3" stroke-linecap="round"/>
+        </svg>`,
+    },
+    {
+      id: 'kick', nome: 'Bumbo', row: 'bumbo',
+      hit: () => Drum.kick(),
+      cor: '#2e7d32', cor2: '#1b4d1e',
+      svg: (w, h) => `
+        <svg width="${w}" height="${h}" viewBox="0 0 200 120">
+          <ellipse cx="100" cy="60" rx="95" ry="58" fill="#2e7d32" stroke="#1b4d1e" stroke-width="3"/>
+          <ellipse cx="100" cy="60" rx="78" ry="46" fill="#1b5e20" stroke="#144018" stroke-width="2"/>
+          <!-- detalhes centrais -->
+          <ellipse cx="100" cy="60" rx="25" ry="25" fill="#2e7d32" stroke="#4caf50" stroke-width="1.5"/>
+          <!-- pernas -->
+          <line x1="30"  y1="108" x2="20"  y2="120" stroke="#555" stroke-width="4" stroke-linecap="round"/>
+          <line x1="170" y1="108" x2="180" y2="120" stroke="#555" stroke-width="4" stroke-linecap="round"/>
+        </svg>`,
+    },
+  ];
+
+  /* ══════════════════════════════════════════════
+     Renderização
+  ══════════════════════════════════════════════ */
+  // Tamanhos por linha
+  const SIZES = {
+    pratos:   { w: null, h: 55 },   // w = calculado abaixo
+    tambores: { w: null, h: 90 },
+    bumbo:    { w: null, h: 115 },
+  };
+
+  const ROWS = {
+    pratos:   document.getElementById('row-pratos'),
+    tambores: document.getElementById('row-tambores'),
+    bumbo:    document.getElementById('row-bumbo'),
+  };
+
+  PECAS.forEach(p => {
+    const size = SIZES[p.row];
+    const div = document.createElement('div');
+    div.className = 'peca';
+    div.id = 'peca-' + p.id;
+    div.innerHTML = `
+      ${p.svg(size.w || 100, size.h)}
+      <span class="peca-nome">${p.nome}</span>`;
+
+    div.addEventListener('pointerdown', e => {
+      e.preventDefault();
+      getCtx(); // inicializa na primeira interação
+      p.hit();
+      div.classList.add('hit');
+      setTimeout(() => div.classList.remove('hit'), 120);
+    });
+
+    ROWS[p.row].appendChild(div);
+  });
+
+  // Ajusta tamanho do bumbo para ser proporcional ao espaço disponível
+  window.addEventListener('resize', ajustarBumbo);
+  ajustarBumbo();
+
+  function ajustarBumbo() {
+    const bumboDiv = document.getElementById('peca-kick');
+    if (!bumboDiv) return;
+    const stageW = document.querySelector('.stage').clientWidth - 32;
+    const svg = bumboDiv.querySelector('svg');
+    if (svg) {
+      const targetW = Math.min(stageW * 0.6, 240);
+      svg.setAttribute('width', targetW);
+      svg.setAttribute('height', targetW * 0.6);
+    }
+  }
+  </script>
+</body>
+</html>

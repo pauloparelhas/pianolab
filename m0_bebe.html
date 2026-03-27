@@ -116,26 +116,11 @@
     .piano-wrap.responsive { width: 100%; }
     .piano.responsive { width: 100%; }
 
-    /* Cores vivas nas teclas brancas */
-    #piano-container .key.nota-do  { --key-base: #FF6B6B; }
-    #piano-container .key.nota-re  { --key-base: #FFA040; }
-    #piano-container .key.nota-mi  { --key-base: #FFD700; }
-    #piano-container .key.nota-fa  { --key-base: #66BB6A; }
-    #piano-container .key.nota-sol { --key-base: #4FC3F7; }
-    #piano-container .key.nota-la  { --key-base: #9575CD; }
-    #piano-container .key.nota-si  { --key-base: #F06292; }
-
-    #piano-container .key:not(.key--black) {
-      background: linear-gradient(to bottom, var(--key-base, #fff), color-mix(in srgb, var(--key-base, #fff) 60%, #333)) !important;
-      border-color: rgba(0,0,0,0.3) !important;
-    }
-    #piano-container .key:not(.key--black).active,
-    #piano-container .key:not(.key--black).pressed {
-      filter: brightness(1.35);
-    }
-    #piano-container .key:not(.key--black) .key__label {
-      color: rgba(0,0,0,0.6);
-      font-weight: 900;
+    /* Marcadores Dó e Sol */
+    #piano-container .key__label {
+      font-size: 1.3rem;
+      color: #444;
+      font-weight: 400;
     }
 
     /* Landscape: mais compacto */
@@ -161,6 +146,7 @@
     <button class="instrumento-btn ativo" data-inst="piano">🎹 Piano</button>
     <button class="instrumento-btn" data-inst="cat">🐱 Gatinho</button>
     <button class="instrumento-btn" data-inst="duck">🐣 Patinho</button>
+    <a href="m0_bateria.html" class="instrumento-btn" style="text-decoration:none">🥁 Bateria</a>
   </div>
 
   <div class="musicas-row">
@@ -393,9 +379,10 @@
   AudioEngine.init();
 
   const kb = createPianoKeyboard(document.getElementById('piano-container'), {
-    startNote: 'C4', endNote: 'B5',
+    startNote: 'C4', endNote: 'B4',
     showLabels: true,
     responsive: true,
+    labelMap: { 'C4': '𝄞', 'G4': '☀' },
     onNoteOn(noteStr) {
       // AudioEngine.play() já chamado internamente pelo createPianoKeyboard;
       // para animais, precisa suprimir o piano e tocar o bicho
