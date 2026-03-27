@@ -361,6 +361,38 @@ const PROGRESSOES = [
       { grau:'IV', nome:'Maior', rootOffset:5, pos:[[ 0, 5, 9],[ 5, 9,12],[ 9,12,17]] },
     ],
   },
+  {
+    // Jazz: ii menor → V → I (resolução clássica do jazz/bossa)
+    // Voice leading pos[0]: Dm(D,F,A) → G/D(D,G,B) → C/E(E,G,C) — apenas 4+3 semitons
+    id:'ii-V-I', titulo:'ii – V – I', tts:'dois, cinco, um',
+    acordes: [
+      { grau:'ii', nome:'menor', rootOffset:2, pos:[[ 2, 5, 9],[ 5, 9,14],[ 9,14,17]] },
+      { grau:'V',  nome:'Maior', rootOffset:7, pos:[[ 2, 7,11],[ 7,11,14],[11,14,19]] },
+      { grau:'I',  nome:'Maior', rootOffset:0, pos:[[ 4, 7,12],[ 7,12,16],[12,16,19]] },
+    ],
+  },
+  {
+    // Clássica/blues: I → IV → V → I (cadência perfeita — toda a música tonal)
+    // Voice leading pos[0]: (C,E,G)→(C,F,A)→(D,G,B)→(C,E,G) — 3+6+9 semitons
+    id:'I-IV-V-I', titulo:'I – IV – V – I', tts:'um, quatro, cinco, um',
+    acordes: [
+      { grau:'I',  nome:'Maior', rootOffset:0, pos:[[ 0, 4, 7],[ 4, 7,12],[ 7,12,16]] },
+      { grau:'IV', nome:'Maior', rootOffset:5, pos:[[ 0, 5, 9],[ 5, 9,12],[ 9,12,17]] },
+      { grau:'V',  nome:'Maior', rootOffset:7, pos:[[ 2, 7,11],[ 7,11,14],[11,14,19]] },
+      { grau:'I',  nome:'Maior', rootOffset:0, pos:[[ 0, 4, 7],[ 4, 7,12],[ 7,12,16]] },
+    ],
+  },
+  {
+    // Country/rock: I → V → IV → I (movimento inverso da clássica)
+    // Voice leading pos[0]: (C,E,G)→(D,G,B)→(C,F,A)→(C,E,G) — 9+6+3 semitons
+    id:'I-V-IV-I', titulo:'I – V – IV – I', tts:'um, cinco, quatro, um',
+    acordes: [
+      { grau:'I',  nome:'Maior', rootOffset:0, pos:[[ 0, 4, 7],[ 4, 7,12],[ 7,12,16]] },
+      { grau:'V',  nome:'Maior', rootOffset:7, pos:[[ 2, 7,11],[ 7,11,14],[11,14,19]] },
+      { grau:'IV', nome:'Maior', rootOffset:5, pos:[[ 0, 5, 9],[ 5, 9,12],[ 9,12,17]] },
+      { grau:'I',  nome:'Maior', rootOffset:0, pos:[[ 0, 4, 7],[ 4, 7,12],[ 7,12,16]] },
+    ],
+  },
 ];
 
 // Retorna os acordes ativos com offsets clamped para MIDI 60-83 (C4-B5)
