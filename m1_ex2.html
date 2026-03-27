@@ -422,6 +422,11 @@
           <div class="nota-circulo" id="apres-circulo"></div>
         </div>
         <button class="btn-ouvir" id="btn-ouvir">▶ Ouvir novamente</button>
+        <div id="apres-btns-velocidade" style="display:flex;gap:5px;flex-wrap:wrap;justify-content:center">
+          <button class="btn-ouvir" onclick="tocarSequencia(900)" style="font-size:0.72rem;min-height:36px">♩ Devagar</button>
+          <button class="btn-ouvir" onclick="tocarSequencia(550)" style="font-size:0.72rem;min-height:36px">♩♩ Médio</button>
+          <button class="btn-ouvir" onclick="tocarSequencia(300)" style="font-size:0.72rem;min-height:36px">♩♩♩ Rápido</button>
+        </div>
       </div>
 
       <!-- FASE 6: Quiz -->
@@ -494,6 +499,8 @@ const MODULE = {
 
 /* ── Constantes derivadas ─────────────────────────────────── */
 const NOTAS        = MODULE.notes;
+const NOTA_NOME_MAP = {};
+NOTAS.forEach(n => { NOTA_NOME_MAP[n.midi] = n.nome; });
 const QUIZ_FASE    = NOTAS.length + 1;   // fase 6
 const CELEBRA_FASE = NOTAS.length + 2;  // fase 7
 const TOTAL_FASES  = CELEBRA_FASE;
@@ -518,13 +525,37 @@ const kb = createPianoKeyboard(document.getElementById('piano-m2'), {
   responsive: true,
   pressColor: MODULE.pressColor,
   onNoteOn(noteStr) {
-    if (faseAtual <= NOTAS.length) {
-      AudioEngine.play(noteStr);
-    } else if (faseAtual === QUIZ_FASE) {
+    AudioEngine.play(noteStr, 0.7);
+    kb.clearHighlights();
+    kb.highlight(noteStr);
+    const nomeStr = NOTA_NOME_MAP[noteStr] || noteStr.replace(/\d/,'');
+    TTS.falar(nomeStr);
+    if (faseAtual === QUIZ_FASE) {
       avaliarQuiz(noteStr);
     }
   },
 });
+
+/* TOCAR SEQUÊNCIA DE NOTAS */
+let seqTimer = null;
+function tocarSequencia(intervaloMs) {
+  if (seqTimer) { clearTimeout(seqTimer); seqTimer = null; }
+  kb.releaseAll(); kb.clearHighlights();
+  const seq = NOTAS.map(n => n.midi);
+  let i = 0;
+  function passo() {
+    if (i > 0) kb.release(seq[i-1]);
+    if (i >= seq.length) return;
+    const n = seq[i];
+    kb.highlight(n);
+    AudioEngine.play(n, intervaloMs / 1000);
+    TTS.falar(NOTAS[i].nome);
+    i++;
+    seqTimer = setTimeout(passo, intervaloMs);
+  }
+  AudioEngine.init();
+  passo();
+}
 
 /* ══════════════════════════════════════════════════════════════
    SEQ-DOTS — círculos clicáveis (apresentação)
@@ -658,7 +689,6 @@ function proximaQuizNota() {
   document.getElementById('feedback-quiz').textContent = '';
   document.getElementById('feedback-quiz').className   = 'feedback-quiz';
   TTS.falar('Toque o ' + quizAtual.nome);
-  if (Settings.getEasyMode()) kb.hint(quizAtual.midi);
 }
 
 function avaliarQuiz(noteStr) {
@@ -808,7 +838,6 @@ btnEasy.addEventListener('click', () => {
   btnEasy.classList.toggle('ativo', on);
   if (faseAtual === QUIZ_FASE && quizAtual) {
     kb.clearHints();
-    if (on) kb.hint(quizAtual.midi);
   }
 });
 

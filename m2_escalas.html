@@ -22,7 +22,7 @@
       border-bottom: 3px solid #000; overflow: hidden;
     }
     @media (orientation: landscape) {
-      .digital-panel { flex: 0 0 auto; max-height: 40dvh; overflow-y: auto; border-bottom: 1px solid #1a2535; }
+      .digital-panel { flex: 0 0 auto; max-height: 40dvh; overflow: hidden; border-bottom: 1px solid #1a2535; }
     }
 
     /* ── TOPBAR (unificada: nav + fases + controles) ─────────── */
@@ -200,6 +200,26 @@
       40%{transform:translateX(4px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(3px)}
     }
     .key.shake { animation: shake-tecla .35s ease-in-out; }
+
+    /* ── LANDSCAPE: compactação total sem scroll ─────────────── */
+    @media (orientation: landscape) {
+      .chave-instr   { display: none !important; }
+      .fase-label    { display: none !important; }
+      .fase-texto    { display: none !important; }
+      .panel-content { padding: 2px 8px; gap: 2px; overflow: hidden; }
+      .screen        { gap: 2px; }
+      .fase-titulo   { font-size: clamp(0.68rem, 1.8vw, 0.86rem); line-height: 1; margin: 0; }
+      .btn-acao      { padding: 4px 12px; font-size: clamp(0.6rem, 1.6vw, 0.74rem); border-radius: 7px; }
+      .chave-bar-wrap { padding: 2px 8px 3px; }
+      .chave-dot      { padding: 3px 5px; }
+      .chave-dot__c   { width: 9px; height: 9px; }
+      .escala-vis    { gap: 0; }
+      .escala-nota__circulo { width: clamp(20px,5.5vw,28px) !important; height: clamp(20px,5.5vw,28px) !important; font-size: clamp(0.3rem,1.1vw,0.46rem) !important; }
+      .escala-sep    { display: none !important; }
+      .escala-nota__grau { font-size: clamp(0.28rem, 0.9vw, 0.38rem); }
+      .pratica-prog  { gap: 4px; }
+      .pratica-status { font-size: clamp(0.58rem, 1.7vw, 0.72rem); min-height: 1em; }
+    }
   </style>
 </head>
 <body>
@@ -323,6 +343,12 @@ const kb = createPianoKeyboard(
     showLabels:true, responsive:true,
     onNoteOn(noteStr) {
       if (Settings.getSoundOn()) AudioEngine.play(noteStr);
+      if (faseAtual === 'praticar') {
+        const notas = escalaNotas();
+        if (praticaStep < notas.length && noteToMidi(noteStr) === notas[praticaStep]) {
+          praticaAvancar();
+        }
+      }
     }
   }
 );

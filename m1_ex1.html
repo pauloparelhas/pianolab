@@ -359,6 +359,11 @@
           <p class="nota-subtitulo">A primeira nota do piano</p>
         </div>
         <button class="btn-ouvir" id="btn-ouvir">▶ Ouvir o Dó</button>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin-top:4px">
+          <button class="btn-ouvir" id="btn-all-lento"  onclick="tocarTodasNotas(900)" style="font-size:0.75rem;min-height:38px">♩ Devagar</button>
+          <button class="btn-ouvir" id="btn-all-medio"  onclick="tocarTodasNotas(550)" style="font-size:0.75rem;min-height:38px">♩♩ Médio</button>
+          <button class="btn-ouvir" id="btn-all-rapido" onclick="tocarTodasNotas(300)" style="font-size:0.75rem;min-height:38px">♩♩♩ Rápido</button>
+        </div>
       </div>
 
       <!-- FASE 2: Identificação -->
@@ -431,13 +436,40 @@ const kb = createPianoKeyboard(document.getElementById('piano-m1ex1'), {
   responsive: true,
   pressColor: MODULE.pressColor,
   onNoteOn(noteStr) {
-    if (faseAtual === 1) {
-      AudioEngine.play(noteStr);
-    } else if (faseAtual === 2) {
+    AudioEngine.play(noteStr);
+    kb.clearHighlights();
+    kb.highlight(noteStr);
+    setTimeout(() => { if (faseAtual !== 2 || !document.getElementById('s2').classList.contains('active')) kb.release(noteStr); }, 600);
+    const nomeNota = MODULE.labelMap[noteStr] || noteStr.replace(/\d/,'');
+    TTS.falar(nomeNota);
+    if (faseAtual === 2) {
       avaliarResposta(noteStr);
     }
   },
 });
+
+/* TOCAR TODAS AS NOTAS DA ESCALA */
+let tocarTimer = null;
+function tocarTodasNotas(intervaloMs) {
+  if (tocarTimer) { clearTimeout(tocarTimer); tocarTimer = null; }
+  kb.releaseAll(); kb.clearHighlights();
+  // Notas de Dó a Dó (C4 a C5) — 8 notas
+  const seq = ['C4','D4','E4','F4','G4','A4','B4','C5'];
+  let i = 0;
+  function passo() {
+    if (i > 0) { kb.release(seq[i-1]); }
+    if (i >= seq.length) return;
+    const n = seq[i];
+    kb.highlight(n);
+    AudioEngine.play(n, intervaloMs / 1000);
+    const nomeNota = MODULE.labelMap[n] || n.replace(/\d/,'');
+    TTS.falar(nomeNota);
+    i++;
+    tocarTimer = setTimeout(passo, intervaloMs);
+  }
+  AudioEngine.init();
+  passo();
+}
 
 /* ══════════════════════════════════════════════════════════════
    NAV DOTS — progresso de fase
@@ -502,7 +534,6 @@ function entrarIdentificacao() {
   feedEl.className = 'feedback-ident';
   kb.releaseAll();
   kb.clearHints();
-  if (Settings.getEasyMode()) kb.hint(MODULE.note.midi);
   TTS.falar('Onde está o Dó?');
 }
 
@@ -535,7 +566,6 @@ function avaliarResposta(noteStr) {
     } else {
       setTimeout(() => {
         kb.releaseAll();
-        if (Settings.getEasyMode()) kb.hint(MODULE.note.midi);
         feedEl.textContent = '';
         feedEl.className = 'feedback-ident';
       }, 800);
@@ -596,7 +626,6 @@ btnEasy.addEventListener('click', () => {
   btnEasy.classList.toggle('ativo', on);
   if (faseAtual === 2) {
     kb.clearHints();
-    if (on) kb.hint(MODULE.note.midi);
   }
 });
 

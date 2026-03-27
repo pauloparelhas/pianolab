@@ -21,7 +21,7 @@
       border-bottom: 3px solid #000; overflow: hidden;
     }
     @media (orientation: landscape) {
-      .digital-panel { flex: 0 0 auto; max-height: 40dvh; overflow-y: auto; border-bottom: 1px solid #1a2535; }
+      .digital-panel { flex: 0 0 auto; max-height: 40dvh; overflow: hidden; border-bottom: 1px solid #1a2535; }
     }
 
     /* ── TOPBAR (unificada) ──────────────────────────────────── */
@@ -220,6 +220,28 @@
     .piano-stage .key { border-color: #444; }
 
     @keyframes pulsar { 0%,100%{opacity:1} 50%{opacity:.5} }
+
+    /* ── LANDSCAPE: compactação para caber tudo sem scroll ───── */
+    @media (orientation: landscape) {
+      .campo-instr   { display: none !important; }
+      .fase-label    { display: none !important; }
+      .fase-texto    { display: none !important; }
+      .funcao-legenda { display: none !important; }
+      .panel-content { padding: 2px 8px; gap: 2px; overflow: hidden; }
+      .screen        { gap: 2px; }
+      .fase-titulo   { font-size: clamp(0.68rem, 1.8vw, 0.86rem); line-height: 1; margin: 0; }
+      .btn-acao      { padding: 4px 12px; font-size: clamp(0.6rem, 1.6vw, 0.74rem); border-radius: 7px; }
+      .campo-card    { padding: 2px 1px; }
+      .campo-card__romano { font-size: clamp(0.42rem, 1.3vw, 0.56rem); }
+      .campo-card__nome   { font-size: clamp(0.42rem, 1.3vw, 0.56rem); }
+      .campo-card__funcao { font-size: clamp(0.32rem, 1vw, 0.44rem); }
+      .campo-bar-wrap { padding: 2px 8px 3px; }
+      .campo-bar-dot  { padding: 3px 5px; }
+      .campo-bar-dot__c { width: 9px; height: 9px; }
+      .prog-acorde   { padding: 3px 6px; font-size: clamp(0.52rem, 1.5vw, 0.66rem); }
+      .pratica-prog  { gap: 4px; }
+      .pratica-instrucao { font-size: clamp(0.52rem, 1.5vw, 0.66rem) !important; }
+    }
   </style>
 </head>
 <body>

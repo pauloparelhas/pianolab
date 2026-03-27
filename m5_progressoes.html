@@ -21,7 +21,7 @@
       border-bottom: 3px solid #000; overflow: hidden;
     }
     @media (orientation: landscape) {
-      .digital-panel { max-height: 40dvh; overflow-y: auto; border-bottom: 1px solid #1a2535; }
+      .digital-panel { max-height: 40dvh; overflow: hidden; border-bottom: 1px solid #1a2535; }
     }
 
     /* ── TOPBAR (unificada) ──────────────────────────────────── */
@@ -136,7 +136,7 @@
       .fase-label   { display: none !important; }
       .fase-texto   { display: none !important; }
       .pratica-dots { display: none !important; }
-      .panel-content { padding: 2px 8px; gap: 2px; }
+      .panel-content { padding: 2px 8px; gap: 2px; overflow: hidden; }
       .screen { gap: 2px; padding: 0; min-height: 0; }
       .fase-titulo { font-size: clamp(0.65rem, 1.7vw, 0.8rem); line-height: 1.1; margin: 0; }
       .btn-acao { padding: 4px 10px; font-size: clamp(0.58rem, 1.6vw, 0.72rem); border-radius: 7px; }
@@ -190,16 +190,38 @@
     }
     .prog-acorde.ativo { border-color: #4FC3F7; background: rgba(79,195,247,.13); }
     .prog-seta { color: #2a3a4a; font-size: 0.8rem; flex-shrink: 0; }
-    /* Itens dentro do card */
-    .pa-top { display: flex; align-items: center; gap: 2px; }
-    .pa-grau { font-size: clamp(0.6rem, 1.8vw, 0.76rem); font-weight: 900; color: #e8eaed; }
-    .pa-nota { font-size: clamp(0.52rem, 1.5vw, 0.64rem); color: #6a8a9a; }
-    .pa-nota::before { content: '·'; color: #3a5a6a; margin-right: 2px; }
-    .pa-func { font-size: clamp(0.44rem, 1.3vw, 0.56rem); color: #4FC3F7; font-weight: 700; letter-spacing: .4px; }
+    /* Itens dentro do card — hierarquia: nome > grau > função */
+    .pa-nome {
+      font-size: clamp(0.7rem, 2.2vw, 0.92rem); font-weight: 900; color: #e8eaed; line-height: 1.1;
+    }
+    .pa-grau {
+      font-size: clamp(0.46rem, 1.4vw, 0.58rem); color: #6a8a9a; font-weight: 600;
+    }
+    .pa-func {
+      font-size: clamp(0.4rem, 1.2vw, 0.5rem); color: #4FC3F7; font-weight: 700;
+      letter-spacing: .4px; cursor: default; position: relative;
+    }
+    /* Tooltip CSS puro — aparece só em hover */
+    .pa-func::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: calc(100% + 5px);
+      left: 50%; transform: translateX(-50%);
+      background: #1e2e44; color: #e8eaed;
+      font-size: 0.6rem; font-weight: 600;
+      padding: 3px 8px; border-radius: 5px;
+      white-space: nowrap; pointer-events: none;
+      opacity: 0; transition: opacity .15s;
+      z-index: 200; border: 1px solid #2a3a4a;
+    }
+    .pa-func:hover::after { opacity: 1; }
     /* Paisagem: card horizontal — 1 linha */
     @media (orientation: landscape) {
-      .prog-acorde { flex-direction: row; padding: 2px 5px; gap: 2px; }
-      .pa-func::before { content: '·'; color: #3a5a6a; margin-right: 1px; }
+      .prog-acorde { flex-direction: row; padding: 2px 5px; gap: 3px; align-items: center; }
+      .pa-nome { font-size: clamp(0.6rem, 1.6vw, 0.78rem); }
+      .pa-grau { font-size: clamp(0.4rem, 1.1vw, 0.5rem); }
+      .pa-func { font-size: clamp(0.36rem, 1vw, 0.46rem); }
+      .inv-info { display: none !important; }
     }
 
     /* ── PROGRESSO (praticar) ───────────────────────────────── */
@@ -605,24 +627,40 @@ function mostrarVL(prevMidis, nextMidis) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   CONCEITO — inversões interativas (Dó fixo)
+   CONCEITO — inversões interativas (tonalidade atual)
 ══════════════════════════════════════════════════════════════ */
+function getConceitoInv() {
+  const t = tonicMidi();
+  const sort3 = ms => ms.slice().sort((a,b)=>a-b);
+  const clamp = m => { let n=m; while(n>83)n-=12; while(n<60)n+=12; return n; };
+  return [
+    { titulo:'Posição raiz', midis:sort3([clamp(t),    clamp(t+4),  clamp(t+7) ]),  desc:'Fundamental mais baixa' },
+    { titulo:'1ª inversão',  midis:sort3([clamp(t+4),  clamp(t+7),  clamp(t+12)]),  desc:'Terça mais baixa' },
+    { titulo:'2ª inversão',  midis:sort3([clamp(t+7),  clamp(t+12), clamp(t+16)]),  desc:'Quinta mais baixa' },
+  ];
+}
+function getConceitoScore() {
+  return getConceitoInv().map((c,i) => ({ midis:c.midis, duration:'w', label:['Raiz','1ª','2ª'][i] }));
+}
+
 function mostrarInversao(idx) {
   invAtiva = idx;
   document.querySelectorAll('.inv-btn').forEach((b, i) => b.classList.toggle('ativo', i === idx));
 
-  const inv = INV_CONCEITO[idx];
+  const conceito = getConceitoInv();
+  const inv = conceito[idx];
   kb.clearHighlights();
   inv.midis.forEach(m => kb.highlight(midiToNote(m)));
   score.highlight(idx);
 
   if (invAnterior !== null && invAnterior !== idx)
-    mostrarVL(INV_CONCEITO[invAnterior].midis, inv.midis);
+    mostrarVL(conceito[invAnterior].midis, inv.midis);
   else clearVL();
 
   const nomesStr = inv.midis.map(m => nomeNota(midiToNote(m))).join(' — ');
+  const tonicaName = CHAVES[chaveIdx].tonica;
   document.getElementById('inv-info').innerHTML =
-    `<strong>Dó Maior · ${inv.titulo}</strong><br>
+    `<strong>${tonicaName} Maior · ${inv.titulo}</strong><br>
      <span class="notas">${nomesStr}</span><br>
      <span style="color:#4a6274">${inv.desc}</span>`;
 
@@ -698,10 +736,11 @@ function mostrarEtapa() {
   const prog = progressaoAtual();
   const p = prog[etapaIdx];
   const t = tonicMidi();
-  const rootMidi = t + p.rootOffset;
   const notasStr = p.offsets.map(o => nomeNota(midiToNote(t + o))).join(' + ');
+  const noteIdx3 = ((t - 60 + p.rootOffset) % 12 + 12) % 12;
+  const nomeIngles3 = CROMÁTICA[noteIdx3] + (p.nome === 'menor' ? 'm' : '');
   document.getElementById('pratica-titulo').textContent =
-    p.grau + ' — ' + nomeNota(midiToNote(rootMidi)) + ' ' + p.nome;
+    nomeIngles3 + ' (' + p.grau + ')';
   document.getElementById('pratica-instrucao').textContent =
     'Toque no seu piano: ' + notasStr;
 
@@ -752,11 +791,17 @@ function faseSeguinte() {
    NAVEGAÇÃO DE FASES
 ══════════════════════════════════════════════════════════════ */
 const GRAU_FUNCAO = {'I':'T','ii':'SD','iii':'T','IV':'SD','V':'D','vi':'T','vii°':'D','vii':'D'};
+const FUNCAO_TEXTO = {
+  'T':  'Tônica — ponto de repouso da música',
+  'SD': 'Subdominante — tensão suave, movimento',
+  'D':  'Dominante — tensão forte, pede resolução',
+};
 
 function buildBarraProgressao(containerId) {
   const el = document.getElementById(containerId);
   el.innerHTML = '';
   const prog = progressaoAtual();
+  const tonicaIdx = noteToMidi(CHAVES[chaveIdx].raiz) - 60; // semitons acima de C4
   prog.forEach((p, i) => {
     if (i > 0) {
       const seta = document.createElement('div');
@@ -766,12 +811,14 @@ function buildBarraProgressao(containerId) {
     const card = document.createElement('div');
     card.className = 'prog-acorde';
     card.dataset.idx = i;
-    const rootMidi = tonicMidi() + p.rootOffset;
-    const qualStr = p.nome === 'menor' ? ' m' : '';
-    const funcao  = GRAU_FUNCAO[p.grau] || '';
+    const noteIdx  = ((tonicaIdx + p.rootOffset) % 12 + 12) % 12;
+    const nomeIngles = CROMÁTICA[noteIdx] + (p.nome === 'menor' ? 'm' : '');
+    const funcao   = GRAU_FUNCAO[p.grau] || '';
+    const tooltip  = FUNCAO_TEXTO[funcao] || funcao;
     card.innerHTML =
-      `<div class="pa-top"><span class="pa-grau">${p.grau}</span><span class="pa-nota">${nomeNota(midiToNote(rootMidi))}${qualStr}</span></div>` +
-      `<span class="pa-func">${funcao}</span>`;
+      `<span class="pa-nome">${nomeIngles}</span>` +
+      `<span class="pa-grau">(${p.grau})</span>` +
+      (funcao ? `<span class="pa-func" data-tooltip="${tooltip}">${funcao}</span>` : '');
     el.appendChild(card);
   });
 }
@@ -789,7 +836,7 @@ function irFase(fase) {
   const cfg = CHAVES[chaveIdx];
 
   if (fase === 'conceito') {
-    score.loadScore(SCORE_CONCEITO);
+    score.loadScore(getConceitoScore());
     mostrarInversao(invAtiva);
     TTS.falar('Inversões — mesmo acorde, posições diferentes');
   }
@@ -852,9 +899,15 @@ function buildChaveBar() {
     dot.addEventListener('click', () => {
       if (i === chaveIdx) return;
       chaveIdx = i;
+      invAnterior = null;
       buildChaveBar();
       buildProgressaoScore();
-      if (faseAtual === 'demo' || faseAtual === 'praticar') irFase(faseAtual);
+      if (faseAtual === 'demo' || faseAtual === 'praticar') {
+        irFase(faseAtual);
+      } else if (faseAtual === 'conceito') {
+        score.loadScore(getConceitoScore());
+        mostrarInversao(invAtiva);
+      }
     });
     el.appendChild(dot);
   });
