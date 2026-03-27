@@ -21,7 +21,7 @@
       border-bottom: 3px solid #000; overflow: hidden;
     }
     @media (orientation: landscape) {
-      .digital-panel { flex: 0 0 auto; max-height: 40dvh; overflow-y: auto; border-bottom: 1px solid #1a2535; }
+      .digital-panel { flex: 0 0 auto; max-height: 40dvh; overflow: hidden; border-bottom: 1px solid #1a2535; }
     }
 
     /* ── TOPBAR (unificada) ──────────────────────────────────── */
@@ -233,6 +233,27 @@
     .chord-dot.sustenido.ativo .chord-dot__label  { color: #F9A825; }
     .chord-dot.sustenido.feito .chord-dot__circle { background: #4CAF50; border-color: #4CAF50; }
     .chord-dot.sustenido.feito .chord-dot__label  { color: #4CAF50; }
+
+    /* ── LANDSCAPE: compactação total sem scroll ─────────────── */
+    @media (orientation: landscape) {
+      .chord-instr   { display: none !important; }
+      .fase-label    { display: none !important; }
+      .fase-texto    { display: none !important; }
+      .acorde-info   { display: none !important; }
+      .panel-content { padding: 2px 8px; gap: 2px; overflow: hidden; }
+      .screen        { gap: 2px; }
+      .fase-titulo   { font-size: clamp(0.68rem, 1.8vw, 0.86rem); line-height: 1; margin: 0; }
+      .btn-acao      { padding: 4px 12px; font-size: clamp(0.6rem, 1.6vw, 0.74rem); border-radius: 7px; }
+      .btn-pular     { font-size: clamp(0.52rem, 1.5vw, 0.64rem); }
+      .chord-bar-wrap { padding: 2px 8px 3px; }
+      .chord-dot      { padding: 3px 4px; }
+      .chord-dot__circle { width: 9px; height: 9px; }
+      .acorde-vis    { gap: 2px; }
+      .acorde-nota__circulo { width: clamp(26px,7vw,34px) !important; height: clamp(26px,7vw,34px) !important; font-size: clamp(0.48rem,1.5vw,0.65rem) !important; }
+      .acorde-sep    { padding-bottom: 6px; }
+      .junto-status  { min-height: 1em; font-size: clamp(0.6rem, 1.8vw, 0.76rem); }
+      .livre-prog    { gap: 5px; }
+    }
   </style>
 </head>
 <body>
@@ -275,7 +296,10 @@
         <div class="acorde-vis" id="acorde-vis-demo"></div>
         <div class="fase-texto">As notas acendem em ordem, depois juntas ✨</div>
         <button class="btn-acao" id="btn-iniciar-demo" onclick="iniciarDemo()">▶ Tocar</button>
-        <button class="btn-acao" id="btn-ir-junto" style="display:none" onclick="irFase('junto')">Toque Junto →</button>
+        <div id="demo-apos" style="display:none;flex-wrap:wrap;justify-content:center;gap:6px">
+          <button class="btn-acao" onclick="irFase('junto')">Toque Junto →</button>
+          <button class="btn-acao destaque" onclick="proximoAcorde()">Próximo →</button>
+        </div>
       </div>
 
       <!-- Play-Along -->
@@ -526,7 +550,7 @@ function irFase(fase) {
     document.getElementById('btn-iniciar-demo').style.display = '';
     document.getElementById('btn-iniciar-demo').disabled = false;
     document.getElementById('btn-iniciar-demo').textContent = '▶ Tocar';
-    document.getElementById('btn-ir-junto').style.display = 'none';
+    document.getElementById('demo-apos').style.display = 'none';
   }
 
   if (fase === 'junto') {
@@ -606,7 +630,7 @@ function iniciarDemo() {
         circs.forEach(c => c.classList.remove('ativa'));
         document.getElementById('btn-iniciar-demo').textContent = '↻ Ouvir de novo';
         document.getElementById('btn-iniciar-demo').disabled = false;
-        document.getElementById('btn-ir-junto').style.display = '';
+        document.getElementById('demo-apos').style.display = 'flex';
       }, 1400);
     }
   }

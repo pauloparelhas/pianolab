@@ -21,7 +21,7 @@
       border-bottom: 3px solid #000; overflow: hidden;
     }
     @media (orientation: landscape) {
-      .digital-panel { overflow: hidden; border-bottom: 1px solid #1a2535; }
+      .digital-panel { max-height: 40dvh; overflow: hidden; border-bottom: 1px solid #1a2535; }
     }
 
     /* ── TOPBAR (unificada) ──────────────────────────────────── */
@@ -627,24 +627,40 @@ function mostrarVL(prevMidis, nextMidis) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   CONCEITO — inversões interativas (Dó fixo)
+   CONCEITO — inversões interativas (tonalidade atual)
 ══════════════════════════════════════════════════════════════ */
+function getConceitoInv() {
+  const t = tonicMidi();
+  const sort3 = ms => ms.slice().sort((a,b)=>a-b);
+  const clamp = m => { let n=m; while(n>83)n-=12; while(n<60)n+=12; return n; };
+  return [
+    { titulo:'Posição raiz', midis:sort3([clamp(t),    clamp(t+4),  clamp(t+7) ]),  desc:'Fundamental mais baixa' },
+    { titulo:'1ª inversão',  midis:sort3([clamp(t+4),  clamp(t+7),  clamp(t+12)]),  desc:'Terça mais baixa' },
+    { titulo:'2ª inversão',  midis:sort3([clamp(t+7),  clamp(t+12), clamp(t+16)]),  desc:'Quinta mais baixa' },
+  ];
+}
+function getConceitoScore() {
+  return getConceitoInv().map((c,i) => ({ midis:c.midis, duration:'w', label:['Raiz','1ª','2ª'][i] }));
+}
+
 function mostrarInversao(idx) {
   invAtiva = idx;
   document.querySelectorAll('.inv-btn').forEach((b, i) => b.classList.toggle('ativo', i === idx));
 
-  const inv = INV_CONCEITO[idx];
+  const conceito = getConceitoInv();
+  const inv = conceito[idx];
   kb.clearHighlights();
   inv.midis.forEach(m => kb.highlight(midiToNote(m)));
   score.highlight(idx);
 
   if (invAnterior !== null && invAnterior !== idx)
-    mostrarVL(INV_CONCEITO[invAnterior].midis, inv.midis);
+    mostrarVL(conceito[invAnterior].midis, inv.midis);
   else clearVL();
 
   const nomesStr = inv.midis.map(m => nomeNota(midiToNote(m))).join(' — ');
+  const tonicaName = CHAVES[chaveIdx].tonica;
   document.getElementById('inv-info').innerHTML =
-    `<strong>Dó Maior · ${inv.titulo}</strong><br>
+    `<strong>${tonicaName} Maior · ${inv.titulo}</strong><br>
      <span class="notas">${nomesStr}</span><br>
      <span style="color:#4a6274">${inv.desc}</span>`;
 
@@ -820,7 +836,7 @@ function irFase(fase) {
   const cfg = CHAVES[chaveIdx];
 
   if (fase === 'conceito') {
-    score.loadScore(SCORE_CONCEITO);
+    score.loadScore(getConceitoScore());
     mostrarInversao(invAtiva);
     TTS.falar('Inversões — mesmo acorde, posições diferentes');
   }
@@ -883,9 +899,15 @@ function buildChaveBar() {
     dot.addEventListener('click', () => {
       if (i === chaveIdx) return;
       chaveIdx = i;
+      invAnterior = null;
       buildChaveBar();
       buildProgressaoScore();
-      if (faseAtual === 'demo' || faseAtual === 'praticar') irFase(faseAtual);
+      if (faseAtual === 'demo' || faseAtual === 'praticar') {
+        irFase(faseAtual);
+      } else if (faseAtual === 'conceito') {
+        score.loadScore(getConceitoScore());
+        mostrarInversao(invAtiva);
+      }
     });
     el.appendChild(dot);
   });
