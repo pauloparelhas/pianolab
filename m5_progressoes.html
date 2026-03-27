@@ -450,14 +450,6 @@ function getChordMidis(stepIdx) {
   const t = tonicMidi();
   return progressaoAtual()[stepIdx].offsets.map(o => t + o);
 }
-
-function nomeAcorde(stepIdx) {
-  const p = progressaoAtual()[stepIdx];
-  const t = tonicMidi();
-  const rootNote = midiToNote(t + p.rootOffset);
-  return nomeNota(rootNote) + ' ' + p.nome;
-}
-
 /* ── Função para mudar inversão ──────────────────────────── */
 function setInversao(idx) {
   invIdx = idx;
