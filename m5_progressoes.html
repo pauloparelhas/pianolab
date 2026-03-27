@@ -247,6 +247,9 @@
       <button class="panel-btn" id="btn-sound" onclick="toggleSom()">🔊</button>
     </div>
 
+    <!-- Seletor de progressão -->
+    <div class="inv-sel" id="prog-sel"></div>
+
     <div class="chave-bar-wrap">
       <div class="chave-instr">Escolha a tonalidade:</div>
       <div class="chave-bar" id="chave-bar"></div>
@@ -337,36 +340,41 @@
    O padrão matemático é o MESMO em qualquer tonalidade — apenas transposto.
 ══════════════════════════════════════════════════════════════ */
 
-// Offsets MIDI relativos à tônica — 3 posições para cada acorde da progressão.
-// Cada linha: [raiz, 1ª inversão, 2ª inversão]
-// rootOffset = semitom da fundamental do acorde (para nome correto)
-const PROGRESSAO_BASE = [
-  { grau:'I',  nome:'Maior', rootOffset: 0,
-    pos: [[ 0, 4, 7], [ 4, 7,12], [ 7,12,16]] },
-  { grau:'VI', nome:'menor', rootOffset: 9,
-    pos: [[ 0, 4, 9], [ 4, 9,12], [ 9,12,16]] },
-  { grau:'IV', nome:'Maior', rootOffset: 5,
-    pos: [[ 0, 5, 9], [ 5, 9,12], [ 9,12,17]] },
-  { grau:'V',  nome:'Maior', rootOffset: 7,
-    pos: [[ 2, 7,11], [ 7,11,14], [11,14,19]] },
+// 2 progressões — cada acorde com 3 posições de voice leading (clamping C4-B5).
+// Minúscula = menor, Maiúscula = maior (convenção padrão de teoria musical).
+const PROGRESSOES = [
+  {
+    id:'I-vi-IV-V', titulo:'I – vi – IV – V', tts:'Um, seis, quatro, cinco',
+    acordes: [
+      { grau:'I',  nome:'Maior', rootOffset:0, pos:[[ 0, 4, 7],[ 4, 7,12],[ 7,12,16]] },
+      { grau:'vi', nome:'menor', rootOffset:9, pos:[[ 0, 4, 9],[ 4, 9,12],[ 9,12,16]] },
+      { grau:'IV', nome:'Maior', rootOffset:5, pos:[[ 0, 5, 9],[ 5, 9,12],[ 9,12,17]] },
+      { grau:'V',  nome:'Maior', rootOffset:7, pos:[[ 2, 7,11],[ 7,11,14],[11,14,19]] },
+    ],
+  },
+  {
+    id:'I-V-vi-IV', titulo:'I – V – vi – IV', tts:'Um, cinco, seis, quatro',
+    acordes: [
+      { grau:'I',  nome:'Maior', rootOffset:0, pos:[[ 0, 4, 7],[ 4, 7,12],[ 7,12,16]] },
+      { grau:'V',  nome:'Maior', rootOffset:7, pos:[[ 2, 7,11],[ 7,11,14],[11,14,19]] },
+      { grau:'vi', nome:'menor', rootOffset:9, pos:[[ 0, 4, 9],[ 4, 9,12],[ 9,12,16]] },
+      { grau:'IV', nome:'Maior', rootOffset:5, pos:[[ 0, 5, 9],[ 5, 9,12],[ 9,12,17]] },
+    ],
+  },
 ];
-const INV_LABELS = ['Posição raiz', '1ª inversão', '2ª inversão'];
 
-// Retorna a progressão ativa (4 acordes) para a inversão selecionada
-// Aplica clamping: notas fora de C4-B5 (MIDI 60-83) são transpostas -12
+// Retorna os acordes ativos com offsets clamped para MIDI 60-83 (C4-B5)
 function getProgressao() {
-  return PROGRESSAO_BASE.map(p => ({
+  return PROGRESSOES[progIdx].acordes.map(p => ({
     ...p,
     offsets: p.pos[invIdx].map(o => {
       let m = tonicMidi() + o;
       while (m > 83) m -= 12;
       while (m < 60) m += 12;
-      return m - tonicMidi(); // retorna de volta como offset
+      return m - tonicMidi();
     }),
   }));
 }
-
-// Para acesso direto como array compatível com código existente
 function progressaoAtual() { return getProgressao(); }
 
 // 7 tonalidades — piano sempre em C4-B5 (2 oitavas)
@@ -397,20 +405,22 @@ function nomeNota(noteStr) { return NOTA_PT[noteStr.replace(/\d/,'')] || noteStr
    ESTADO
 ══════════════════════════════════════════════════════════════ */
 let chaveIdx    = 0;
+let progIdx     = 0;   // progressão ativa (0=I-vi-IV-V, 1=I-V-vi-IV)
 let faseAtual   = 'conceito';
 let etapaIdx    = 0;
 let modoFacil   = Settings.getEasyMode();
 let animTimer   = null;
 let invAtiva    = 0;   // para o conceito (demo das 3 inversões de Dó)
-let invIdx      = 0;   // inversão ativa para a progressão (0=raiz, 1=1ª, 2=2ª)
+let invIdx      = 0;   // inversão ativa (0=raiz, 1=1ª, 2=2ª)
 let invAnterior = null;
+const concluidasSession = new Set(); // rastrea conclusões da sessão atual (sem localStorage)
 
 const FASES_ORDEM = ['conceito','demo','praticar'];
 
 /* ── Textos de ajuda por fase ─────────────────────────────── */
 const HELP_FASES = {
   conceito: '<b>Inversões</b><br>Um acorde tem 3 notas. A posição muda qual nota fica mais baixa. Isso permite que as mãos se movam o mínimo entre um acorde e outro. Clique nos botões para ver cada posição!',
-  demo:     '<b>Ouça a progressão</b><br>A sequência I–VI–IV–V é usada em milhares de músicas. Veja como as notas do piano mal se movem de um acorde para o outro! Use os botões de inversão para mudar a posição.',
+  demo:     '<b>Ouça a progressão</b><br>Essas sequências aparecem em milhares de músicas! Veja como as notas do piano mal se movem de um acorde para o outro. Use os botões de inversão para mudar a posição.',
   praticar: '<b>Pratique no piano real</b><br>Toque cada acorde indicado no seu piano. O app mostra as notas acesas. Após tocar, clique em "Próximo" para avançar. Use o botão de inversão para treinar posições diferentes!',
   celebra:  '<b>Parabéns!</b><br>Você tocou a progressão inteira! Escolha outra tonalidade ou posição para continuar.',
 };
@@ -450,11 +460,32 @@ function getChordMidis(stepIdx) {
   const t = tonicMidi();
   return progressaoAtual()[stepIdx].offsets.map(o => t + o);
 }
+/* ── Seletor de progressão ───────────────────────────────── */
+function buildProgSel() {
+  const el = document.getElementById('prog-sel');
+  el.innerHTML = '';
+  PROGRESSOES.forEach((p, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'inv-sel-btn' + (i === progIdx ? ' ativo' : '');
+    btn.textContent = p.titulo;
+    btn.addEventListener('click', () => setProgressao(i));
+    el.appendChild(btn);
+  });
+}
+
+function setProgressao(idx) {
+  if (idx === progIdx) return;
+  progIdx = idx;
+  invIdx = 0;
+  buildProgSel();
+  document.querySelectorAll('#inv-sel .inv-sel-btn').forEach((b, i) => b.classList.toggle('ativo', i === 0));
+  irFase('conceito');
+}
+
 /* ── Função para mudar inversão ──────────────────────────── */
 function setInversao(idx) {
   invIdx = idx;
-  document.querySelectorAll('.inv-sel-btn').forEach((b, i) => b.classList.toggle('ativo', i === idx));
-  // Rebuild score/barra se estiver em demo ou praticar
+  document.querySelectorAll('#inv-sel .inv-sel-btn').forEach((b, i) => b.classList.toggle('ativo', i === idx));
   if (faseAtual === 'demo') {
     buildProgressaoScore();
     buildBarraProgressao('demo-barra');
@@ -676,12 +707,13 @@ function irFase(fase) {
   if (fase === 'demo') {
     buildProgressaoScore();
     buildBarraProgressao('demo-barra');
+    const pg = PROGRESSOES[progIdx];
     document.getElementById('demo-titulo').textContent =
-      'I – VI – IV – V · ' + cfg.tonica + ' Maior';
+      pg.titulo + ' · ' + cfg.tonica + ' Maior';
     document.getElementById('btn-demo-tocar').disabled = false;
     document.getElementById('btn-demo-tocar').textContent = '▶ Ouvir';
     document.getElementById('btn-demo-praticar').style.display = 'none';
-    TTS.falar('Um, seis, quatro, cinco, em ' + cfg.tonica + ' Maior');
+    TTS.falar(pg.tts + ', em ' + cfg.tonica + ' Maior');
   }
 
   if (fase === 'praticar') {
@@ -700,14 +732,15 @@ function irFase(fase) {
   }
 
   if (fase === 'celebra') {
-    salvarProgresso(cfg.raiz);
+    concluidasSession.add(cfg.raiz);
     buildChaveBar();
-    const concluidas = getProgresso()?.concluidas || [];
-    const total = concluidas.length;
+    const total = concluidasSession.size;
     const ultimo = chaveIdx >= CHAVES.length - 1;
     document.getElementById('celebra-emoji').textContent  = total >= CHAVES.length ? '🏆' : '🎉';
-    document.getElementById('celebra-titulo').textContent = 'I–VI–IV–V em ' + cfg.tonica + ' ✓';
-    document.getElementById('celebra-sub').textContent    = total + ' de ' + CHAVES.length + ' tonalidades concluídas';
+    document.getElementById('celebra-titulo').textContent =
+      PROGRESSOES[progIdx].titulo + ' em ' + cfg.tonica + ' ✓';
+    document.getElementById('celebra-sub').textContent    =
+      total + ' de ' + CHAVES.length + ' tonalidades nesta sessão';
     document.getElementById('btn-outra-chave').style.display = ultimo ? 'none' : '';
     TTS.falar('Parabéns! Progressão em ' + cfg.tonica + ' concluída!');
   }
@@ -721,9 +754,8 @@ function irFase(fase) {
 function buildChaveBar() {
   const el = document.getElementById('chave-bar');
   el.innerHTML = '';
-  const concluidas = getProgresso()?.concluidas || [];
   CHAVES.forEach((c, i) => {
-    const feito = concluidas.includes(c.raiz);
+    const feito = concluidasSession.has(c.raiz);
     const dot = document.createElement('div');
     dot.className = 'chave-dot' + (i === chaveIdx ? ' ativo' : feito ? ' feito' : '');
     dot.innerHTML = `<div class="chave-dot__c"></div><div class="chave-dot__l">${c.label}</div>`;
@@ -746,19 +778,6 @@ function proximaChave() {
   } else {
     goTo('index.html');
   }
-}
-
-/* ══════════════════════════════════════════════════════════════
-   PERSISTÊNCIA
-══════════════════════════════════════════════════════════════ */
-function getProgresso() {
-  try { return JSON.parse(localStorage.getItem('piano_m5_progresso') || 'null'); } catch { return null; }
-}
-function salvarProgresso(chaveRaiz) {
-  const p = getProgresso() || { concluidas: [], completo: false };
-  if (!p.concluidas.includes(chaveRaiz)) p.concluidas.push(chaveRaiz);
-  p.completo = p.concluidas.length >= CHAVES.length;
-  try { localStorage.setItem('piano_m5_progresso', JSON.stringify(p)); } catch {}
 }
 
 function toggleEasy() {
@@ -793,6 +812,7 @@ window.addEventListener('resize', ajustarTeclado);
 window.addEventListener('orientationchange', () => setTimeout(ajustarTeclado, 150));
 requestAnimationFrame(() => requestAnimationFrame(ajustarTeclado));
 
+buildProgSel();
 buildChaveBar();
 irFase('conceito');
 document.addEventListener('pointerdown', () => AudioEngine.init(), { once: true });
