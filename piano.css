@@ -182,20 +182,14 @@
 .nota-la  { --key-active-color: var(--nota-la);  }
 .nota-si  { --key-active-color: var(--nota-si);  }
 
-/* ── MODO FÁCIL — dica dourada pulsando ─────────────────────── */
+/* ── MODO FÁCIL — dica dourada (estática, sem pulso) ────────── */
 .key.easy-hint {
-  box-shadow: 0 0 0 3px #F9A825, 0 0 20px rgba(249,168,37,.5);
-  animation: easy-hint-pulse 1s ease-in-out infinite;
+  box-shadow: 0 0 0 3px #F9A825, 0 0 14px rgba(249,168,37,.4);
   z-index: 3;
 }
 
 .key--black.easy-hint {
-  box-shadow: 0 0 0 3px #F9A825, 0 0 14px rgba(249,168,37,.6);
-}
-
-@keyframes easy-hint-pulse {
-  0%, 100% { box-shadow: 0 0 0 3px #F9A825, 0 0 16px rgba(249,168,37,.4); }
-  50%       { box-shadow: 0 0 0 5px #F9A825, 0 0 28px rgba(249,168,37,.7); }
+  box-shadow: 0 0 0 3px #F9A825, 0 0 10px rgba(249,168,37,.5);
 }
 
 /* ── X DE ERRO NA TECLA ─────────────────────────────────────── */

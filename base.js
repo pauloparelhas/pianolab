@@ -426,6 +426,13 @@ const Settings = (() => {
     init() {
       document.documentElement.dataset.theme = this.getTheme();
       document.documentElement.style.setProperty('--fs', this.getFontScale());
+      // Restaura zoom do painel após DOM pronto
+      const fs = this.getFontScale();
+      if (fs !== 1) {
+        document.addEventListener('DOMContentLoaded', () => {
+          document.querySelectorAll('.digital-panel').forEach(el => { el.style.zoom = fs; });
+        }, { once: true });
+      }
     }
   };
 })();
@@ -473,7 +480,13 @@ const TTS = (() => {
     if (!Settings.getSoundOn()) return;
     if (!window.speechSynthesis) return;
     window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(texto);
+    // Converte quebras de linha e <br> em pausa natural (ponto final)
+    const limpo = texto
+      .replace(/<br\s*\/?>/gi, '. ')
+      .replace(/\n+/g, '. ')
+      .replace(/<[^>]+>/g, '')
+      .trim();
+    const u = new SpeechSynthesisUtterance(limpo);
     u.lang = lang || (Settings.getLang() === 'pt' ? 'pt-BR' : 'en-US');
     u.rate = 0.95;
     u.pitch = 1.1;
@@ -501,6 +514,8 @@ function cycleFontSize(btnEl) {
   const idx = steps.findIndex(v => Math.abs(v - cur) < 0.05);
   const next = steps[(idx + 1) % steps.length];
   Settings.setFontScale(next);
+  // Aplica zoom no painel digital para escalar todo o conteúdo de texto
+  document.querySelectorAll('.digital-panel').forEach(el => { el.style.zoom = next; });
   if (btnEl) btnEl.title = 'Texto: ' + Math.round(next * 100) + '%';
 }
 
