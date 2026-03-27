@@ -251,15 +251,17 @@
       <div class="screen" id="s-praticar">
         <span class="fase-label">Sua vez!</span>
         <div class="fase-titulo" id="pratica-titulo"></div>
+        <div class="escala-vis" id="escala-vis-pratica"></div>
         <div class="pratica-prog" id="pratica-prog"></div>
-        <div class="pratica-status" id="pratica-status">Toque a nota acesa no piano</div>
+        <div class="pratica-status" id="pratica-status">Observe a nota acesa e toque no seu piano</div>
+        <button class="btn-acao destaque" id="btn-pratica-next" onclick="praticaAvancar()">Próximo →</button>
       </div>
 
       <!-- Celebração -->
       <div class="screen" id="s-celebra">
         <div class="celebra-emoji">🌟</div>
         <div class="celebra-titulo" id="celebra-titulo"></div>
-        <div class="celebra-sub">Você tocou todos os 7 graus em sequência!</div>
+        <div class="celebra-sub">Você tocou as 8 notas da escala!</div>
         <div class="celebra-cont" id="celebra-cont"></div>
         <button class="btn-acao destaque" id="btn-proxima" onclick="proximaChave()"></button>
       </div>
@@ -284,9 +286,9 @@
    TEORIA — 7 ESCALAS MAIORES
    Intervalos: T T S T T T S (T=2 st, S=1 st)
 ══════════════════════════════════════════════════════════════ */
-const ESCALA_ST   = [0, 2, 4, 5, 7, 9, 11];
-const GRAUS       = ['I','II','III','IV','V','VI','VII'];
-const INTERVALOS  = ['T','T','S','T','T','T'];
+const ESCALA_ST   = [0, 2, 4, 5, 7, 9, 11, 12];
+const GRAUS       = ['I','II','III','IV','V','VI','VII','I'];
+const INTERVALOS  = ['T','T','S','T','T','T','S'];
 const NOMES_PT    = ['Dó','Dó♯','Ré','Ré♯','Mi','Fá','Fá♯','Sol','Sol♯','Lá','Lá♯','Si'];
 const FASES_ORDEM = ['intro','demo','praticar','celebra'];
 
@@ -300,18 +302,18 @@ const CHAVES = [
 const HELP_FASES = {
   intro:    '<b>Aprenda a escala</b><br>Veja as 7 notas da escala e a distância entre elas (T=Tom, S=Semitom). Clique em "Demonstração" para ouvir.',
   demo:     '<b>Ouça a escala</b><br>As notas acendem uma a uma no piano. Acompanhe com os olhos. Quando quiser treinar sozinho, clique em "Nota a nota" e avance no seu ritmo.',
-  praticar: '<b>Sua vez!</b><br>Toque no seu piano real a nota que está acesa (azul). O app vai acender cada nota em ordem. Se errar, tente de novo — sem pressa!',
+  praticar: '<b>Sua vez!</b><br>Observe a nota que acende no piano. Toque a mesma nota no seu piano real, depois clique "Próximo →" para avançar.',
   celebra:  '<b>Parabéns!</b><br>Você tocou a escala inteira! Escolha outra tonalidade na barra acima para continuar praticando.',
 };
 
 /* ── Estado ───────────────────────────────────────────────── */
-let chaveIdx     = 0;
-let faseAtual    = 'intro';
-let praticaStep  = 0;
-let demoTimer    = null;
-let demoJaRodou  = false;  // false = auto na próxima, true = manual
-let demoStep     = 0;      // step atual do demo manual
-const acertosSet = new Set();
+let chaveIdx    = 0;
+let faseAtual   = 'intro';
+let praticaStep = 0;
+let demoTimer   = null;
+let demoJaRodou = false;  // false = auto na próxima, true = manual
+let demoStep    = 0;      // step atual do demo manual
+const concluidasSession = new Set();
 
 /* ── Piano (fixo C4-B5, criado uma vez) ──────────────────── */
 const kb = createPianoKeyboard(
@@ -321,7 +323,6 @@ const kb = createPianoKeyboard(
     showLabels:true, responsive:true,
     onNoteOn(noteStr) {
       if (Settings.getSoundOn()) AudioEngine.play(noteStr);
-      if (faseAtual === 'praticar') checarPratica(noteStr);
     }
   }
 );
@@ -361,15 +362,6 @@ const nomePT    = midi => NOMES_PT[midi % 12];
 const tonicMidi = ()   => noteToMidi(CHAVES[chaveIdx].raiz);
 const escalaNotas = () => ESCALA_ST.map(st => tonicMidi() + st);
 
-function isConcluida(i) {
-  try { return JSON.parse(localStorage.getItem('piano_m2_c' + i) || 'false'); } catch { return false; }
-}
-function marcarConcluida() {
-  localStorage.setItem('piano_m2_c' + chaveIdx, 'true');
-  const completo = CHAVES.every((_, i) => isConcluida(i));
-  localStorage.setItem('piano_m2_progresso', JSON.stringify({ chaveIdx, completo }));
-}
-
 /* ── Partitura ────────────────────────────────────────────── */
 function buildScore() {
   score.loadScore(escalaNotas().map(m => ({ midis:[m], duration:'q', label:nomePT(m) })));
@@ -382,8 +374,8 @@ function buildChaveBar() {
   CHAVES.forEach((c, i) => {
     const d = document.createElement('div');
     d.className = 'chave-dot' +
-      (i === chaveIdx  ? ' ativo' : '') +
-      (isConcluida(i)  ? ' feito' : '');
+      (i === chaveIdx           ? ' ativo' : '') +
+      (concluidasSession.has(i) ? ' feito' : '');
     d.innerHTML = `<div class="chave-dot__c"></div><div class="chave-dot__l">${c.label}</div>`;
     d.onclick = () => { chaveIdx = i; demoJaRodou = false; irFase('intro'); };
     bar.appendChild(d);
@@ -404,9 +396,7 @@ function buildVis(id, activeIdx = -1) {
       el.appendChild(sep);
     }
     const nota = document.createElement('div');
-    nota.className = 'escala-nota' +
-      (i === activeIdx ? ' ativa' : '') +
-      (acertosSet.has(i) && faseAtual === 'praticar' ? ' acerto' : '');
+    nota.className = 'escala-nota' + (i === activeIdx ? ' ativa' : '');
     nota.innerHTML = `
       <div class="escala-nota__circulo">${nomePT(midi)}</div>
       <div class="escala-nota__grau">${GRAUS[i]}</div>`;
@@ -512,20 +502,23 @@ function demoAvancar() {
   }
 }
 
-/* ── Praticar ─────────────────────────────────────────────── */
+/* ── Praticar (display-only) ──────────────────────────────── */
 function iniciarPratica() {
-  praticaStep = 0; acertosSet.clear();
+  praticaStep = 0;
   kb.clearHighlights(); kb.clearHints();
   mostrarHint(); buildProgDots();
-  document.getElementById('pratica-status').textContent = 'Toque a nota acesa no piano';
+  const notas = escalaNotas();
+  document.getElementById('pratica-status').textContent = `Nota 1 de ${notas.length}`;
+  document.getElementById('btn-pratica-next').style.display = '';
 }
 
 function mostrarHint() {
-  kb.clearHints();
+  kb.clearHighlights();
   const notas = escalaNotas();
   if (praticaStep < notas.length) {
-    kb.hint(midiToNote(notas[praticaStep]));
+    kb.highlight(midiToNote(notas[praticaStep]));
     score.highlight(praticaStep);
+    buildVis('escala-vis-pratica', praticaStep);
   }
 }
 
@@ -535,39 +528,32 @@ function buildProgDots() {
   ESCALA_ST.forEach((_, i) => {
     const d = document.createElement('div');
     d.className = 'pratica-dot' +
-      (i === praticaStep  ? ' atual'  : '') +
-      (acertosSet.has(i)  ? ' acerto' : '');
+      (i === praticaStep ? ' atual'  : '') +
+      (i <  praticaStep  ? ' acerto' : '');
     prog.appendChild(d);
   });
 }
 
-function checarPratica(noteStr) {
+function praticaAvancar() {
   const notas = escalaNotas();
-  if (praticaStep >= notas.length) return;
-  if (noteToMidi(noteStr) !== notas[praticaStep]) {
-    const k = kb.getKeyElement(noteStr);
-    if (k) { k.classList.remove('shake'); void k.offsetWidth; k.classList.add('shake'); }
-    return;
-  }
-  kb.highlight(noteStr);
-  acertosSet.add(praticaStep);
   praticaStep++;
   buildProgDots();
   if (praticaStep >= notas.length) {
-    kb.clearHints(); score.highlight(-1);
+    kb.clearHighlights(); score.highlight(-1);
     document.getElementById('pratica-status').textContent = '✓ Escala completa!';
-    setTimeout(() => irFase('celebra'), 700);
+    document.getElementById('btn-pratica-next').style.display = 'none';
+    setTimeout(() => irFase('celebra'), 600);
   } else {
     mostrarHint();
+    document.getElementById('pratica-status').textContent = `Nota ${praticaStep + 1} de ${notas.length}`;
   }
 }
 
 /* ── Celebração ───────────────────────────────────────────── */
 function mostrarCelebracao() {
-  marcarConcluida(); buildChaveBar();
-  const n = CHAVES.filter((_, i) => isConcluida(i)).length;
+  concluidasSession.add(chaveIdx); buildChaveBar();
   document.getElementById('celebra-titulo').textContent = `Escala de ${CHAVES[chaveIdx].label} Maior!`;
-  document.getElementById('celebra-cont').textContent   = `${n} / ${CHAVES.length} escalas concluídas`;
+  document.getElementById('celebra-cont').textContent   = `${concluidasSession.size} de ${CHAVES.length} escalas treinadas hoje`;
   document.getElementById('btn-proxima').textContent    =
     chaveIdx < CHAVES.length - 1 ? 'Próxima tonalidade →' : '← Voltar ao curso';
 }
@@ -620,7 +606,7 @@ function irFase(fase) {
   }
 
   if (fase === 'praticar') {
-    document.getElementById('pratica-titulo').textContent = `Toque a escala de ${label}`;
+    document.getElementById('pratica-titulo').textContent = `Escala de ${label}`;
     iniciarPratica();
   }
 
@@ -631,10 +617,6 @@ function irFase(fase) {
 
 /* ── Init ─────────────────────────────────────────────────── */
 (function() {
-  try {
-    const p = JSON.parse(localStorage.getItem('piano_m2_progresso') || 'null');
-    if (p && typeof p.chaveIdx === 'number') chaveIdx = p.chaveIdx;
-  } catch {}
   document.getElementById('btn-sound').textContent = Settings.getSoundOn() ? '🔊' : '🔇';
   LockMode.listenChanges(document.getElementById('btn-lock'));
   irFase('intro');

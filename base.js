@@ -10,67 +10,106 @@
 const AudioEngine = (() => {
   let ctx = null;
 
-  // Frequências base — oitava 4 (MIDI 60 = C4)
+  // Frequências base — fallback oscilador (enquanto samples carregam)
   const FREQ_BASE = {
     C: 261.63, 'C#': 277.18, D: 293.66, 'D#': 311.13,
     E: 329.63, F: 349.23, 'F#': 369.99, G: 392.00,
     'G#': 415.30, A: 440.00, 'A#': 466.16, B: 493.88
   };
-
-  // Calcula frequência de qualquer nota em qualquer oitava
-  // Ex: freq('C', 4) = 261.63 | freq('G', 5) = 784.00
   function freq(note, octave = 4) {
     const base = FREQ_BASE[note];
-    if (!base) return null;
-    return base * Math.pow(2, octave - 4);
+    return base ? base * Math.pow(2, octave - 4) : null;
   }
 
-  // Inicializa AudioContext na primeira interação do usuário
+  // ── Salamander Grand Piano (domínio público 2022) ─────────────
+  // CDN: @audio-samples/piano-mp3-velocity10 — C,D#,F#,A em cada oitava
+  const CDN = 'https://cdn.jsdelivr.net/npm/@audio-samples/piano-mp3-velocity10@1.0.5/audio/';
+  const SAMPLE_MIDIS = [60, 63, 66, 69, 72, 75, 78, 81, 84];
+  const SAMPLE_FILE  = {
+    60: 'C4v10',   63: 'D%234v10', 66: 'F%234v10', 69: 'A4v10',
+    72: 'C5v10',   75: 'D%235v10', 78: 'F%235v10', 81: 'A5v10',
+    84: 'C6v10'
+  };
+  const buffers = {};
+  let samplesLoaded = false;
+  let samplesLoading = false;
+
+  async function loadSamples() {
+    if (samplesLoaded || samplesLoading) return;
+    samplesLoading = true;
+    await Promise.all(SAMPLE_MIDIS.map(async midi => {
+      try {
+        const res = await fetch(CDN + SAMPLE_FILE[midi] + '.mp3');
+        const arr = await res.arrayBuffer();
+        buffers[midi] = await ctx.decodeAudioData(arr);
+      } catch (e) { /* silently keep oscillator fallback for this note */ }
+    }));
+    samplesLoaded = true;
+  }
+
+  function nearestSample(midi) {
+    let best = SAMPLE_MIDIS[0], bestDist = Infinity;
+    for (const sm of SAMPLE_MIDIS) {
+      const d = Math.abs(midi - sm);
+      if (d < bestDist) { bestDist = d; best = sm; }
+    }
+    return { sampleMidi: best, detune: (midi - best) * 100 };
+  }
+
+  // Inicializa AudioContext na primeira interação e dispara carregamento dos samples
   function init() {
     if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
     if (ctx.state === 'suspended') ctx.resume();
+    loadSamples();
   }
 
-  // Toca nota individual com envelope ADSR simples
+  // Toca nota individual — sample real se carregado, oscilador se não
   // note: 'C4', 'F#5', etc. | duration em segundos
   function play(noteStr, duration = 0.6) {
     if (!Settings.getSoundOn()) return;
     init();
-
     const match = noteStr.match(/^([A-G]#?)(\d)$/);
     if (!match) return;
-    const [, note, oct] = match;
-    const hz = freq(note, parseInt(oct));
-    if (!hz) return;
-
     const vol = Settings.getVolume();
     const now = ctx.currentTime;
 
-    // Osciladores encadeados para timbre mais rico (piano sintético)
-    const osc1 = ctx.createOscillator(); // fundamental
-    const osc2 = ctx.createOscillator(); // 2ª harmônica (oitava)
-    const gain = ctx.createGain();
-
-    osc1.type = 'triangle';
-    osc1.frequency.value = hz;
-    osc2.type = 'sine';
-    osc2.frequency.value = hz * 2;
-
-    osc1.connect(gain);
-    osc2.connect(gain);
-    gain.connect(ctx.destination);
-
-    // Envelope: attack rápido → decay → sustain → release
-    gain.gain.setValueAtTime(0, now);
-    gain.gain.linearRampToValueAtTime(vol * 0.35, now + 0.012);  // attack
-    gain.gain.exponentialRampToValueAtTime(vol * 0.18, now + 0.1); // decay
-    gain.gain.setValueAtTime(vol * 0.18, now + duration - 0.08);   // sustain
-    gain.gain.exponentialRampToValueAtTime(0.001, now + duration);  // release
-
-    osc1.start(now);
-    osc2.start(now);
-    osc1.stop(now + duration);
-    osc2.stop(now + duration);
+    if (samplesLoaded) {
+      // ── Playback de sample com detune para afinação exata ──
+      const midi = noteToMidi(noteStr);
+      if (midi === null) return;
+      const { sampleMidi, detune } = nearestSample(midi);
+      if (!buffers[sampleMidi]) return;
+      const src = ctx.createBufferSource();
+      src.buffer = buffers[sampleMidi];
+      src.detune.value = detune;
+      const gain = ctx.createGain();
+      src.connect(gain);
+      gain.connect(ctx.destination);
+      gain.gain.setValueAtTime(vol * 0.9, now);
+      gain.gain.setValueAtTime(vol * 0.9, now + duration - 0.12);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + duration + 0.05);
+      src.start(now);
+      src.stop(now + duration + 0.1);
+    } else {
+      // ── Oscilador (fallback enquanto samples carregam) ─────
+      const [, note, oct] = match;
+      const hz = freq(note, parseInt(oct));
+      if (!hz) return;
+      const osc1 = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc1.type = 'triangle'; osc1.frequency.value = hz;
+      osc2.type = 'sine';     osc2.frequency.value = hz * 2;
+      osc1.connect(gain); osc2.connect(gain);
+      gain.connect(ctx.destination);
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(vol * 0.35, now + 0.012);
+      gain.gain.exponentialRampToValueAtTime(vol * 0.18, now + 0.1);
+      gain.gain.setValueAtTime(vol * 0.18, now + duration - 0.08);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+      osc1.start(now); osc2.start(now);
+      osc1.stop(now + duration); osc2.stop(now + duration);
+    }
   }
 
   // Toca acorde: array de noteStr, com delay em ms entre cada nota (arpejo)
