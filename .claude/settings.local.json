@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(gh repo:*)",
+      "Bash(gh api:*)",
+      "WebFetch(domain:paperclip.ing)",
+      "WebFetch(domain:docs.paperclip.ing)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(npm --version)",
+      "Bash(npx paperclipai:*)",
+      "Bash(curl:*)",
+      "Bash(COMPANY_ID=\"ed841cbf-36cc-4e0c-bddd-8cb8b34c0ec5\" PROJECT_DIR=\"C:\\\\Users\\\\paulo\\\\OneDrive\\\\td junto outlook hotmail\\\\Mafinho\\\\app_piano\" __NEW_LINE_c24d51f585cf7e7a__ curl -s -X POST \"http://127.0.0.1:3100/api/companies/$COMPANY_ID/agents\" -H \"Content-Type: application/json\" -d \"{:*)",
+      "Bash(python3 -m json.tool)",
+      "Bash(python3 -c \"import sys,json; agents=json.load\\(sys.stdin\\); [print\\(f''''Status: {a[\"\"status\"\"]}, lastHeartbeat: {a[\"\"lastHeartbeatAt\"\"]}''''\\) for a in agents]\")",
+      "Bash(python3 -c \"import sys,json; data=json.load\\(sys.stdin\\); print\\(json.dumps\\(data, indent=2, ensure_ascii=False\\)\\)\")",
+      "Bash(powershell -Command \"Set-ItemProperty -Path 'HKLM:\\\\SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\AppModelUnlock' -Name 'AllowDevelopmentWithoutDevLicense' -Value 1 -Type DWord\" 2>&1)",
+      "Bash(powershell -Command \"Get-ItemProperty -Path 'HKLM:\\\\SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\AppModelUnlock' -Name 'AllowDevelopmentWithoutDevLicense' 2>&1\")",
+      "Bash(python3 -c \":*)",
+      "Skill(update-config)",
+      "Bash(bash \"/c/Users/paulo/.claude/paperclip-status.sh\")",
+      "mcp__Claude_Preview__preview_start"
+    ]
+  }
+}
