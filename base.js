@@ -453,6 +453,47 @@ function goTo(page) {
   window.location.href = page;
 }
 
+/* ── 7b. FONT SIZE CYCLE ──────────────────────────────────── */
+// Cicla entre 3 tamanhos de fonte: normal → grande → pequeno → normal
+// Atualiza botão e persiste escolha.
+function cycleFontSize(btnEl) {
+  const steps = [1, 1.2, 0.85];
+  const cur = Settings.getFontScale();
+  const idx = steps.findIndex(v => Math.abs(v - cur) < 0.05);
+  const next = steps[(idx + 1) % steps.length];
+  Settings.setFontScale(next);
+  if (btnEl) btnEl.title = 'Texto: ' + Math.round(next * 100) + '%';
+}
+
+/* ── 7c. HELP MODAL ───────────────────────────────────────── */
+// Exibe um overlay de ajuda com o texto passado.
+// Usa/cria #help-modal automaticamente no document.
+function showHelp(text) {
+  let modal = document.getElementById('help-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'help-modal';
+    modal.style.cssText = [
+      'position:fixed;inset:0;background:rgba(0,0,0,.72)',
+      'display:flex;align-items:center;justify-content:center',
+      'z-index:9999;padding:20px',
+    ].join(';');
+    modal.innerHTML = `
+      <div style="background:#0d1117;border:1px solid #263045;border-radius:14px;
+                  padding:20px 22px;max-width:360px;width:100%;position:relative;
+                  color:#c8d8e8;font-size:clamp(0.82rem,2.5vw,1rem);line-height:1.6;">
+        <button onclick="document.getElementById('help-modal').style.display='none'"
+          style="position:absolute;top:10px;right:12px;background:none;border:none;
+                 color:#7a8fa8;font-size:1.3rem;cursor:pointer;line-height:1;">×</button>
+        <div id="help-modal-text"></div>
+      </div>`;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', e => { if (e.target === modal) modal.style.display = 'none'; });
+  }
+  document.getElementById('help-modal-text').innerHTML = text;
+  modal.style.display = 'flex';
+}
+
 /* ── 8. PENTAGRAMA ────────────────────────────────────────── */
 // createStaff(container) — retorna { showNotes(midiArray), clear(), el }
 // Posicionamento: clave de sol (C4–B5), 5 linhas, notas com acidentes e
@@ -559,16 +600,16 @@ function createStaff(container) {
 //           'q'=semínima (cheia+haste)       '8'=colcheia (cheia+haste+bandeira)
 
 function createStaffScore(container, opts = {}) {
-  const SLOT  = opts.slotWidth || 76;  // largura de cada slot (px)
-  const CLEF  = 50;                    // área da clave (px)
-  const H     = 96;                    // altura total SVG (px)
-  const STEP  = 4;                     // px por passo diatônico
-  const L1Y   = 64;                    // Y da linha 1 do pentagrama (Mi4)
-  const NRX   = 4.6;                   // rx da cabeça de nota
-  const NRY   = 3.0;                   // ry da cabeça de nota
+  const SLOT  = opts.slotWidth || 88;  // largura de cada slot (px)
+  const CLEF  = 56;                    // área da clave (px)
+  const H     = 108;                   // altura total SVG (px)
+  const STEP  = 5;                     // px por passo diatônico (maior = notas mais espaçadas)
+  const L1Y   = 72;                    // Y da linha 1 do pentagrama (Mi4)
+  const NRX   = 6.5;                   // rx da cabeça de nota (maior)
+  const NRY   = 4.2;                   // ry da cabeça de nota (maior)
   const TILT  = -15;                   // rotação da cabeça (graus)
-  const STMH  = 25;                    // comprimento da haste (px)
-  const LBH   = 12;                    // altura do rótulo no fundo
+  const STMH  = 28;                    // comprimento da haste (px)
+  const LBH   = 14;                    // altura do rótulo no fundo
 
   const NS   = 'http://www.w3.org/2000/svg';
   // Índice cromático → posição diatônica (a partir de Dó)
@@ -604,16 +645,16 @@ function createStaffScore(container, opts = {}) {
 
     // 5 linhas do pentagrama (Mi4,Sol4,Si4,Ré5,Fá5 = passos 0,2,4,6,8)
     [0, 2, 4, 6, 8].forEach(s =>
-      svg.appendChild($('line', { x1: CLEF-2, y1: sY(s), x2: W-2, y2: sY(s), stroke: '#3a5068', 'stroke-width': 1 }))
+      svg.appendChild($('line', { x1: CLEF-2, y1: sY(s), x2: W-2, y2: sY(s), stroke: '#5a7a96', 'stroke-width': 1.2 }))
     );
 
     // Clave de Sol
-    const clef = $('text', { x: 2, y: sY(9), fill: '#4a6274', 'font-size': 42, 'dominant-baseline': 'hanging', 'font-family': "'Segoe UI Symbol','Symbola',serif" });
+    const clef = $('text', { x: 2, y: sY(9), fill: '#6a8aa6', 'font-size': 46, 'dominant-baseline': 'hanging', 'font-family': "'Segoe UI Symbol','Symbola',serif" });
     clef.textContent = '\u{1D11E}';
     svg.appendChild(clef);
 
     // Linha de compasso inicial
-    svg.appendChild($('line', { x1: CLEF-1, y1: sY(0), x2: CLEF-1, y2: sY(8), stroke: '#2a3a4a', 'stroke-width': 1.2 }));
+    svg.appendChild($('line', { x1: CLEF-1, y1: sY(0), x2: CLEF-1, y2: sY(8), stroke: '#4a6a84', 'stroke-width': 1.5 }));
 
     chords.forEach((ch, i) => {
       const { midis = [], duration = 'w', label = '' } = ch;
@@ -629,12 +670,12 @@ function createStaffScore(container, opts = {}) {
         const cy   = sY(step);
 
         if (step <= -2)  // linha suplementar inferior (Dó4)
-          svg.appendChild($('line', { x1: cx-8, y1: sY(-2), x2: cx+8, y2: sY(-2), stroke: active ? '#4FC3F7' : '#3a5068', 'stroke-width': 1 }));
+          svg.appendChild($('line', { x1: cx-10, y1: sY(-2), x2: cx+10, y2: sY(-2), stroke: active ? '#4FC3F7' : '#5a7a96', 'stroke-width': 1.2 }));
         if (step >= 10)  // linha suplementar superior (Lá5+)
-          svg.appendChild($('line', { x1: cx-8, y1: sY(10), x2: cx+8, y2: sY(10), stroke: active ? '#4FC3F7' : '#3a5068', 'stroke-width': 1 }));
+          svg.appendChild($('line', { x1: cx-10, y1: sY(10), x2: cx+10, y2: sY(10), stroke: active ? '#4FC3F7' : '#5a7a96', 'stroke-width': 1.2 }));
 
         if (isSharp(midi)) {
-          const acc = $('text', { x: cx-11, y: cy+4.5, fill: active ? '#4FC3F7' : '#6a7a8a', 'font-size': 9, 'font-weight': 'bold', 'text-anchor': 'middle' });
+          const acc = $('text', { x: cx-13, y: cy+5, fill: active ? '#4FC3F7' : '#7a9ab6', 'font-size': 11, 'font-weight': 'bold', 'text-anchor': 'middle' });
           acc.textContent = '\u266F';
           svg.appendChild(acc);
         }
@@ -642,7 +683,7 @@ function createStaffScore(container, opts = {}) {
         svg.appendChild($('ellipse', {
           cx, cy, rx: NRX, ry: NRY,
           fill: isFilled(duration) ? col : 'none',
-          stroke: col, 'stroke-width': isFilled(duration) ? 0 : 1.4,
+          stroke: col, 'stroke-width': isFilled(duration) ? 0 : 1.8,
           transform: `rotate(${TILT} ${cx} ${cy})`
         }));
       });
@@ -665,11 +706,11 @@ function createStaffScore(container, opts = {}) {
       }
 
       // Linha de compasso final
-      svg.appendChild($('line', { x1: CLEF+(i+1)*SLOT, y1: sY(0), x2: CLEF+(i+1)*SLOT, y2: sY(8), stroke: '#2a3a4a', 'stroke-width': 1.2 }));
+      svg.appendChild($('line', { x1: CLEF+(i+1)*SLOT, y1: sY(0), x2: CLEF+(i+1)*SLOT, y2: sY(8), stroke: '#4a6a84', 'stroke-width': 1.5 }));
 
       // Rótulo abaixo
       if (label) {
-        const t = $('text', { x: cx, y: H-2, fill: active ? '#4FC3F7' : '#2e4055', 'font-size': 8.5, 'font-weight': 700, 'text-anchor': 'middle', 'font-family': 'sans-serif' });
+        const t = $('text', { x: cx, y: H-2, fill: active ? '#4FC3F7' : '#5a7a96', 'font-size': 10, 'font-weight': 700, 'text-anchor': 'middle', 'font-family': 'sans-serif' });
         t.textContent = label;
         svg.appendChild(t);
       }
@@ -690,7 +731,85 @@ function createStaffScore(container, opts = {}) {
   };
 }
 
-/* ── 10. INICIALIZAÇÃO ────────────────────────────────────── */
+/* ── 10. RECONHECIMENTO DE ÁUDIO (infraestrutura — inativo) ── */
+//
+// AudioRecognizer detecta notas/acordes via microfone usando FFT.
+// COMO ATIVAR: chame AudioRecognizer.start(callback) onde
+//   callback({ note:'C4', midi:60, confidence:0.8 }) é chamado
+//   cada vez que uma nota é detectada com confiança suficiente.
+// COMO PARAR: AudioRecognizer.stop()
+//
+// Requer permissão de microfone (navigator.mediaDevices.getUserMedia).
+// Algoritmo: análise de pico de frequência via AnalyserNode FFT
+// seguida de mapeamento à nota MIDI mais próxima.
+//
+const AudioRecognizer = (() => {
+  let stream = null, analyser = null, rafId = null, ctx = null;
+  const FFT_SIZE = 4096;
+  const CONFIDENCE_THRESHOLD = 0.65;
+
+  function freqToMidi(hz) {
+    return Math.round(69 + 12 * Math.log2(hz / 440));
+  }
+
+  function detectPitch(buf, sampleRate) {
+    // Autocorrelação simples para detecção de pitch fundamental
+    const N = buf.length;
+    let bestR = -1, bestT = -1;
+    for (let t = 20; t < N / 2; t++) {
+      let r = 0;
+      for (let i = 0; i < N / 2; i++) r += buf[i] * buf[i + t];
+      if (r > bestR) { bestR = r; bestT = t; }
+    }
+    if (bestT < 0) return null;
+    const freq = sampleRate / bestT;
+    if (freq < 60 || freq > 2000) return null;  // fora do range do piano
+    const rms = Math.sqrt(buf.reduce((a, v) => a + v * v, 0) / N);
+    const confidence = Math.min(1, rms * 10);
+    return { freq, confidence };
+  }
+
+  function loop(callback, sampleRate) {
+    const buf = new Float32Array(FFT_SIZE);
+    function tick() {
+      analyser.getFloatTimeDomainData(buf);
+      const result = detectPitch(buf, sampleRate);
+      if (result && result.confidence >= CONFIDENCE_THRESHOLD) {
+        const midi = freqToMidi(result.freq);
+        if (midi >= 48 && midi <= 83)  // C3-B5
+          callback({ note: midiToNote(midi), midi, confidence: result.confidence });
+      }
+      rafId = requestAnimationFrame(tick);
+    }
+    tick();
+  }
+
+  return {
+    // Para ativar: AudioRecognizer.start(({note, midi, confidence}) => { ... })
+    async start(callback) {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const src = ctx.createMediaStreamSource(stream);
+        analyser = ctx.createAnalyser();
+        analyser.fftSize = FFT_SIZE;
+        src.connect(analyser);
+        loop(callback, ctx.sampleRate);
+      } catch (e) {
+        console.warn('AudioRecognizer: microfone indisponível —', e.message);
+      }
+    },
+    stop() {
+      if (rafId) cancelAnimationFrame(rafId);
+      if (stream) stream.getTracks().forEach(t => t.stop());
+      if (ctx) ctx.close();
+      stream = analyser = rafId = ctx = null;
+    },
+    get active() { return !!stream; },
+  };
+})();
+
+/* ── 12. INICIALIZAÇÃO ────────────────────────────────────── */
 
 document.addEventListener('DOMContentLoaded', () => {
   Settings.init();
@@ -699,4 +818,5 @@ document.addEventListener('DOMContentLoaded', () => {
 /* ── EXPORTAÇÕES (para uso nos módulos) ──────────────────── */
 // AudioEngine, createPianoKeyboard, buildChord, transpose,
 // noteToMidi, midiToNote, FORMULAS, noteCssClass,
-// Settings, LockMode, TTS, goToIndex, goTo
+// Settings, LockMode, TTS, goToIndex, goTo,
+// cycleFontSize, showHelp, AudioRecognizer

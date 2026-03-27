@@ -21,46 +21,78 @@
       border-bottom: 3px solid #000; overflow: hidden;
     }
     @media (orientation: landscape) {
-      .digital-panel { flex: 0 0 auto; max-height: 32dvh; overflow-y: auto; border-bottom: 1px solid #1a2535; }
+      .digital-panel { flex: 0 0 auto; max-height: 40dvh; overflow-y: auto; border-bottom: 1px solid #1a2535; }
     }
 
+    /* ── TOPBAR (unificada) ──────────────────────────────────── */
     .panel-topbar {
-      display: flex; align-items: center; padding: 5px 8px; gap: 4px;
+      display: flex; align-items: center; padding: 4px 6px; gap: 3px;
       background: #070d14; border-bottom: 1px solid #1a2535; flex-shrink: 0;
     }
     .panel-title {
-      flex: 1; text-align: center; font-size: 0.65rem; letter-spacing: 3px;
+      flex: 1; text-align: center; font-size: 0.6rem; letter-spacing: 2px;
       color: #4FC3F7; font-weight: 700; text-transform: uppercase;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
     }
     .panel-btn {
-      width: 34px; height: 34px; background: #141e2e;
-      border: 1px solid #263045; border-radius: 7px; color: #7a8fa8;
-      font-size: 0.9rem; cursor: pointer;
+      width: 30px; height: 30px; background: #141e2e;
+      border: 1px solid #263045; border-radius: 6px; color: #7a8fa8;
+      font-size: 0.82rem; cursor: pointer; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
       touch-action: manipulation;
     }
     .panel-btn:active { background: #1e2e44; }
+    .panel-btn:disabled { opacity: .3; pointer-events: none; }
     .panel-btn.active { color: #F9A825; border-color: #F9A825; }
-
-    /* ── BARRA DE TONALIDADE ────────────────────────────────── */
-    .chave-bar {
-      display: flex; align-items: center; justify-content: center;
-      gap: 3px; padding: 5px 6px;
-      background: #070d14; border-bottom: 1px solid #1a2535; flex-shrink: 0;
-    }
-    .chave-dot {
-      display: flex; flex-direction: column; align-items: center; gap: 1px;
-      padding: 4px 5px; border-radius: 5px; cursor: pointer; touch-action: manipulation;
-    }
-    .chave-dot__c {
-      width: 7px; height: 7px; border-radius: 50%;
+    .fase-dots-row { display: flex; gap: 4px; align-items: center; flex-shrink: 0; }
+    .fase-dot {
+      width: 5px; height: 5px; border-radius: 50%;
       background: #2a3a4a; border: 1px solid #3a4a5a; transition: background .2s;
     }
-    .chave-dot__l { font-size: 0.38rem; font-weight: 700; color: #3a4a5a; transition: color .2s; }
+    .fase-dot.ativa { background: #4FC3F7; }
+    .fase-dot.feita { background: #4CAF50; }
+
+    /* ── BARRA DE TONALIDADE — maior com instrução ───────────── */
+    .chave-bar-wrap {
+      background: #070d14; border-bottom: 1px solid #1a2535; flex-shrink: 0;
+      padding: 4px 8px 5px;
+    }
+    .chave-instr {
+      font-size: 0.5rem; color: #4a6274; text-align: center;
+      letter-spacing: .5px; margin-bottom: 4px; font-weight: 600;
+    }
+    .chave-bar {
+      display: flex; align-items: center; justify-content: center; gap: 4px;
+    }
+    .chave-dot {
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      padding: 5px 7px; border-radius: 7px; cursor: pointer; touch-action: manipulation;
+      transition: background .15s;
+    }
+    .chave-dot:active { background: rgba(79,195,247,.12); }
+    .chave-dot__c {
+      width: 11px; height: 11px; border-radius: 50%;
+      background: #2a3a4a; border: 1.5px solid #3a4a5a; transition: background .2s;
+    }
+    .chave-dot__l { font-size: 0.48rem; font-weight: 700; color: #3a4a5a; transition: color .2s; }
     .chave-dot.ativo .chave-dot__c { background: #4FC3F7; border-color: #4FC3F7; }
     .chave-dot.ativo .chave-dot__l { color: #4FC3F7; }
     .chave-dot.feito .chave-dot__c { background: #4CAF50; border-color: #4CAF50; }
     .chave-dot.feito .chave-dot__l { color: #4CAF50; }
+
+    /* ── SELETOR DE INVERSÃO ─────────────────────────────────── */
+    .inv-sel {
+      display: flex; gap: 4px; justify-content: center; flex-shrink: 0;
+      padding: 4px 8px; background: #070d14; border-bottom: 1px solid #1a2535;
+    }
+    .inv-sel-btn {
+      padding: 3px 9px; background: #141e2e; border: 1.5px solid #263045;
+      border-radius: 6px; color: #7a8fa8; font-size: 0.5rem;
+      font-weight: 700; cursor: pointer; touch-action: manipulation;
+      transition: border-color .15s, color .15s;
+    }
+    .inv-sel-btn.ativo { border-color: #4FC3F7; color: #4FC3F7; background: rgba(79,195,247,.07); }
+    .inv-sel-btn:active { background: rgba(79,195,247,.15); }
 
     /* ── CONTEÚDO ───────────────────────────────────────────── */
     .panel-content {
@@ -143,49 +175,28 @@
     .btn-acao:disabled { opacity: .4; pointer-events: none; }
     .btns-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
 
-    /* ── NAV DE FASES ───────────────────────────────────────── */
-    .fase-nav {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 7px 12px; gap: 8px;
-      background: #070d14; border-top: 1px solid #1a2535; flex-shrink: 0;
-    }
-    .fase-nav-btn {
-      width: 32px; height: 32px; background: #141e2e;
-      border: 1px solid #263045; border-radius: 7px;
-      color: #4FC3F7; font-size: 1.1rem; cursor: pointer;
-      display: flex; align-items: center; justify-content: center; touch-action: manipulation;
-    }
-    .fase-nav-btn:disabled { opacity: .3; cursor: default; pointer-events: none; }
-    .fase-dots-row { display: flex; gap: 5px; }
-    .fase-dot {
-      width: 6px; height: 6px; border-radius: 50%;
-      background: #2a3a4a; border: 1px solid #3a4a5a; transition: background .2s;
-    }
-    .fase-dot.ativa { background: #4FC3F7; }
-    .fase-dot.feita { background: #4CAF50; }
-
     /* ── PIANO STAGE ────────────────────────────────────────── */
     /* REGRA: piano sempre C4-B5 (2 oitavas). Staff acima. Não alterar. */
     .piano-stage {
       background: #111827; border-top: 3px solid #000;
-      flex: 0 0 52dvh;                       /* inclui espaço para staff */
-      display: flex; flex-direction: column; /* staff acima, piano abaixo */
+      flex: 0 0 50dvh;
+      display: flex; flex-direction: column;
       align-items: stretch;
-      --key-h:    clamp(130px, 34dvh, 260px);
-      --key-bk-h: clamp( 78px, 20dvh, 156px);
+      --key-h:    clamp(90px, 28dvh, 240px);
+      --key-bk-h: clamp(54px, 17dvh, 144px);
     }
     @media (orientation: landscape) {
       .piano-stage {
-        flex: 1; border-top: none;
-        --key-h:    clamp(60px, 45dvh, 200px);
-        --key-bk-h: clamp(36px, 27dvh, 120px);
+        flex: 1; min-height: 0; border-top: none;
+        --key-h:    clamp(55px, 42dvh, 180px);
+        --key-bk-h: clamp(33px, 25dvh, 108px);
       }
     }
 
     /* Staff container: fixo no topo do piano-stage */
     #staff-container {
       flex-shrink: 0; padding: 2px 8px 0;
-      background: #0d1117; border-bottom: 1px solid #1a2535;
+      background: #0d1117; border-bottom: 1px solid #1a2535; overflow-x: auto;
     }
 
     /* Keyboard container: preenche resto */
@@ -224,14 +235,29 @@
 
   <div class="digital-panel">
     <div class="panel-topbar">
-      <button class="panel-btn" onclick="goTo('index.html')">←</button>
+      <button class="panel-btn" onclick="goTo('index.html')" title="Menu do curso">⌂</button>
       <span class="panel-title">M5 · PROGRESSÕES</span>
-      <button class="panel-btn" id="btn-easy" onclick="toggleEasy()">☆</button>
-      <button class="panel-btn" id="btn-lock" onclick="LockMode.toggle(this)">🔓</button>
+      <button class="panel-btn" id="btn-fase-prev" onclick="faseAnterior()">‹</button>
+      <div class="fase-dots-row" id="fase-dots-row"></div>
+      <button class="panel-btn" id="btn-fase-next" onclick="faseSeguinte()">›</button>
+      <button class="panel-btn" onclick="showHelp(HELP_FASES[faseAtual])" title="Ajuda">?</button>
+      <button class="panel-btn" id="btn-easy" onclick="toggleEasy()" title="Modo fácil">☆</button>
+      <button class="panel-btn" onclick="cycleFontSize(this)" title="Tamanho do texto">A</button>
+      <button class="panel-btn" id="btn-lock" onclick="LockMode.toggle(this)" title="Tela cheia">🔓</button>
       <button class="panel-btn" id="btn-sound" onclick="toggleSom()">🔊</button>
     </div>
 
-    <div class="chave-bar" id="chave-bar"></div>
+    <div class="chave-bar-wrap">
+      <div class="chave-instr">Escolha a tonalidade:</div>
+      <div class="chave-bar" id="chave-bar"></div>
+    </div>
+
+    <!-- Seletor de inversão: muda a posição dos acordes na progressão -->
+    <div class="inv-sel" id="inv-sel">
+      <button class="inv-sel-btn ativo" onclick="setInversao(0)">Posição raiz</button>
+      <button class="inv-sel-btn"       onclick="setInversao(1)">1ª inversão</button>
+      <button class="inv-sel-btn"       onclick="setInversao(2)">2ª inversão</button>
+    </div>
 
     <div class="panel-content">
 
@@ -287,11 +313,6 @@
 
     </div><!-- panel-content -->
 
-    <div class="fase-nav">
-      <button class="fase-nav-btn" id="btn-fase-prev" onclick="faseAnterior()">‹</button>
-      <div class="fase-dots-row" id="fase-dots-row"></div>
-      <button class="fase-nav-btn" id="btn-fase-next" onclick="faseSeguinte()">›</button>
-    </div>
   </div><!-- digital-panel -->
 
   <!-- PIANO STAGE: staff acima + teclado abaixo -->
@@ -316,14 +337,37 @@
    O padrão matemático é o MESMO em qualquer tonalidade — apenas transposto.
 ══════════════════════════════════════════════════════════════ */
 
-// Offsets MIDI relativos à tônica (tônica = offset 0)
-// rootOffset = offset da fundamental do acorde (para nome e label corretos)
-const PROGRESSAO = [
-  { grau:'I',  nome:'Maior', inv:'raiz', offsets:[ 0, 4, 7], rootOffset: 0 },
-  { grau:'vi', nome:'menor', inv:'1ª',   offsets:[ 0, 4, 9], rootOffset: 9 },
-  { grau:'IV', nome:'Maior', inv:'2ª',   offsets:[ 0, 5, 9], rootOffset: 5 },
-  { grau:'V',  nome:'Maior', inv:'2ª',   offsets:[ 2, 7,11], rootOffset: 7 },
+// Offsets MIDI relativos à tônica — 3 posições para cada acorde da progressão.
+// Cada linha: [raiz, 1ª inversão, 2ª inversão]
+// rootOffset = semitom da fundamental do acorde (para nome correto)
+const PROGRESSAO_BASE = [
+  { grau:'I',  nome:'Maior', rootOffset: 0,
+    pos: [[ 0, 4, 7], [ 4, 7,12], [ 7,12,16]] },
+  { grau:'VI', nome:'menor', rootOffset: 9,
+    pos: [[ 0, 4, 9], [ 4, 9,12], [ 9,12,16]] },
+  { grau:'IV', nome:'Maior', rootOffset: 5,
+    pos: [[ 0, 5, 9], [ 5, 9,12], [ 9,12,17]] },
+  { grau:'V',  nome:'Maior', rootOffset: 7,
+    pos: [[ 2, 7,11], [ 7,11,14], [11,14,19]] },
 ];
+const INV_LABELS = ['Posição raiz', '1ª inversão', '2ª inversão'];
+
+// Retorna a progressão ativa (4 acordes) para a inversão selecionada
+// Aplica clamping: notas fora de C4-B5 (MIDI 60-83) são transpostas -12
+function getProgressao() {
+  return PROGRESSAO_BASE.map(p => ({
+    ...p,
+    offsets: p.pos[invIdx].map(o => {
+      let m = tonicMidi() + o;
+      while (m > 83) m -= 12;
+      while (m < 60) m += 12;
+      return m - tonicMidi(); // retorna de volta como offset
+    }),
+  }));
+}
+
+// Para acesso direto como array compatível com código existente
+function progressaoAtual() { return getProgressao(); }
 
 // 7 tonalidades — piano sempre em C4-B5 (2 oitavas)
 const CHAVES = [
@@ -352,15 +396,24 @@ function nomeNota(noteStr) { return NOTA_PT[noteStr.replace(/\d/,'')] || noteStr
 /* ══════════════════════════════════════════════════════════════
    ESTADO
 ══════════════════════════════════════════════════════════════ */
-let chaveIdx  = 0;
-let faseAtual = 'conceito';
-let etapaIdx  = 0;
-let modoFacil = Settings.getEasyMode();
-let animTimer = null;
-let invAtiva  = 0;
+let chaveIdx    = 0;
+let faseAtual   = 'conceito';
+let etapaIdx    = 0;
+let modoFacil   = Settings.getEasyMode();
+let animTimer   = null;
+let invAtiva    = 0;   // para o conceito (demo das 3 inversões de Dó)
+let invIdx      = 0;   // inversão ativa para a progressão (0=raiz, 1=1ª, 2=2ª)
 let invAnterior = null;
 
 const FASES_ORDEM = ['conceito','demo','praticar'];
+
+/* ── Textos de ajuda por fase ─────────────────────────────── */
+const HELP_FASES = {
+  conceito: '<b>Inversões</b><br>Um acorde tem 3 notas. A posição muda qual nota fica mais baixa. Isso permite que as mãos se movam o mínimo entre um acorde e outro. Clique nos botões para ver cada posição!',
+  demo:     '<b>Ouça a progressão</b><br>A sequência I–VI–IV–V é usada em milhares de músicas. Veja como as notas do piano mal se movem de um acorde para o outro! Use os botões de inversão para mudar a posição.',
+  praticar: '<b>Pratique no piano real</b><br>Toque cada acorde indicado no seu piano. O app mostra as notas acesas. Após tocar, clique em "Próximo" para avançar. Use o botão de inversão para treinar posições diferentes!',
+  celebra:  '<b>Parabéns!</b><br>Você tocou a progressão inteira! Escolha outra tonalidade ou posição para continuar.',
+};
 
 /* ══════════════════════════════════════════════════════════════
    PIANO + STAFF — criados UMA VEZ, reutilizados
@@ -383,7 +436,7 @@ const SCORE_CONCEITO = [
 
 function buildProgressaoScore() {
   const t = tonicMidi();
-  score.loadScore(PROGRESSAO.map(p => ({
+  score.loadScore(progressaoAtual().map(p => ({
     midis: p.offsets.map(o => t + o),
     duration: 'q', label: p.grau
   })));
@@ -395,14 +448,29 @@ function buildProgressaoScore() {
 const tonicMidi = () => noteToMidi(CHAVES[chaveIdx].raiz);
 function getChordMidis(stepIdx) {
   const t = tonicMidi();
-  return PROGRESSAO[stepIdx].offsets.map(o => t + o);
+  return progressaoAtual()[stepIdx].offsets.map(o => t + o);
 }
 
 function nomeAcorde(stepIdx) {
-  const p = PROGRESSAO[stepIdx];
+  const p = progressaoAtual()[stepIdx];
   const t = tonicMidi();
   const rootNote = midiToNote(t + p.rootOffset);
-  return nomeNota(rootNote) + ' ' + p.nome + ' (' + p.inv + ')';
+  return nomeNota(rootNote) + ' ' + p.nome;
+}
+
+/* ── Função para mudar inversão ──────────────────────────── */
+function setInversao(idx) {
+  invIdx = idx;
+  document.querySelectorAll('.inv-sel-btn').forEach((b, i) => b.classList.toggle('ativo', i === idx));
+  // Rebuild score/barra se estiver em demo ou praticar
+  if (faseAtual === 'demo') {
+    buildProgressaoScore();
+    buildBarraProgressao('demo-barra');
+  } else if (faseAtual === 'praticar') {
+    buildProgressaoScore();
+    buildBarraProgressao('pratica-barra');
+    mostrarEtapa();
+  }
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -470,7 +538,7 @@ function tocarDemo() {
       el.classList.toggle('ativo', i === step));
     kb.clearHighlights(); clearVL();
 
-    if (step >= PROGRESSAO.length) {
+    if (step >= progressaoAtual().length) {
       document.getElementById('btn-demo-tocar').disabled = false;
       document.getElementById('btn-demo-tocar').textContent = '↻ Ouvir de novo';
       document.getElementById('btn-demo-praticar').style.display = '';
@@ -518,14 +586,15 @@ function mostrarEtapa() {
   });
 
   // Instrução
-  const p = PROGRESSAO[etapaIdx];
+  const prog = progressaoAtual();
+  const p = prog[etapaIdx];
   const t = tonicMidi();
   const rootMidi = t + p.rootOffset;
   const notasStr = p.offsets.map(o => nomeNota(midiToNote(t + o))).join(' + ');
   document.getElementById('pratica-titulo').textContent =
     p.grau + ' — ' + nomeNota(midiToNote(rootMidi)) + ' ' + p.nome;
   document.getElementById('pratica-instrucao').textContent =
-    notasStr + ' · ' + p.inv + ' inversão · toque no piano real e avance';
+    'Toque no seu piano: ' + notasStr;
 
   AudioEngine.playChord(midis.map(midiToNote), 40, 1.0);
 }
@@ -538,7 +607,7 @@ function repetirAcorde() {
 function proximoAcorde() {
   prevMidisPratica = getChordMidis(etapaIdx);
   etapaIdx++;
-  if (etapaIdx >= PROGRESSAO.length) {
+  if (etapaIdx >= progressaoAtual().length) {
     irFase('celebra');
   } else {
     mostrarEtapa();
@@ -576,7 +645,8 @@ function faseSeguinte() {
 function buildBarraProgressao(containerId) {
   const el = document.getElementById(containerId);
   el.innerHTML = '';
-  PROGRESSAO.forEach((p, i) => {
+  const prog = progressaoAtual();
+  prog.forEach((p, i) => {
     if (i > 0) {
       const seta = document.createElement('div');
       seta.className = 'prog-seta'; seta.textContent = '→';
@@ -615,11 +685,11 @@ function irFase(fase) {
     buildProgressaoScore();
     buildBarraProgressao('demo-barra');
     document.getElementById('demo-titulo').textContent =
-      'I – vi – IV – V em ' + cfg.tonica + ' Maior';
+      'I – VI – IV – V · ' + cfg.tonica + ' Maior';
     document.getElementById('btn-demo-tocar').disabled = false;
-    document.getElementById('btn-demo-tocar').textContent = '▶ Tocar';
+    document.getElementById('btn-demo-tocar').textContent = '▶ Ouvir';
     document.getElementById('btn-demo-praticar').style.display = 'none';
-    TTS.falar('I vi IV V em ' + cfg.tonica + ' Maior');
+    TTS.falar('Um, seis, quatro, cinco, em ' + cfg.tonica + ' Maior');
   }
 
   if (fase === 'praticar') {
@@ -628,7 +698,7 @@ function irFase(fase) {
     // Dots
     const dotsEl = document.getElementById('pratica-dots');
     dotsEl.innerHTML = '';
-    PROGRESSAO.forEach((_, i) => {
+    progressaoAtual().forEach((_, i) => {
       const d = document.createElement('div');
       d.className = 'pratica-dot' + (i === 0 ? ' atual' : '');
       dotsEl.appendChild(d);
@@ -644,7 +714,7 @@ function irFase(fase) {
     const total = concluidas.length;
     const ultimo = chaveIdx >= CHAVES.length - 1;
     document.getElementById('celebra-emoji').textContent  = total >= CHAVES.length ? '🏆' : '🎉';
-    document.getElementById('celebra-titulo').textContent = 'I–vi–IV–V em ' + cfg.tonica + ' ✓';
+    document.getElementById('celebra-titulo').textContent = 'I–VI–IV–V em ' + cfg.tonica + ' ✓';
     document.getElementById('celebra-sub').textContent    = total + ' de ' + CHAVES.length + ' tonalidades concluídas';
     document.getElementById('btn-outra-chave').style.display = ultimo ? 'none' : '';
     TTS.falar('Parabéns! Progressão em ' + cfg.tonica + ' concluída!');

@@ -22,42 +22,60 @@
       border-bottom: 3px solid #000; overflow: hidden;
     }
     @media (orientation: landscape) {
-      .digital-panel { flex: 0 0 auto; max-height: 32dvh; overflow-y: auto; border-bottom: 1px solid #1a2535; }
+      .digital-panel { flex: 0 0 auto; max-height: 40dvh; overflow-y: auto; border-bottom: 1px solid #1a2535; }
     }
 
-    /* ── TOPBAR ──────────────────────────────────────────────── */
+    /* ── TOPBAR (unificada: nav + fases + controles) ─────────── */
     .panel-topbar {
-      display: flex; align-items: center; padding: 5px 8px; gap: 4px;
+      display: flex; align-items: center; padding: 4px 6px; gap: 3px;
       background: #070d14; border-bottom: 1px solid #1a2535; flex-shrink: 0;
     }
     .panel-title {
-      flex: 1; text-align: center; font-size: 0.65rem; letter-spacing: 3px;
+      flex: 1; text-align: center; font-size: 0.6rem; letter-spacing: 2px;
       color: #4FC3F7; font-weight: 700; text-transform: uppercase;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
     }
     .panel-btn {
-      width: 34px; height: 34px; background: #141e2e;
-      border: 1px solid #263045; border-radius: 7px; color: #7a8fa8;
-      font-size: 0.9rem; cursor: pointer;
+      width: 30px; height: 30px; background: #141e2e;
+      border: 1px solid #263045; border-radius: 6px; color: #7a8fa8;
+      font-size: 0.82rem; cursor: pointer; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
       touch-action: manipulation;
     }
     .panel-btn:active { background: #1e2e44; }
-
-    /* ── BARRA DE TONALIDADE (7 dots) ────────────────────────── */
-    .chave-bar {
-      display: flex; align-items: center; justify-content: center;
-      gap: 3px; padding: 5px 6px;
-      background: #070d14; border-bottom: 1px solid #1a2535; flex-shrink: 0;
-    }
-    .chave-dot {
-      display: flex; flex-direction: column; align-items: center; gap: 1px;
-      padding: 4px 5px; border-radius: 5px; cursor: pointer; touch-action: manipulation;
-    }
-    .chave-dot__c {
-      width: 7px; height: 7px; border-radius: 50%;
+    .panel-btn:disabled { opacity: .3; pointer-events: none; }
+    /* dots de fase no topbar */
+    .fase-dots-row { display: flex; gap: 4px; align-items: center; flex-shrink: 0; }
+    .fase-dot {
+      width: 5px; height: 5px; border-radius: 50%;
       background: #2a3a4a; border: 1px solid #3a4a5a; transition: background .2s;
     }
-    .chave-dot__l { font-size: 0.38rem; font-weight: 700; color: #3a4a5a; transition: color .2s; }
+    .fase-dot.ativa { background: #4FC3F7; }
+    .fase-dot.feita { background: #4CAF50; }
+
+    /* ── BARRA DE TONALIDADE — maior e com instrução ─────────── */
+    .chave-bar-wrap {
+      background: #070d14; border-bottom: 1px solid #1a2535; flex-shrink: 0;
+      padding: 4px 8px 5px;
+    }
+    .chave-instr {
+      font-size: 0.5rem; color: #4a6274; text-align: center;
+      letter-spacing: .5px; margin-bottom: 4px; font-weight: 600;
+    }
+    .chave-bar {
+      display: flex; align-items: center; justify-content: center; gap: 4px;
+    }
+    .chave-dot {
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      padding: 5px 7px; border-radius: 7px; cursor: pointer; touch-action: manipulation;
+      transition: background .15s;
+    }
+    .chave-dot:active { background: rgba(79,195,247,.12); }
+    .chave-dot__c {
+      width: 11px; height: 11px; border-radius: 50%;
+      background: #2a3a4a; border: 1.5px solid #3a4a5a; transition: background .2s;
+    }
+    .chave-dot__l { font-size: 0.48rem; font-weight: 700; color: #3a4a5a; transition: color .2s; }
     .chave-dot.ativo .chave-dot__c { background: #4FC3F7; border-color: #4FC3F7; }
     .chave-dot.ativo .chave-dot__l { color: #4FC3F7; }
     .chave-dot.feito .chave-dot__c { background: #4CAF50; border-color: #4CAF50; }
@@ -156,48 +174,25 @@
     /* JS (ajustarTeclado) define --key-h e --key-bk-h dinamicamente
        com base na altura real disponível. CSS define apenas fallback seguro. */
     .piano-stage {
-      background: #111827; border-top: 3px solid #000; flex: 0 0 52dvh;
+      background: #111827; border-top: 3px solid #000; flex: 0 0 50dvh;
       display: flex; flex-direction: column;
-      --key-h:    clamp(100px, 30dvh, 240px);
-      --key-bk-h: clamp( 60px, 18dvh, 144px);
+      --key-h:    clamp(90px, 28dvh, 240px);
+      --key-bk-h: clamp(54px, 17dvh, 144px);
     }
     @media (orientation: landscape) {
       .piano-stage {
-        flex: 1; border-top: none;
-        /* JS vai corrigir; valor inicial conservador para evitar overflow */
-        --key-h:    clamp(60px, 45dvh, 200px);
-        --key-bk-h: clamp(36px, 27dvh, 120px);
+        flex: 1; min-height: 0; border-top: none;
+        --key-h:    clamp(55px, 42dvh, 180px);
+        --key-bk-h: clamp(33px, 25dvh, 108px);
       }
     }
-    #staff-container { flex-shrink: 0; padding: 2px 8px 0; background: #0d1117; border-bottom: 1px solid #1a2535; }
+    #staff-container { flex-shrink: 0; padding: 2px 8px 0; background: #0d1117; border-bottom: 1px solid #1a2535; overflow-x: auto; }
     #piano-wrap { flex: 1; min-height: 0; display: flex; align-items: center; overflow: hidden; }
     #piano-wrap #piano-escalas { width: 100%; }
     .piano-stage .piano-wrap.responsive { overflow: visible; padding-bottom: 0; }
     .piano-stage .piano.responsive { width: 100%; }
     .piano-stage .key__label { font-size: clamp(0.38rem, 1.1vw, 0.54rem); font-weight: 700; color: #888; }
     .piano-stage .key { border-color: #444; }
-
-    /* ── NAV PADRONIZADA ─────────────────────────────────────── */
-    .fase-nav {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 7px 12px; gap: 8px;
-      background: #070d14; border-top: 1px solid #1a2535; flex-shrink: 0;
-    }
-    .fase-nav-btn {
-      width: 32px; height: 32px; background: #141e2e;
-      border: 1px solid #263045; border-radius: 7px;
-      color: #4FC3F7; font-size: 1.1rem; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      touch-action: manipulation;
-    }
-    .fase-nav-btn:disabled { opacity: .3; cursor: default; pointer-events: none; }
-    .fase-dots-row { display: flex; gap: 5px; }
-    .fase-dot {
-      width: 6px; height: 6px; border-radius: 50%;
-      background: #2a3a4a; border: 1px solid #3a4a5a; transition: background .2s;
-    }
-    .fase-dot.ativa { background: #4FC3F7; }
-    .fase-dot.feita { background: #4CAF50; }
 
     @keyframes pulsar { 0%,100%{opacity:1} 50%{opacity:.5} }
     @keyframes shake-tecla {
@@ -212,12 +207,21 @@
 
   <div class="digital-panel">
     <div class="panel-topbar">
-      <button class="panel-btn" onclick="goTo('index.html')">←</button>
+      <button class="panel-btn" onclick="goTo('index.html')" title="Menu do curso">⌂</button>
       <span class="panel-title">M2 · ESCALAS</span>
+      <button class="panel-btn" id="btn-fase-prev" onclick="faseAnterior()">‹</button>
+      <div class="fase-dots-row" id="fase-dots-row"></div>
+      <button class="panel-btn" id="btn-fase-next" onclick="faseSeguinte()">›</button>
+      <button class="panel-btn" onclick="showHelp(HELP_FASES[faseAtual])" title="Ajuda">?</button>
+      <button class="panel-btn" onclick="cycleFontSize(this)" title="Tamanho do texto">A</button>
+      <button class="panel-btn" id="btn-lock" onclick="LockMode.toggle(this)" title="Tela cheia">🔓</button>
       <button class="panel-btn" id="btn-sound" onclick="toggleSom()">🔊</button>
     </div>
 
-    <div class="chave-bar" id="chave-bar"></div>
+    <div class="chave-bar-wrap">
+      <div class="chave-instr">Escolha a escala que quer treinar:</div>
+      <div class="chave-bar" id="chave-bar"></div>
+    </div>
 
     <div class="panel-content">
 
@@ -262,11 +266,6 @@
 
     </div>
 
-    <div class="fase-nav">
-      <button class="fase-nav-btn" id="btn-fase-prev" onclick="faseAnterior()">‹</button>
-      <div class="fase-dots-row" id="fase-dots-row"></div>
-      <button class="fase-nav-btn" id="btn-fase-next" onclick="faseSeguinte()">›</button>
-    </div>
   </div>
 
   <div class="piano-stage" id="piano-stage">
@@ -296,6 +295,14 @@ const CHAVES = [
   {raiz:'F4',label:'Fá'}, {raiz:'G4',label:'Sol'},{raiz:'A4',label:'Lá'},
   {raiz:'B4',label:'Si'},
 ];
+
+/* ── Textos de ajuda por fase ─────────────────────────────── */
+const HELP_FASES = {
+  intro:    '<b>Aprenda a escala</b><br>Veja as 7 notas da escala e a distância entre elas (T=Tom, S=Semitom). Clique em "Demonstração" para ouvir.',
+  demo:     '<b>Ouça a escala</b><br>As notas acendem uma a uma no piano. Acompanhe com os olhos. Quando quiser treinar sozinho, clique em "Nota a nota" e avance no seu ritmo.',
+  praticar: '<b>Sua vez!</b><br>Toque no seu piano real a nota que está acesa (azul). O app vai acender cada nota em ordem. Se errar, tente de novo — sem pressa!',
+  celebra:  '<b>Parabéns!</b><br>Você tocou a escala inteira! Escolha outra tonalidade na barra acima para continuar praticando.',
+};
 
 /* ── Estado ───────────────────────────────────────────────── */
 let chaveIdx     = 0;
@@ -629,6 +636,7 @@ function irFase(fase) {
     if (p && typeof p.chaveIdx === 'number') chaveIdx = p.chaveIdx;
   } catch {}
   document.getElementById('btn-sound').textContent = Settings.getSoundOn() ? '🔊' : '🔇';
+  LockMode.listenChanges(document.getElementById('btn-lock'));
   irFase('intro');
 })();
 </script>

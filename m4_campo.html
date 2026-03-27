@@ -21,46 +21,61 @@
       border-bottom: 3px solid #000; overflow: hidden;
     }
     @media (orientation: landscape) {
-      .digital-panel { flex: 0 0 auto; max-height: 32dvh; overflow-y: auto; border-bottom: 1px solid #1a2535; }
+      .digital-panel { flex: 0 0 auto; max-height: 40dvh; overflow-y: auto; border-bottom: 1px solid #1a2535; }
     }
 
-    /* ── TOPBAR ──────────────────────────────────────────────── */
+    /* ── TOPBAR (unificada) ──────────────────────────────────── */
     .panel-topbar {
-      display: flex; align-items: center; padding: 5px 8px; gap: 4px;
+      display: flex; align-items: center; padding: 4px 6px; gap: 3px;
       background: #070d14; border-bottom: 1px solid #1a2535; flex-shrink: 0;
     }
     .panel-title {
-      flex: 1; text-align: center; font-size: 0.65rem; letter-spacing: 3px;
+      flex: 1; text-align: center; font-size: 0.6rem; letter-spacing: 2px;
       color: #4FC3F7; font-weight: 700; text-transform: uppercase;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
     }
     .panel-btn {
-      width: 34px; height: 34px; background: #141e2e;
-      border: 1px solid #263045; border-radius: 7px; color: #7a8fa8;
-      font-size: 0.9rem; cursor: pointer;
+      width: 30px; height: 30px; background: #141e2e;
+      border: 1px solid #263045; border-radius: 6px; color: #7a8fa8;
+      font-size: 0.82rem; cursor: pointer; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
       touch-action: manipulation;
     }
     .panel-btn:active { background: #1e2e44; }
+    .panel-btn:disabled { opacity: .3; pointer-events: none; }
     .panel-btn.active { color: #F9A825; border-color: #F9A825; }
-
-    /* ── BARRA DE CAMPOS (7 escalas) ─────────────────────────── */
-    .campo-bar {
-      display: flex; align-items: center; justify-content: center;
-      gap: 3px; padding: 5px 6px;
-      background: #070d14; border-bottom: 1px solid #1a2535; flex-shrink: 0;
-    }
-    .campo-bar-dot {
-      display: flex; flex-direction: column; align-items: center; gap: 1px;
-      padding: 4px 5px; border-radius: 5px; cursor: pointer;
-      touch-action: manipulation; transition: background .15s;
-    }
-    .campo-bar-dot:active { background: rgba(79,195,247,.1); }
-    .campo-bar-dot__c {
-      width: 7px; height: 7px; border-radius: 50%;
+    .fase-dots-row { display: flex; gap: 4px; align-items: center; flex-shrink: 0; }
+    .fase-dot {
+      width: 5px; height: 5px; border-radius: 50%;
       background: #2a3a4a; border: 1px solid #3a4a5a; transition: background .2s;
     }
+    .fase-dot.ativa { background: #4FC3F7; }
+    .fase-dot.feita { background: #4CAF50; }
+
+    /* ── BARRA DE CAMPOS — maior com instrução ───────────────── */
+    .campo-bar-wrap {
+      background: #070d14; border-bottom: 1px solid #1a2535; flex-shrink: 0;
+      padding: 4px 8px 5px;
+    }
+    .campo-instr {
+      font-size: 0.5rem; color: #4a6274; text-align: center;
+      letter-spacing: .5px; margin-bottom: 4px; font-weight: 600;
+    }
+    .campo-bar {
+      display: flex; align-items: center; justify-content: center; gap: 4px;
+    }
+    .campo-bar-dot {
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      padding: 5px 7px; border-radius: 7px; cursor: pointer;
+      touch-action: manipulation; transition: background .15s;
+    }
+    .campo-bar-dot:active { background: rgba(79,195,247,.12); }
+    .campo-bar-dot__c {
+      width: 11px; height: 11px; border-radius: 50%;
+      background: #2a3a4a; border: 1.5px solid #3a4a5a; transition: background .2s;
+    }
     .campo-bar-dot__l {
-      font-size: 0.38rem; font-weight: 700; color: #3a4a5a; transition: color .2s;
+      font-size: 0.48rem; font-weight: 700; color: #3a4a5a; transition: color .2s;
     }
     .campo-bar-dot.ativo  .campo-bar-dot__c { background: #4FC3F7; border-color: #4FC3F7; }
     .campo-bar-dot.ativo  .campo-bar-dot__l { color: #4FC3F7; }
@@ -92,16 +107,14 @@
 
     /* ── GRID DE ACORDES DO CAMPO ────────────────────────────── */
     .campo-grid {
-      display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; width: 100%;
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; width: 100%;
     }
     .campo-card {
-      width: calc(25% - 5px);
-      min-width: 52px;
-      padding: 7px 4px 5px;
-      background: #1a2535; border-radius: 9px;
+      padding: 5px 3px 4px;
+      background: #1a2535; border-radius: 7px;
       border: 2px solid #2a3a4a;
       cursor: pointer; touch-action: manipulation;
-      display: flex; flex-direction: column; align-items: center; gap: 3px;
+      display: flex; flex-direction: column; align-items: center; gap: 1px;
       transition: border-color .15s, background .15s, transform .1s;
     }
     .campo-card:active { transform: scale(.95); }
@@ -109,17 +122,21 @@
       border-color: var(--funcao-cor, #4FC3F7);
       background: color-mix(in srgb, var(--funcao-cor, #4FC3F7) 12%, #1a2535);
     }
+    /* top: romano + nome na mesma linha */
+    .campo-card__top {
+      display: flex; align-items: baseline; gap: 3px; flex-wrap: wrap; justify-content: center;
+    }
     .campo-card__romano {
-      font-size: clamp(0.5rem, 1.6vw, 0.65rem); font-weight: 900;
-      color: var(--funcao-cor, #4a6274); letter-spacing: .5px;
+      font-size: clamp(0.5rem, 1.8vw, 0.7rem); font-weight: 900;
+      color: var(--funcao-cor, #4a6274); letter-spacing: .3px;
     }
     .campo-card__nome {
-      font-size: clamp(0.55rem, 1.8vw, 0.72rem); font-weight: 700;
-      color: #e8eaed; text-align: center; line-height: 1.1;
+      font-size: clamp(0.52rem, 1.7vw, 0.68rem); font-weight: 700;
+      color: #e8eaed; text-align: center; line-height: 1;
     }
     .campo-card__funcao {
-      font-size: clamp(0.38rem, 1.2vw, 0.5rem); font-weight: 700;
-      color: var(--funcao-cor, #4a6274); letter-spacing: .5px;
+      font-size: clamp(0.38rem, 1.1vw, 0.48rem); font-weight: 700;
+      color: var(--funcao-cor, #4a6274); letter-spacing: .3px;
     }
 
     /* ── LEGENDA DE FUNÇÕES ──────────────────────────────────── */
@@ -179,44 +196,22 @@
     .btn-acao:active { background: #1e2e44; border-color: #4FC3F7; }
     .btn-acao.destaque { background: #4FC3F7; color: #000; border-color: #4FC3F7; }
 
-    /* ── NAV PADRONIZADA ─────────────────────────────────────── */
-    .fase-nav {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 7px 12px; gap: 8px;
-      background: #070d14; border-top: 1px solid #1a2535; flex-shrink: 0;
-    }
-    .fase-nav-btn {
-      width: 32px; height: 32px; background: #141e2e;
-      border: 1px solid #263045; border-radius: 7px;
-      color: #4FC3F7; font-size: 1.1rem; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      touch-action: manipulation;
-    }
-    .fase-nav-btn:disabled { opacity: .3; cursor: default; pointer-events: none; }
-    .fase-dots-row { display: flex; gap: 5px; }
-    .fase-dot {
-      width: 6px; height: 6px; border-radius: 50%;
-      background: #2a3a4a; border: 1px solid #3a4a5a; transition: background .2s;
-    }
-    .fase-dot.ativa { background: #4FC3F7; }
-    .fase-dot.feita { background: #4CAF50; }
-
     /* ── TECLADO + PARTITURA ─────────────────────────────────── */
     .piano-stage {
       background: #111827;
-      border-top: 3px solid #000; flex: 0 0 52dvh;
+      border-top: 3px solid #000; flex: 0 0 50dvh;
       display: flex; flex-direction: column;
-      --key-h:    clamp(128px, 33dvh, 258px);
-      --key-bk-h: clamp( 77px, 20dvh, 155px);
+      --key-h:    clamp(90px, 28dvh, 240px);
+      --key-bk-h: clamp(54px, 17dvh, 144px);
     }
     @media (orientation: landscape) {
       .piano-stage {
-        flex: 1; border-top: none;
-        --key-h:    clamp(60px, 45dvh, 200px);
-        --key-bk-h: clamp(36px, 27dvh, 120px);
+        flex: 1; min-height: 0; border-top: none;
+        --key-h:    clamp(55px, 42dvh, 180px);
+        --key-bk-h: clamp(33px, 25dvh, 108px);
       }
     }
-    #staff-container { flex-shrink: 0; padding: 2px 8px 0; background: #0d1117; border-bottom: 1px solid #1a2535; }
+    #staff-container { flex-shrink: 0; padding: 2px 8px 0; background: #0d1117; border-bottom: 1px solid #1a2535; overflow-x: auto; }
     #piano-wrap { flex: 1; min-height: 0; display: flex; align-items: center; overflow: hidden; }
     #piano-wrap #piano-campo { width: 100%; }
     .piano-stage .piano-wrap.responsive { overflow: visible; padding-bottom: 0; }
@@ -232,14 +227,22 @@
 
   <div class="digital-panel">
     <div class="panel-topbar">
-      <button class="panel-btn" onclick="goTo('index.html')">←</button>
+      <button class="panel-btn" onclick="goTo('index.html')" title="Menu do curso">⌂</button>
       <span class="panel-title">M4 · CAMPO HARMÔNICO</span>
-      <button class="panel-btn" id="btn-easy" onclick="toggleEasy()">☆</button>
-      <button class="panel-btn" id="btn-lock" onclick="LockMode.toggle(this)">🔓</button>
+      <button class="panel-btn" id="btn-fase-prev" onclick="faseAnterior()">‹</button>
+      <div class="fase-dots-row" id="fase-dots-row"></div>
+      <button class="panel-btn" id="btn-fase-next" onclick="faseSeguinte()">›</button>
+      <button class="panel-btn" onclick="showHelp(HELP_FASES[faseAtual])" title="Ajuda">?</button>
+      <button class="panel-btn" id="btn-easy" onclick="toggleEasy()" title="Modo fácil">☆</button>
+      <button class="panel-btn" onclick="cycleFontSize(this)" title="Tamanho do texto">A</button>
+      <button class="panel-btn" id="btn-lock" onclick="LockMode.toggle(this)" title="Tela cheia">🔓</button>
       <button class="panel-btn" id="btn-sound" onclick="toggleSom()">🔊</button>
     </div>
 
-    <div class="campo-bar" id="campo-bar"></div>
+    <div class="campo-bar-wrap">
+      <div class="campo-instr">Escolha o campo harmônico que quer explorar:</div>
+      <div class="campo-bar" id="campo-bar"></div>
+    </div>
 
     <div class="panel-content">
 
@@ -269,9 +272,9 @@
       <div class="screen" id="s-prog">
         <span class="fase-label">Ouça</span>
         <div class="fase-titulo">Tensão e resolução</div>
-        <div class="fase-texto">T → SD → D → T · a história de toda música</div>
+        <div class="fase-texto" id="prog-texto">Na música existe uma ideia poderosa: a <strong style="color:#4FC3F7">tensão</strong> e a <strong style="color:#81C784">resolução</strong>.<br>O grau V (Dominante) cria uma sensação de tensão — como uma pergunta.<br>Quando volta para o grau I (Tônica), a tensão some — é a resposta, o repouso.<br>Essa sequência I → IV → V → I está no coração de toda música!</div>
         <div class="prog-vis" id="prog-vis"></div>
-        <button class="btn-acao" id="btn-tocar-prog" onclick="tocarProgressao()">▶ Tocar progressão</button>
+        <button class="btn-acao" id="btn-tocar-prog" onclick="tocarProgressao()">▶ Ouvir progressão</button>
       </div>
 
       <!-- Praticar -->
@@ -294,11 +297,6 @@
 
     </div><!-- panel-content -->
 
-    <div class="fase-nav">
-      <button class="fase-nav-btn" id="btn-fase-prev" onclick="faseAnterior()">‹</button>
-      <div class="fase-dots-row" id="fase-dots-row"></div>
-      <button class="fase-nav-btn" id="btn-fase-next" onclick="faseSeguinte()">›</button>
-    </div>
   </div>
 
   <div class="piano-stage" id="piano-stage">
@@ -391,6 +389,15 @@ let acordeAtivo = -1; // índice do card ativo na fase explorar
 
 const FASES_ORDEM = ['intro', 'explorar', 'prog', 'praticar'];
 
+/* ── Textos de ajuda por fase ─────────────────────────────── */
+const HELP_FASES = {
+  intro:    '<b>O campo harmônico</b><br>São 7 acordes construídos a partir de uma mesma escala maior. Cada acorde tem uma função: Tônica (repouso), Subdominante (movimento) ou Dominante (tensão).',
+  explorar: '<b>Explore os acordes</b><br>Clique em cada acorde para ouvi-lo no app. Depois, toque esse mesmo acorde no seu piano real. Observe a sensação que cada um traz.',
+  prog:     '<b>Tensão e resolução</b><br>Na música, o grau V (Dominante) cria tensão. Quando volta para o grau I (Tônica), a tensão resolve. Clique em "Ouvir progressão" para sentir isso!',
+  praticar: '<b>Pratique!</b><br>Toque no seu piano real os 7 acordes do campo, do grau I ao VII, na ordem. O app vai acender as notas de cada acorde para guiar você.',
+  celebra:  '<b>Parabéns!</b><br>Campo harmônico concluído! Continue para o próximo.',
+};
+
 /* ══════════════════════════════════════════════════════════════
    TECLADO
 ══════════════════════════════════════════════════════════════ */
@@ -432,8 +439,10 @@ function buildCampoGrid(containerId, campo, clicavel = false, idxAtivo = -1) {
     card.className = 'campo-card' + (i === idxAtivo ? ' ativo' : '');
     card.style.setProperty('--funcao-cor', acorde.funcao.cor);
     card.innerHTML = `
-      <div class="campo-card__romano">${acorde.romano}</div>
-      <div class="campo-card__nome">${acorde.nome}</div>
+      <div class="campo-card__top">
+        <span class="campo-card__romano">${acorde.romano}</span>
+        <span class="campo-card__nome">${acorde.nomeBreve}</span>
+      </div>
       <div class="campo-card__funcao">${acorde.funcao.sigla}</div>`;
     if (clicavel) {
       card.addEventListener('click', () => tocarAcorde(i, containerId));
@@ -545,8 +554,8 @@ function irFase(fase) {
     acordeAtivo = -1;
     buildCampoGrid('campo-grid-explorar', campo, true, -1);
     document.getElementById('explorar-titulo').textContent = cfg.tonica + ' Maior';
-    document.getElementById('explorar-info').textContent = 'Toque um acorde para ouvir sua função';
-    TTS.falar('Toque cada acorde e ouça sua função');
+    document.getElementById('explorar-info').textContent = 'Toque cada acorde no seu piano e ouça sua função';
+    TTS.falar('Toque cada acorde no seu piano e ouça sua função');
   }
 
   if (fase === 'prog') {
@@ -561,9 +570,9 @@ function irFase(fase) {
     buildCampoGrid('campo-grid-pratica', campo, false, 0);
     buildPraticaProg();
     document.getElementById('pratica-titulo').textContent = cfg.tonica + ' Maior · I ao VII';
-    document.getElementById('pratica-instrucao').textContent = 'Toque o ' + campo[0].romano + ': ' + campo[0].notas.map(nomePT).join(' - ');
+    document.getElementById('pratica-instrucao').textContent = 'Toque no seu piano: ' + campo[0].romano + ' — ' + campo[0].notas.map(nomePT).join(' – ');
     mostrarHintPratica();
-    TTS.falar('Sua vez! Toque os 7 acordes em ordem');
+    TTS.falar('Sua vez! Toque os 7 acordes em ordem no seu piano');
   }
 
   if (fase === 'celebra') {
@@ -608,7 +617,8 @@ function tocarAcorde(i, gridId) {
 
   document.getElementById('explorar-info').innerHTML =
     `<strong style="color:${acorde.funcao.cor}">${acorde.funcao.sigla} — ${acorde.funcao.nome}</strong> · ` +
-    acorde.notas.map(nomePT).join(' – ');
+    acorde.notas.map(nomePT).join(' – ') +
+    `<br><span style="color:#4a6274;font-size:.85em">Toque este acorde no seu piano!</span>`;
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -659,7 +669,7 @@ function mostrarHintPratica() {
   cards[praticaIdx]?.style.setProperty('--funcao-cor', acorde.funcao.cor);
 
   document.getElementById('pratica-instrucao').textContent =
-    acorde.romano + ': ' + acorde.notas.map(nomePT).join(' – ');
+    'Toque no seu piano: ' + acorde.romano + ' — ' + acorde.notas.map(nomePT).join(' – ');
 }
 
 // Rastreia quais notas do acorde atual já foram tocadas
