@@ -64,53 +64,54 @@
       color: #FFD700;
     }
 
-    /* ── Grid de músicas ── */
+    /* ── Grid de músicas compacto ── */
     .musicas-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 6px;
-      padding: 4px 14px;
+      gap: 2px 6px;
+      padding: 2px 14px;
       flex-shrink: 0;
     }
     .musica-card {
-      background: #111827;
-      border: 2px solid #1e2a3a;
-      border-radius: 12px;
-      padding: 7px 10px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 4px;
+      padding: 2px 4px;
+      border-left: 2px solid transparent;
+      border-radius: 4px;
     }
-    .musica-card.tocando  { border-color: #4FC3F7; }
-    .musica-card.guiando  { border-color: #81C784; }
+    .musica-card.tocando { border-color: #4FC3F7; background: rgba(79,195,247,.06); }
+    .musica-card.guiando { border-color: #81C784; background: rgba(129,199,132,.06); }
     .musica-simbolo {
-      font-size: 1.3rem;
-      line-height: 1;
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: #5a7a9a;
       flex-shrink: 0;
-      color: #e8eaed;
-      font-weight: 900;
+      min-width: 26px;
+      letter-spacing: 0.3px;
     }
+    .musica-card.tocando .musica-simbolo,
+    .musica-card.guiando .musica-simbolo { color: #e8eaed; }
     .musica-btns {
       display: flex;
-      gap: 5px;
+      gap: 3px;
       margin-left: auto;
     }
     .btn-auto, .btn-guia, .btn-parar-card {
-      width: 32px; height: 32px;
+      width: 22px; height: 22px;
       border-radius: 50%;
       border: none;
-      font-size: 0.85rem;
+      font-size: 0.65rem;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: transform 0.1s, opacity 0.1s;
       flex-shrink: 0;
     }
     .btn-auto       { background: #4FC3F7; color: #111; }
     .btn-guia       { background: #81C784; color: #111; }
     .btn-parar-card { background: #F44336; color: #fff; display: none; }
-    .btn-auto:active, .btn-guia:active { transform: scale(0.9); }
+    .btn-auto:active, .btn-guia:active { opacity: 0.75; }
 
     /* ── Piano stage ── */
     .piano-stage {
@@ -156,15 +157,15 @@
 
     /* Landscape compacto */
     @media (orientation: landscape) and (max-height: 500px) {
-      .topo { padding: 3px 12px 2px; }
-      .titulo-bebe { font-size: 1rem; }
-      .instrumento-row { padding: 1px 12px 2px; gap: 5px; }
-      .instrumento-btn { padding: 4px 10px; font-size: 0.85rem; }
-      .musicas-grid { gap: 4px; padding: 2px 12px; }
-      .musica-card { padding: 4px 8px; }
-      .musica-simbolo { font-size: 1.05rem; }
-      .btn-auto, .btn-guia, .btn-parar-card { width: 26px; height: 26px; font-size: 0.75rem; }
-      .piano-stage { padding: 3px 6px 5px; }
+      .topo { padding: 2px 12px 1px; }
+      .titulo-bebe { font-size: 0.95rem; }
+      .instrumento-row { padding: 1px 12px 1px; gap: 4px; }
+      .instrumento-btn { padding: 3px 9px; font-size: 0.8rem; }
+      .musicas-grid { gap: 1px 4px; padding: 1px 12px; grid-template-columns: repeat(5, 1fr); }
+      .musica-card { padding: 1px 2px; }
+      .musica-simbolo { font-size: 0.7rem; min-width: 22px; }
+      .btn-auto, .btn-guia, .btn-parar-card { width: 18px; height: 18px; font-size: 0.55rem; }
+      .piano-stage { padding: 2px 6px 4px; }
     }
   </style>
 </head>
@@ -211,9 +212,57 @@
     <div class="musica-card" id="card-macdonald">
       <span class="musica-simbolo">♬4</span>
       <div class="musica-btns">
-        <button class="btn-auto"       data-song="macdonald" title="Tocar automático">▶</button>
-        <button class="btn-guia"       data-song="macdonald" title="Guiar nota a nota">👆</button>
+        <button class="btn-auto"       data-song="macdonald">▶</button>
+        <button class="btn-guia"       data-song="macdonald">👆</button>
         <button class="btn-parar-card" data-song="macdonald">■</button>
+      </div>
+    </div>
+    <div class="musica-card" id="card-hotcross">
+      <span class="musica-simbolo">♬5</span>
+      <div class="musica-btns">
+        <button class="btn-auto"       data-song="hotcross">▶</button>
+        <button class="btn-guia"       data-song="hotcross">👆</button>
+        <button class="btn-parar-card" data-song="hotcross">■</button>
+      </div>
+    </div>
+    <div class="musica-card" id="card-rowboat">
+      <span class="musica-simbolo">♬6</span>
+      <div class="musica-btns">
+        <button class="btn-auto"       data-song="rowboat">▶</button>
+        <button class="btn-guia"       data-song="rowboat">👆</button>
+        <button class="btn-parar-card" data-song="rowboat">■</button>
+      </div>
+    </div>
+    <div class="musica-card" id="card-london">
+      <span class="musica-simbolo">♬7</span>
+      <div class="musica-btns">
+        <button class="btn-auto"       data-song="london">▶</button>
+        <button class="btn-guia"       data-song="london">👆</button>
+        <button class="btn-parar-card" data-song="london">■</button>
+      </div>
+    </div>
+    <div class="musica-card" id="card-jingle">
+      <span class="musica-simbolo">♬8</span>
+      <div class="musica-btns">
+        <button class="btn-auto"       data-song="jingle">▶</button>
+        <button class="btn-guia"       data-song="jingle">👆</button>
+        <button class="btn-parar-card" data-song="jingle">■</button>
+      </div>
+    </div>
+    <div class="musica-card" id="card-sleeping">
+      <span class="musica-simbolo">♬9</span>
+      <div class="musica-btns">
+        <button class="btn-auto"       data-song="sleeping">▶</button>
+        <button class="btn-guia"       data-song="sleeping">👆</button>
+        <button class="btn-parar-card" data-song="sleeping">■</button>
+      </div>
+    </div>
+    <div class="musica-card" id="card-ode">
+      <span class="musica-simbolo">♬10</span>
+      <div class="musica-btns">
+        <button class="btn-auto"       data-song="ode">▶</button>
+        <button class="btn-guia"       data-song="ode">👆</button>
+        <button class="btn-parar-card" data-song="ode">■</button>
       </div>
     </div>
   </div>
@@ -370,6 +419,30 @@
       notas: ['G4','G4','G4','D4','E4','E4','D4','B4','B4','A4','A4','G4','D4','E4','E4','D4','G4','G4','G4','G4','D4','E4','E4','D4','B4','B4','A4','A4','G4'],
       dur:   [.4,.4,.4,.4,.4,.4,.8,.4,.4,.4,.4,.8,.4,.4,.4,.8,.4,.4,.4,.4,.4,.4,.4,.8,.4,.4,.4,.4,.8],
     },
+    hotcross: {
+      notas: ['E4','D4','C4','E4','D4','C4','C4','C4','C4','C4','D4','D4','D4','D4','E4','D4','C4'],
+      dur:   [.4,.4,.9, .4,.4,.9, .2,.2,.2,.2,.2,.2,.2,.2,.4,.4,.9],
+    },
+    rowboat: {
+      notas: ['C4','C4','C4','D4','E4','E4','D4','E4','F4','G4','C5','C5','C5','G4','G4','G4','E4','E4','E4','C4','G4','F4','E4','D4','C4'],
+      dur:   [.45,.45,.6,.2,.5, .6,.2,.2,.2,.9, .3,.3,.3,.3,.3,.3,.3,.3,.3,.3, .2,.2,.2,.2,.9],
+    },
+    london: {
+      notas: ['G4','A4','G4','F4','E4','F4','G4','D4','E4','F4','E4','F4','G4','G4','A4','G4','F4','E4','F4','G4','D4','G4','E4','C4'],
+      dur:   [.4,.2,.2,.4,.4,.2,.8, .4,.2,.4,.2,.2,.8, .4,.2,.2,.4,.4,.2,.8, .4,.4,.4,.8],
+    },
+    jingle: {
+      notas: ['E4','E4','E4','E4','E4','E4','E4','G4','C4','D4','E4','F4','F4','F4','F4','F4','E4','E4','E4','E4','D4','D4','E4','D4','G4'],
+      dur:   [.4,.4,.8, .4,.4,.8, .4,.2,.2,.2,.9, .4,.4,.2,.2, .4,.2,.2,.2, .2,.2,.2,.4,.4,.8],
+    },
+    sleeping: {
+      notas: ['C4','D4','E4','C4','C4','D4','E4','C4','E4','F4','G4','E4','F4','G4','G4','A4','G4','F4','E4','C4','C4','G4','C5'],
+      dur:   [.4,.4,.4,.4, .4,.4,.4,.4, .4,.4,.8, .4,.4,.8, .2,.2,.2,.2,.4,.8, .4,.4,.8],
+    },
+    ode: {
+      notas: ['E4','E4','F4','G4','G4','F4','E4','D4','C4','C4','D4','E4','E4','D4','D4'],
+      dur:   [.4,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4,.6,.2,.8],
+    },
   };
 
   // Estado da música
@@ -433,11 +506,10 @@
     kb.highlight(nota);
     notaEsperada = nota;
 
-    // Mostra label da nota e toca suavemente
+    // Mostra label da nota — sem som, a criança é quem toca
     const label = document.getElementById('guia-label');
     label.textContent = nota.replace(/\d/, '');
     label.classList.add('visivel');
-    tocarNota(nota, 0.5);
 
     // Auto-avança se criança não tocar em 3s
     guiaTimer = setTimeout(avancarGuia, 3000);
