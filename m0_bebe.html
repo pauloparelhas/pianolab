@@ -19,7 +19,7 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: 10px 14px 6px;
+      padding: 8px 14px 4px;
       flex-shrink: 0;
     }
     .btn-voltar {
@@ -29,7 +29,7 @@
       line-height: 1;
     }
     .titulo-bebe {
-      font-size: 1.4rem;
+      font-size: 1.3rem;
       font-weight: 900;
       color: #FFD700;
       letter-spacing: -0.5px;
@@ -38,100 +38,133 @@
     /* ── Linha de instrumentos ── */
     .instrumento-row {
       display: flex;
-      gap: 8px;
-      padding: 4px 14px;
+      gap: 6px;
+      padding: 2px 14px 4px;
       flex-shrink: 0;
       flex-wrap: wrap;
     }
     .instrumento-btn {
-      padding: 8px 16px;
+      padding: 6px 14px;
       border-radius: 99px;
       border: 2px solid #1e2a3a;
       background: #111827;
       color: #e8eaed;
-      font-size: 1.1rem;
+      font-size: 1rem;
       font-weight: 700;
       cursor: pointer;
       transition: all 0.15s;
       white-space: nowrap;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
     }
     .instrumento-btn.ativo {
       border-color: #FFD700;
-      background: #1e2a1a;
+      background: #1c2215;
       color: #FFD700;
     }
 
-    /* ── Linha de músicas ── */
-    .musicas-row {
-      display: flex;
+    /* ── Grid de músicas ── */
+    .musicas-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 6px;
       padding: 4px 14px;
       flex-shrink: 0;
-      flex-wrap: wrap;
-      align-items: center;
     }
-    .musica-btn {
-      padding: 8px 14px;
-      border-radius: 99px;
+    .musica-card {
+      background: #111827;
+      border: 2px solid #1e2a3a;
+      border-radius: 12px;
+      padding: 7px 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .musica-card.tocando  { border-color: #4FC3F7; }
+    .musica-card.guiando  { border-color: #81C784; }
+    .musica-simbolo {
+      font-size: 1.3rem;
+      line-height: 1;
+      flex-shrink: 0;
+      color: #e8eaed;
+      font-weight: 900;
+    }
+    .musica-btns {
+      display: flex;
+      gap: 5px;
+      margin-left: auto;
+    }
+    .btn-auto, .btn-guia, .btn-parar-card {
+      width: 32px; height: 32px;
+      border-radius: 50%;
       border: none;
       font-size: 0.85rem;
-      font-weight: 700;
       cursor: pointer;
-      transition: transform 0.12s, opacity 0.12s;
-      white-space: nowrap;
-    }
-    .musica-btn:nth-child(1) { background: #FF6B6B; color: #fff; }
-    .musica-btn:nth-child(2) { background: #81C784; color: #fff; }
-    .musica-btn:nth-child(3) { background: #4FC3F7; color: #111; }
-    .musica-btn:nth-child(4) { background: #FFB74D; color: #111; }
-    .musica-btn:hover { opacity: 0.85; }
-    .musica-btn.tocando { animation: pulsebebe 0.5s ease-in-out infinite alternate; }
-    @keyframes pulsebebe { from { transform: scale(1); } to { transform: scale(1.06); } }
-
-    .btn-parar {
-      padding: 6px 14px;
-      border-radius: 99px;
-      border: none;
-      background: #F44336;
-      color: #fff;
-      font-size: 0.8rem;
-      font-weight: 700;
-      cursor: pointer;
-      display: none;
-    }
-
-    /* ── Piano ── */
-    .piano-area {
-      flex: 1;
       display: flex;
-      align-items: stretch;
-      padding: 6px 8px 8px;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.1s, opacity 0.1s;
+      flex-shrink: 0;
+    }
+    .btn-auto       { background: #4FC3F7; color: #111; }
+    .btn-guia       { background: #81C784; color: #111; }
+    .btn-parar-card { background: #F44336; color: #fff; display: none; }
+    .btn-auto:active, .btn-guia:active { transform: scale(0.9); }
+
+    /* ── Piano stage ── */
+    .piano-stage {
+      flex: 1;
       min-height: 0;
+      display: flex;
+      align-items: center;
+      padding: 6px 8px 8px;
+      --key-h: clamp(100px, 35dvh, 260px);
+      --key-bk-h: clamp(62px, 22dvh, 161px);
     }
     #piano-container {
       width: 100%;
       display: flex;
       align-items: center;
     }
-    .piano-wrap.responsive { width: 100%; }
-    .piano.responsive { width: 100%; }
-
-    /* Marcadores Dó e Sol */
-    #piano-container .key__label {
+    .piano-stage .piano-wrap.responsive { width: 100%; overflow: visible; padding-bottom: 0; }
+    .piano-stage .piano.responsive { width: 100%; }
+    .piano-stage .key { border-color: #444; }
+    .piano-stage .key__label {
       font-size: 1.3rem;
-      color: #444;
-      font-weight: 400;
+      color: #888;
     }
 
-    /* Landscape: mais compacto */
+    /* Indicador de nota guia */
+    .nota-guia-label {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(129, 199, 132, 0.9);
+      color: #111;
+      font-size: 1rem;
+      font-weight: 900;
+      padding: 6px 18px;
+      border-radius: 99px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+      z-index: 10;
+    }
+    .nota-guia-label.visivel { opacity: 1; }
+
+    /* Landscape compacto */
     @media (orientation: landscape) and (max-height: 500px) {
-      .topo { padding: 4px 12px 2px; }
-      .titulo-bebe { font-size: 1.1rem; }
-      .instrumento-row { padding: 2px 12px; gap: 6px; }
-      .instrumento-btn { padding: 5px 12px; font-size: 0.95rem; }
-      .musicas-row { padding: 2px 12px; gap: 5px; }
-      .musica-btn { padding: 5px 10px; font-size: 0.78rem; }
-      .piano-area { padding: 4px 6px 6px; }
+      .topo { padding: 3px 12px 2px; }
+      .titulo-bebe { font-size: 1rem; }
+      .instrumento-row { padding: 1px 12px 2px; gap: 5px; }
+      .instrumento-btn { padding: 4px 10px; font-size: 0.85rem; }
+      .musicas-grid { gap: 4px; padding: 2px 12px; }
+      .musica-card { padding: 4px 8px; }
+      .musica-simbolo { font-size: 1.05rem; }
+      .btn-auto, .btn-guia, .btn-parar-card { width: 26px; height: 26px; font-size: 0.75rem; }
+      .piano-stage { padding: 3px 6px 5px; }
     }
   </style>
 </head>
@@ -149,278 +182,341 @@
     <a href="m0_bateria.html" class="instrumento-btn" style="text-decoration:none">🥁 Bateria</a>
   </div>
 
-  <div class="musicas-row">
-    <button class="musica-btn" data-song="twinkle">⭐ Twinkle Twinkle</button>
-    <button class="musica-btn" data-song="mary">🐑 Mary Had a Little Lamb</button>
-    <button class="musica-btn" data-song="birthday">🎂 Happy Birthday</button>
-    <button class="musica-btn" data-song="macdonald">🐄 Old MacDonald</button>
-    <button class="btn-parar" id="btn-parar">⏹ Parar</button>
+  <!-- Músicas: símbolo ♬ + número, ▶ auto, 👆 guia -->
+  <div class="musicas-grid">
+    <div class="musica-card" id="card-twinkle">
+      <span class="musica-simbolo">♬1</span>
+      <div class="musica-btns">
+        <button class="btn-auto"       data-song="twinkle" title="Tocar automático">▶</button>
+        <button class="btn-guia"       data-song="twinkle" title="Guiar nota a nota">👆</button>
+        <button class="btn-parar-card" data-song="twinkle">■</button>
+      </div>
+    </div>
+    <div class="musica-card" id="card-mary">
+      <span class="musica-simbolo">♬2</span>
+      <div class="musica-btns">
+        <button class="btn-auto"       data-song="mary" title="Tocar automático">▶</button>
+        <button class="btn-guia"       data-song="mary" title="Guiar nota a nota">👆</button>
+        <button class="btn-parar-card" data-song="mary">■</button>
+      </div>
+    </div>
+    <div class="musica-card" id="card-birthday">
+      <span class="musica-simbolo">♬3</span>
+      <div class="musica-btns">
+        <button class="btn-auto"       data-song="birthday" title="Tocar automático">▶</button>
+        <button class="btn-guia"       data-song="birthday" title="Guiar nota a nota">👆</button>
+        <button class="btn-parar-card" data-song="birthday">■</button>
+      </div>
+    </div>
+    <div class="musica-card" id="card-macdonald">
+      <span class="musica-simbolo">♬4</span>
+      <div class="musica-btns">
+        <button class="btn-auto"       data-song="macdonald" title="Tocar automático">▶</button>
+        <button class="btn-guia"       data-song="macdonald" title="Guiar nota a nota">👆</button>
+        <button class="btn-parar-card" data-song="macdonald">■</button>
+      </div>
+    </div>
   </div>
 
-  <div class="piano-area">
+  <div class="piano-stage" id="piano-stage">
     <div id="piano-container"></div>
   </div>
+
+  <div class="nota-guia-label" id="guia-label"></div>
 
   <script src="base.js"></script>
   <script>
   'use strict';
 
   /* ══════════════════════════════════════════════
-     Síntese de sons de animais via Web Audio API
+     Síntese de animais — Web Audio API melhorada
   ══════════════════════════════════════════════ */
   let actx = null;
-
   function getActx() {
     if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
     if (actx.state === 'suspended') actx.resume();
     return actx;
   }
-
-  function midiHz(midi) {
-    return 440 * Math.pow(2, (midi - 69) / 12);
-  }
+  function midiHz(midi) { return 440 * Math.pow(2, (midi - 69) / 12); }
 
   const AnimalSynth = {
-    // Gato: portamento descendente + vibrato suave + sawtooth
+    // Gato: síntese formântica com dois picos de ressonância (miau realista)
     cat(midi) {
-      const ctx = getActx();
-      const now = ctx.currentTime;
-      const hz  = midiHz(midi);
+      const c = getActx(), now = c.currentTime;
+      const hz = midiHz(midi);
 
-      const osc    = ctx.createOscillator();
-      const lfo    = ctx.createOscillator();
-      const lfoGain= ctx.createGain();
-      const filter = ctx.createBiquadFilter();
-      const gain   = ctx.createGain();
-
+      const osc = c.createOscillator();
       osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(hz * 1.4, now);
-      osc.frequency.exponentialRampToValueAtTime(hz, now + 0.08);
-      osc.frequency.linearRampToValueAtTime(hz * 0.93, now + 0.55);
+      // Pitch: começa alto, cai ao alvo, sobe ligeiramente, cai de novo
+      osc.frequency.setValueAtTime(hz * 1.55, now);
+      osc.frequency.exponentialRampToValueAtTime(hz * 0.82, now + 0.14);
+      osc.frequency.linearRampToValueAtTime(hz * 0.96, now + 0.28);
+      osc.frequency.linearRampToValueAtTime(hz * 0.85, now + 0.65);
 
-      lfo.frequency.value = 7;
-      lfoGain.gain.value  = hz * 0.025;
-      lfo.connect(lfoGain);
-      lfoGain.connect(osc.frequency);
+      // Vibrato suave
+      const lfo = c.createOscillator(), lfoG = c.createGain();
+      lfo.frequency.value = 5.5;
+      lfoG.gain.value = hz * 0.018;
+      lfo.connect(lfoG); lfoG.connect(osc.frequency);
 
-      filter.type      = 'bandpass';
-      filter.frequency.value = hz * 2.5;
-      filter.Q.value   = 2;
+      // Formante 1: vogal aberta (cavidade oral)
+      const f1 = c.createBiquadFilter();
+      f1.type = 'bandpass';
+      f1.frequency.value = Math.min(hz * 2.2, 900);
+      f1.Q.value = 8;
 
-      gain.gain.setValueAtTime(0, now);
-      gain.gain.linearRampToValueAtTime(0.45, now + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.2,  now + 0.15);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.65);
+      // Formante 2: vogal fechada (cavidade faríngea)
+      const f2 = c.createBiquadFilter();
+      f2.type = 'bandpass';
+      f2.frequency.value = Math.min(hz * 4.5, 2000);
+      f2.Q.value = 6;
 
-      osc.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+      const g1 = c.createGain(); g1.gain.value = 0.55;
+      const g2 = c.createGain(); g2.gain.value = 0.38;
+      const master = c.createGain();
+      master.gain.setValueAtTime(0, now);
+      master.gain.linearRampToValueAtTime(0.75, now + 0.025);
+      master.gain.setValueAtTime(0.75, now + 0.12);
+      master.gain.exponentialRampToValueAtTime(0.3, now + 0.3);
+      master.gain.setValueAtTime(0.3, now + 0.42);
+      master.gain.exponentialRampToValueAtTime(0.001, now + 0.72);
+
+      osc.connect(f1); f1.connect(g1); g1.connect(master);
+      osc.connect(f2); f2.connect(g2); g2.connect(master);
+      master.connect(c.destination);
+
       lfo.start(now); osc.start(now);
-      lfo.stop(now + 0.8); osc.stop(now + 0.8);
+      lfo.stop(now + 0.9); osc.stop(now + 0.9);
     },
 
-    // Pato: sweep rápido + onda quadrada
+    // Pato: onda quadrada com chirp ascendente-descendente (quack)
     duck(midi) {
-      const ctx = getActx();
-      const now = ctx.currentTime;
-      const hz  = midiHz(midi);
+      const c = getActx(), now = c.currentTime;
+      const hz = midiHz(midi);
 
-      const osc  = ctx.createOscillator();
-      const filt = ctx.createBiquadFilter();
-      const gain = ctx.createGain();
+      // Oscilador principal: chirp característico do pato
+      const osc1 = c.createOscillator();
+      osc1.type = 'square';
+      osc1.frequency.setValueAtTime(hz * 0.58, now);
+      osc1.frequency.exponentialRampToValueAtTime(hz * 1.15, now + 0.05);
+      osc1.frequency.exponentialRampToValueAtTime(hz * 0.72, now + 0.14);
+      osc1.frequency.linearRampToValueAtTime(hz * 0.62, now + 0.24);
 
-      osc.type = 'square';
-      osc.frequency.setValueAtTime(hz * 0.7, now);
-      osc.frequency.exponentialRampToValueAtTime(hz * 1.35, now + 0.04);
-      osc.frequency.exponentialRampToValueAtTime(hz * 0.8, now + 0.18);
+      // Segundo oscilador levemente desafinado (dá espessura)
+      const osc2 = c.createOscillator();
+      osc2.type = 'sawtooth';
+      osc2.frequency.setValueAtTime(hz * 0.6, now);
+      osc2.frequency.exponentialRampToValueAtTime(hz * 1.18, now + 0.05);
+      osc2.frequency.exponentialRampToValueAtTime(hz * 0.75, now + 0.14);
 
-      filt.type = 'highpass';
-      filt.frequency.value = 300;
+      // Filtro nasal (peak em ~1200 Hz = timbre de pato)
+      const nasal = c.createBiquadFilter();
+      nasal.type = 'peaking';
+      nasal.frequency.value = 1100;
+      nasal.Q.value = 2.5;
+      nasal.gain.value = 10;
 
-      gain.gain.setValueAtTime(0, now);
-      gain.gain.linearRampToValueAtTime(0.55, now + 0.01);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
+      const lp = c.createBiquadFilter();
+      lp.type = 'lowpass'; lp.frequency.value = 2800;
 
-      osc.connect(filt); filt.connect(gain); gain.connect(ctx.destination);
-      osc.start(now); osc.stop(now + 0.4);
+      const g1 = c.createGain(); g1.gain.value = 0.5;
+      const g2 = c.createGain(); g2.gain.value = 0.22;
+      const master = c.createGain();
+      master.gain.setValueAtTime(0, now);
+      master.gain.linearRampToValueAtTime(0.85, now + 0.01);
+      master.gain.exponentialRampToValueAtTime(0.45, now + 0.07);
+      master.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+
+      osc1.connect(g1); g1.connect(nasal); nasal.connect(lp); lp.connect(master);
+      osc2.connect(g2); g2.connect(master);
+      master.connect(c.destination);
+
+      osc1.start(now); osc2.start(now);
+      osc1.stop(now + 0.38); osc2.stop(now + 0.38);
     },
   };
 
   /* ══════════════════════════════════════════════
-     Estado do instrumento
+     Estado
   ══════════════════════════════════════════════ */
   let instrumento = 'piano';
 
-  function tocarNota(noteStr) {
-    const midi = noteToMidi(noteStr);
-    if (midi === null) return;
+  function tocarNota(noteStr, dur = 0.8) {
     if (instrumento === 'piano') {
-      AudioEngine.play(noteStr, 0.8);
+      AudioEngine.play(noteStr, dur);
     } else {
-      AnimalSynth[instrumento](midi);
+      const midi = noteToMidi(noteStr);
+      if (midi !== null) AnimalSynth[instrumento](midi);
     }
   }
 
   /* ══════════════════════════════════════════════
-     Músicas tradicionais
+     Músicas
   ══════════════════════════════════════════════ */
   const MUSICAS = {
     twinkle: {
-      nome: 'Twinkle Twinkle Little Star',
-      notas: [
-        'C4','C4','G4','G4','A4','A4','G4',
-        'F4','F4','E4','E4','D4','D4','C4',
-        'G4','G4','F4','F4','E4','E4','D4',
-        'G4','G4','F4','F4','E4','E4','D4',
-        'C4','C4','G4','G4','A4','A4','G4',
-        'F4','F4','E4','E4','D4','D4','C4',
-      ],
-      dur: [
-        .4,.4,.4,.4,.4,.4,.8,
-        .4,.4,.4,.4,.4,.4,.8,
-        .4,.4,.4,.4,.4,.4,.8,
-        .4,.4,.4,.4,.4,.4,.8,
-        .4,.4,.4,.4,.4,.4,.8,
-        .4,.4,.4,.4,.4,.4,.8,
-      ],
+      notas: ['C4','C4','G4','G4','A4','A4','G4','F4','F4','E4','E4','D4','D4','C4','G4','G4','F4','F4','E4','E4','D4','G4','G4','F4','F4','E4','E4','D4','C4','C4','G4','G4','A4','A4','G4','F4','F4','E4','E4','D4','D4','C4'],
+      dur:   [.4,.4,.4,.4,.4,.4,.8,.4,.4,.4,.4,.4,.4,.8,.4,.4,.4,.4,.4,.4,.8,.4,.4,.4,.4,.4,.4,.8,.4,.4,.4,.4,.4,.4,.8,.4,.4,.4,.4,.4,.4,.8],
     },
     mary: {
-      nome: 'Mary Had a Little Lamb',
-      notas: [
-        'E4','D4','C4','D4','E4','E4','E4',
-        'D4','D4','D4',
-        'E4','G4','G4',
-        'E4','D4','C4','D4','E4','E4','E4','E4',
-        'D4','D4','E4','D4','C4',
-      ],
-      dur: [
-        .4,.4,.4,.4,.4,.4,.8,
-        .4,.4,.8,
-        .4,.4,.8,
-        .4,.4,.4,.4,.4,.4,.4,.4,
-        .4,.4,.4,.4,.8,
-      ],
+      notas: ['E4','D4','C4','D4','E4','E4','E4','D4','D4','D4','E4','G4','G4','E4','D4','C4','D4','E4','E4','E4','E4','D4','D4','E4','D4','C4'],
+      dur:   [.4,.4,.4,.4,.4,.4,.8,.4,.4,.8,.4,.4,.8,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4,.8],
     },
     birthday: {
-      nome: 'Happy Birthday',
-      notas: [
-        'C4','C4','D4','C4','F4','E4',
-        'C4','C4','D4','C4','G4','F4',
-        'C4','C4','C5','A4','F4','E4','D4',
-        'A#4','A#4','A4','F4','G4','F4',
-      ],
-      dur: [
-        .3,.15,.45,.45,.45,.9,
-        .3,.15,.45,.45,.45,.9,
-        .3,.15,.45,.45,.45,.45,.9,
-        .3,.15,.45,.45,.45,.9,
-      ],
+      notas: ['C4','C4','D4','C4','F4','E4','C4','C4','D4','C4','G4','F4','C4','C4','C5','A4','F4','E4','D4','A#4','A#4','A4','F4','G4','F4'],
+      dur:   [.3,.15,.45,.45,.45,.9,.3,.15,.45,.45,.45,.9,.3,.15,.45,.45,.45,.45,.9,.3,.15,.45,.45,.45,.9],
     },
     macdonald: {
-      nome: 'Old MacDonald Had a Farm',
-      notas: [
-        'G4','G4','G4','D4','E4','E4','D4',
-        'B4','B4','A4','A4','G4',
-        'D4','E4','E4','D4',
-        'G4','G4','G4','G4','D4','E4','E4','D4',
-        'B4','B4','A4','A4','G4',
-      ],
-      dur: [
-        .4,.4,.4,.4,.4,.4,.8,
-        .4,.4,.4,.4,.8,
-        .4,.4,.4,.8,
-        .4,.4,.4,.4,.4,.4,.4,.8,
-        .4,.4,.4,.4,.8,
-      ],
+      notas: ['G4','G4','G4','D4','E4','E4','D4','B4','B4','A4','A4','G4','D4','E4','E4','D4','G4','G4','G4','G4','D4','E4','E4','D4','B4','B4','A4','A4','G4'],
+      dur:   [.4,.4,.4,.4,.4,.4,.8,.4,.4,.4,.4,.8,.4,.4,.4,.8,.4,.4,.4,.4,.4,.4,.4,.8,.4,.4,.4,.4,.8],
     },
   };
 
-  let songTimer   = null;
-  let tocandoBtn  = null;
-  let tocando     = false;
+  // Estado da música
+  let songTimer = null, tocando = false, modoGuia = false;
+  let songKey = null, songIdx = 0;
+  let notaEsperada = null, guiaTimer = null;
 
-  function pararMusica() {
-    if (songTimer) { clearTimeout(songTimer); songTimer = null; }
-    tocando = false;
-    if (tocandoBtn) { tocandoBtn.classList.remove('tocando'); tocandoBtn = null; }
-    document.getElementById('btn-parar').style.display = 'none';
+  function pararTudo() {
+    if (songTimer)  { clearTimeout(songTimer);  songTimer  = null; }
+    if (guiaTimer)  { clearTimeout(guiaTimer);  guiaTimer  = null; }
+    tocando = false; modoGuia = false;
+    notaEsperada = null;
+    // Limpa estados visuais dos cards
+    document.querySelectorAll('.musica-card').forEach(c => c.classList.remove('tocando','guiando'));
+    document.querySelectorAll('.btn-parar-card').forEach(b => b.style.display = 'none');
+    document.querySelectorAll('.btn-auto, .btn-guia').forEach(b => b.style.display = '');
+    document.getElementById('guia-label').classList.remove('visivel');
     kb.releaseAll();
+    songKey = null; songIdx = 0;
   }
 
-  function tocarMusica(chave, btn) {
-    pararMusica();
+  function iniciarMusica(chave, guia) {
+    pararTudo();
     const m = MUSICAS[chave];
     if (!m) return;
 
-    // garantir que o audio está inicializado
     if (instrumento === 'piano') AudioEngine.init();
     else getActx();
 
-    tocando = true;
-    tocandoBtn = btn;
-    btn.classList.add('tocando');
-    document.getElementById('btn-parar').style.display = 'inline-block';
+    songKey = chave; songIdx = 0;
+    tocando = true; modoGuia = guia;
 
-    let i = 0;
-    function proxima() {
-      if (!tocando || i >= m.notas.length) { pararMusica(); return; }
-      const nota = m.notas[i];
-      const dur  = m.dur[i];
-      kb.releaseAll();
-      kb.highlight(nota);
-      tocarNota(nota);
-      i++;
-      songTimer = setTimeout(proxima, dur * 1000);
-    }
-    proxima();
+    const card = document.getElementById('card-' + chave);
+    card.classList.add(guia ? 'guiando' : 'tocando');
+    card.querySelector('.btn-parar-card').style.display = 'flex';
+    card.querySelector('.btn-auto').style.display = 'none';
+    card.querySelector('.btn-guia').style.display = 'none';
+
+    guia ? tocarGuia() : tocarAuto();
+  }
+
+  // ── Modo automático ──────────────────────────────────────────
+  function tocarAuto() {
+    const m = MUSICAS[songKey];
+    if (!tocando || !m || songIdx >= m.notas.length) { pararTudo(); return; }
+    const nota = m.notas[songIdx];
+    const dur  = m.dur[songIdx];
+    kb.releaseAll();
+    kb.highlight(nota);
+    tocarNota(nota, dur * 0.9);
+    songIdx++;
+    songTimer = setTimeout(tocarAuto, dur * 1000);
+  }
+
+  // ── Modo guia (criança toca) ──────────────────────────────────
+  function tocarGuia() {
+    const m = MUSICAS[songKey];
+    if (!modoGuia || !m || songIdx >= m.notas.length) { pararTudo(); return; }
+    const nota = m.notas[songIdx];
+    kb.releaseAll();
+    kb.highlight(nota);
+    notaEsperada = nota;
+
+    // Mostra label da nota e toca suavemente
+    const label = document.getElementById('guia-label');
+    label.textContent = nota.replace(/\d/, '');
+    label.classList.add('visivel');
+    tocarNota(nota, 0.5);
+
+    // Auto-avança se criança não tocar em 3s
+    guiaTimer = setTimeout(avancarGuia, 3000);
+  }
+
+  function avancarGuia() {
+    if (!modoGuia) return;
+    songIdx++;
+    tocarGuia();
   }
 
   /* ══════════════════════════════════════════════
-     Teclado de piano
+     Teclado
   ══════════════════════════════════════════════ */
   AudioEngine.init();
 
   const kb = createPianoKeyboard(document.getElementById('piano-container'), {
-    startNote: 'C4', endNote: 'B4',
+    startNote: 'C4', endNote: 'C5',
     showLabels: true,
     responsive: true,
-    labelMap: { 'C4': '𝄞', 'G4': '☀' },
+    labelMap: { 'C4': '𝄞', 'G4': '☀', 'C5': '𝄞' },
     onNoteOn(noteStr) {
-      // AudioEngine.play() já chamado internamente pelo createPianoKeyboard;
-      // para animais, precisa suprimir o piano e tocar o bicho
-      if (instrumento !== 'piano') {
-        AnimalSynth[instrumento](noteToMidi(noteStr));
+      // Som animal (piano já soa via AudioEngine interno)
+      if (instrumento !== 'piano') AnimalSynth[instrumento](noteToMidi(noteStr));
+
+      // Modo guia: verifica nota certa
+      if (modoGuia && notaEsperada) {
+        if (songTimer) { clearTimeout(songTimer); songTimer = null; }
+        if (guiaTimer) { clearTimeout(guiaTimer); guiaTimer = null; }
+        if (noteStr === notaEsperada) {
+          // Certa: pisca e avança
+          notaEsperada = null;
+          songTimer = setTimeout(avancarGuia, 350);
+        }
+        // Errada: mantém a nota acesa, aguarda nova tentativa (guiaTimer já foi limpo, reinicia)
+        else {
+          guiaTimer = setTimeout(avancarGuia, 2500);
+        }
       }
     },
   });
 
-  /* ══════════════════════════════════════════════
-     Botões de instrumento
-  ══════════════════════════════════════════════ */
-  document.querySelectorAll('.instrumento-btn').forEach(btn => {
+  // Silencia AudioEngine nas teclas quando animal ativo
+  document.querySelectorAll('.instrumento-btn[data-inst]').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.instrumento-btn').forEach(b => b.classList.remove('ativo'));
       btn.classList.add('ativo');
       instrumento = btn.dataset.inst;
-
-      // Silencia o AudioEngine nas teclas quando animal está ativo
       Settings.setSoundOn(instrumento === 'piano');
-
-      if (instrumento !== 'piano') getActx();
-      else AudioEngine.init();
-      pararMusica();
+      if (instrumento !== 'piano') getActx(); else AudioEngine.init();
+      pararTudo();
     });
   });
 
-  /* ══════════════════════════════════════════════
-     Botões de músicas
-  ══════════════════════════════════════════════ */
-  document.querySelectorAll('.musica-btn').forEach(btn => {
-    btn.addEventListener('click', () => tocarMusica(btn.dataset.song, btn));
-  });
-  document.getElementById('btn-parar').addEventListener('click', pararMusica);
+  // Botões de música
+  document.querySelectorAll('.btn-auto').forEach(btn =>
+    btn.addEventListener('click', () => iniciarMusica(btn.dataset.song, false)));
+  document.querySelectorAll('.btn-guia').forEach(btn =>
+    btn.addEventListener('click', () => iniciarMusica(btn.dataset.song, true)));
+  document.querySelectorAll('.btn-parar-card').forEach(btn =>
+    btn.addEventListener('click', pararTudo));
 
-  /* ── Restaurar som ao sair da página ── */
-  window.addEventListener('pagehide', () => Settings.setSoundOn(true));
-  window.addEventListener('beforeunload', () => Settings.setSoundOn(true));
+  // Restaura som ao sair
+  window.addEventListener('pagehide',    () => Settings.setSoundOn(true));
+  window.addEventListener('beforeunload',() => Settings.setSoundOn(true));
+
+  // Ajusta altura do piano igual ao padrão dos outros módulos
+  function ajustarTeclado() {
+    const stage = document.getElementById('piano-stage');
+    if (!stage) return;
+    const disponivel = stage.clientHeight - 8;
+    if (disponivel < 60) return;
+    const keyH = Math.max(80, Math.min(disponivel, 300));
+    stage.style.setProperty('--key-h',    keyH + 'px');
+    stage.style.setProperty('--key-bk-h', Math.round(keyH * 0.62) + 'px');
+  }
+  window.addEventListener('resize', ajustarTeclado);
+  window.addEventListener('orientationchange', () => setTimeout(ajustarTeclado, 150));
+  requestAnimationFrame(() => requestAnimationFrame(ajustarTeclado));
   </script>
 </body>
 </html>
