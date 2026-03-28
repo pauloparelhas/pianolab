@@ -40,7 +40,12 @@
     }
     .ctrl-btn.ativo { border-color: #4FC3F7; background: rgba(79,195,247,.1); color: #4FC3F7; }
     .ctrl-btn.verde { border-color: #81C784; background: rgba(129,199,132,.1); color: #81C784; }
+    .ctrl-btn.bpm-btn { padding: 4px 8px; font-size: 0.9rem; font-weight: 900; min-width: 28px; }
     .ctrl-sep { width: 1px; height: 16px; background: #1e2a3a; margin: 0 1px; }
+    .bpm-display {
+      font-size: 0.75rem; font-weight: 800; color: #FFD700;
+      padding: 0 4px; white-space: nowrap; min-width: 72px; text-align: center;
+    }
 
     /* ── Mode tabs ── */
     .mode-tabs {
@@ -68,33 +73,59 @@
     }
     .viz-area canvas { display: block; width: 100%; height: 100%; }
 
-    /* ── Caderno Pautado ── */
+    /* ── Caderno Pautado (texto em linha) ── */
     .caderno-wrap {
       width: 100%; height: 100%; overflow-x: auto; overflow-y: hidden;
       display: none; align-items: center; gap: 0;
       padding: 0 40%;
       scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
     }
     .caderno-wrap.show { display: flex; }
     .caderno-nota {
-      flex-shrink: 0; display: flex; align-items: center; justify-content: center;
-      height: 70%; min-width: 28px;
-      border-radius: 6px; margin: 0 1px;
-      background: rgba(79,195,247,.12); border: 1.5px solid rgba(79,195,247,.2);
-      color: #7aa8c8; font-size: 0.82rem; font-weight: 800;
-      transition: all 0.2s;
+      flex-shrink: 0; display: inline-flex; align-items: baseline;
+      padding: 2px 5px; margin: 0 1px;
+      color: #6a8fa8; font-size: 1rem; font-weight: 800;
+      border-radius: 4px;
+      transition: color 0.15s, background 0.15s;
+      cursor: default; white-space: nowrap;
+    }
+    .caderno-nota sup {
+      font-size: 0.55em; font-weight: 700; color: #4a6a7a;
+      margin-left: 1px; vertical-align: super;
     }
     .caderno-nota.atual {
-      background: rgba(79,195,247,.35); border-color: #4FC3F7;
-      color: #fff; transform: scale(1.12); z-index: 2;
-      box-shadow: 0 0 12px rgba(79,195,247,.4);
+      color: #fff; background: rgba(79,195,247,.25);
+      text-shadow: 0 0 8px rgba(79,195,247,.5);
     }
-    .caderno-nota.acerto { background: rgba(129,199,132,.25); border-color: #81C784; color: #81C784; }
-    .caderno-nota.erro   { background: rgba(244,67,54,.2); border-color: #F44336; color: #F44336; opacity: 0.6; }
+    .caderno-nota.acerto { color: #81C784; }
+    .caderno-nota.erro   { color: #F44336; opacity: 0.5; text-decoration: line-through; }
     .caderno-barra {
-      flex-shrink: 0; width: 1px; height: 50%;
-      background: rgba(255,255,255,.08); margin: 0 3px;
+      flex-shrink: 0; width: 1px; height: 40%;
+      background: rgba(255,255,255,.1); margin: 0 4px;
     }
+
+    /* ── Seekbar ── */
+    .seek-wrap {
+      display: flex; align-items: center; gap: 6px;
+      padding: 0 12px 2px; flex-shrink: 0;
+    }
+    .seek-bar {
+      flex: 1; height: 6px; background: #1e2a3a; border-radius: 99px;
+      position: relative; cursor: pointer; touch-action: none;
+    }
+    .seek-fill {
+      height: 100%; background: #4FC3F7; border-radius: 99px;
+      width: 0%; pointer-events: none; transition: width 0.1s linear;
+    }
+    .seek-thumb {
+      position: absolute; top: 50%; right: -6px;
+      width: 14px; height: 14px; border-radius: 50%;
+      background: #4FC3F7; border: 2px solid #0d1117;
+      transform: translateY(-50%); pointer-events: none;
+      box-shadow: 0 0 6px rgba(79,195,247,.4);
+    }
+    .seek-time { font-size: 0.68rem; color: #5a7a9a; font-weight: 700; white-space: nowrap; min-width: 32px; }
 
     /* ── Partitura ── */
     .partitura-wrap {
@@ -179,12 +210,16 @@
       .titulo-song { font-size: 0.7rem; }
       .controles { padding: 1px 10px 1px; gap: 3px; }
       .ctrl-btn { padding: 2px 7px; font-size: 0.68rem; }
+      .ctrl-btn.bpm-btn { padding: 2px 6px; font-size: 0.78rem; min-width: 22px; }
+      .bpm-display { font-size: 0.65rem; min-width: 60px; }
       .mode-tabs { padding: 0 10px 2px; gap: 2px; }
       .mode-tab { padding: 2px 7px; font-size: 0.65rem; }
       .viz-area { flex: 2; }
       .piano-stage { flex: 3; padding: 2px 0 3px; }
       .score-bar { padding: 1px 10px 3px; font-size: 0.68rem; gap: 8px; }
-      .caderno-nota { font-size: 0.7rem; min-width: 22px; height: 60%; }
+      .caderno-nota { font-size: 0.8rem; padding: 1px 4px; }
+      .seek-wrap { padding: 0 10px 1px; }
+      .seek-bar { height: 4px; }
     }
   </style>
 </head>
@@ -200,11 +235,12 @@
     <button class="ctrl-btn" id="btn-ouvir" onclick="startDemo()">👂 Ouvir</button>
     <button class="ctrl-btn" id="btn-jogar" onclick="startGame()">🎮 Jogar</button>
     <button class="ctrl-btn verde" id="btn-praticar" onclick="startPractice()">📖 Praticar</button>
+    <button class="ctrl-btn" id="btn-pause" onclick="togglePause()" style="display:none">⏸</button>
     <button class="ctrl-btn" id="btn-parar" onclick="stopAll()" style="display:none">■ Parar</button>
     <div class="ctrl-sep"></div>
-    <button class="ctrl-btn" data-speed="60" onclick="setSpeed(60,this)">🐌</button>
-    <button class="ctrl-btn ativo" data-speed="100" onclick="setSpeed(100,this)">▶</button>
-    <button class="ctrl-btn" data-speed="150" onclick="setSpeed(150,this)">🐇</button>
+    <button class="ctrl-btn bpm-btn" onclick="changeBPM(-10)">−</button>
+    <span class="bpm-display" id="bpm-display">⚡ 120 bpm</span>
+    <button class="ctrl-btn bpm-btn" onclick="changeBPM(+10)">+</button>
   </div>
 
   <div class="mode-tabs">
@@ -224,6 +260,15 @@
     <div class="piano-stage" id="piano-stage">
       <div id="piano-container"></div>
     </div>
+  </div>
+
+  <div class="seek-wrap" id="seek-wrap">
+    <span class="seek-time" id="seek-cur">0:00</span>
+    <div class="seek-bar" id="seek-bar">
+      <div class="seek-fill" id="seek-fill"></div>
+      <div class="seek-thumb" id="seek-thumb" style="display:none"></div>
+    </div>
+    <span class="seek-time" id="seek-total">0:00</span>
   </div>
 
   <div class="score-bar">
@@ -268,10 +313,15 @@
   /* ══════════════════════════════════════════════
      Estado
   ══════════════════════════════════════════════ */
-  let state = 'idle';
+  let state = 'idle';  // idle | demo | playing | practicing | countdown | paused | result
+  let stateBeforePause = 'idle';
   let viewMode = 'chuva'; // 'chuva' | 'caderno' | 'partitura'
-  let speedPercent = 100;
+  let liveBPM = SONG.bpm;          // BPM atual (editável em tempo real)
+  let beatAnchor = 0;              // beat acumulado no momento da última mudança de BPM
+  let timeAnchor = 0;              // performance.now() no momento da última mudança de BPM
+  let pausedBeat = 0;              // beat onde pausou
   let startTime = 0, rafId = null, nextDemoIdx = 0;
+  let seeking = false;
   let score = 0, combo = 0, maxCombo = 0, notesHit = 0;
   let hits = [];
   let practiceIdx = 0, practiceTargetBeat = 0, practiceCurrentBeat = 0;
@@ -312,15 +362,17 @@
     const c = document.getElementById('caderno-wrap');
     c.innerHTML = '';
     SONG.notes.forEach((note, i) => {
-      const el = document.createElement('div');
+      const el = document.createElement('span');
       el.className = 'caderno-nota';
-      el.style.width = Math.max(28, note.d * 52) + 'px';
-      const letter = note.n.replace(/\d/, '');
-      let txt = NOMES_PT[letter] || letter;
-      if (note.d >= 2) txt += '——';
-      else if (note.d >= 1.5) txt += '·';
-      el.textContent = txt;
       el.id = 'cn-' + i;
+      const letter = note.n.replace(/\d/, '');
+      const nome = NOMES_PT[letter] || letter;
+      // Superscript para duração diferente de 1 beat
+      if (note.d === 1) {
+        el.textContent = nome;
+      } else {
+        el.innerHTML = nome + '<sup>' + (note.d === 0.5 ? '½' : note.d === 1.5 ? '1½' : note.d) + '</sup>';
+      }
       c.appendChild(el);
       // Bar line
       const endBeat = note.t + note.d;
@@ -416,7 +468,10 @@
   function getCurrentBeat() {
     if (state === 'practicing') return practiceCurrentBeat;
     if (state === 'idle' || state === 'result') return -LEAD_BEATS;
-    return (performance.now() - startTime) / 1000 / (60 / SONG.bpm / (speedPercent / 100)) - LEAD_BEATS;
+    if (state === 'paused') return pausedBeat;
+    const secPerBeat = 60 / liveBPM;
+    const elapsed = (performance.now() - timeAnchor) / 1000;
+    return beatAnchor + elapsed / secPerBeat - LEAD_BEATS;
   }
 
   /* ══════════════════════════════════════════════
@@ -424,6 +479,9 @@
   ══════════════════════════════════════════════ */
   function render() {
     const currentBeat = getCurrentBeat();
+
+    // ── Seekbar ──
+    updateSeekbar(currentBeat);
 
     // ── Canvas (Chuva) ──
     if (viewMode === 'chuva') renderChuva(currentBeat);
@@ -436,7 +494,7 @@
 
     // ── Demo: auto-play ──
     if (state === 'demo') {
-      const beatDur = 60 / SONG.bpm * (100 / speedPercent);
+      const beatDur = 60 / liveBPM;
       while (nextDemoIdx < SONG.notes.length && currentBeat >= SONG.notes[nextDemoIdx].t) {
         const note = SONG.notes[nextDemoIdx];
         AudioEngine.play(note.n, beatDur * note.d * 0.85);
@@ -608,13 +666,20 @@
     document.getElementById('btn-ouvir').style.display = playing ? 'none' : '';
     document.getElementById('btn-jogar').style.display = playing ? 'none' : '';
     document.getElementById('btn-praticar').style.display = playing ? 'none' : '';
+    document.getElementById('btn-pause').style.display = playing ? '' : 'none';
     document.getElementById('btn-parar').style.display = playing ? '' : 'none';
+    document.getElementById('seek-thumb').style.display = playing ? '' : 'none';
+  }
+
+  function resetAnchors() {
+    beatAnchor = 0;
+    timeAnchor = performance.now();
   }
 
   function startDemo() {
     stopAll(); AudioEngine.init(); resetNoteStates(); showControls(true);
     nextDemoIdx = 0; state = 'demo';
-    startTime = performance.now() + LEAD_BEATS * (60/SONG.bpm*(100/speedPercent)) * 1000;
+    resetAnchors();
     rafId = requestAnimationFrame(render);
   }
 
@@ -622,10 +687,12 @@
     stopAll(); AudioEngine.init(); resetNoteStates(); showControls(true);
     doCountdown(() => {
       state = 'playing';
-      startTime = performance.now() + LEAD_BEATS * (60/SONG.bpm*(100/speedPercent)) * 1000;
+      resetAnchors();
       rafId = requestAnimationFrame(render);
     });
-    startTime = performance.now() + 999999000; state = 'countdown';
+    // During countdown, keep beat frozen
+    beatAnchor = 0; timeAnchor = performance.now() + 999999000;
+    state = 'countdown';
     rafId = requestAnimationFrame(render);
   }
 
@@ -643,7 +710,9 @@
     state = 'idle'; kb.releaseAll(); showControls(false);
     document.getElementById('countdown').className = 'countdown';
     document.getElementById('feedback').className = 'feedback';
+    document.getElementById('btn-pause').textContent = '⏸';
     if (viewMode === 'chuva') renderStatic();
+    updateSeekbar(-LEAD_BEATS);
   }
 
   function showResult() {
@@ -673,11 +742,101 @@
     state = 'idle'; resetNoteStates();
   }
 
-  function setSpeed(v, btn) {
-    speedPercent = v;
-    document.querySelectorAll('.ctrl-btn[data-speed]').forEach(b => b.classList.remove('ativo'));
-    btn.classList.add('ativo');
+  function changeBPM(delta) {
+    const newBPM = Math.max(40, Math.min(200, liveBPM + delta));
+    if (newBPM === liveBPM) return;
+    // Salvar beat atual antes de mudar BPM (só se tocando)
+    if (state === 'demo' || state === 'playing') {
+      const secPerBeat = 60 / liveBPM;
+      const elapsed = (performance.now() - timeAnchor) / 1000;
+      beatAnchor = beatAnchor + elapsed / secPerBeat;
+      timeAnchor = performance.now();
+    }
+    liveBPM = newBPM;
+    document.getElementById('bpm-display').textContent = '\u26A1 ' + liveBPM + ' bpm';
   }
+
+  /* ══════════════════════════════════════════════
+     Pause / Resume
+  ══════════════════════════════════════════════ */
+  function togglePause() {
+    if (state === 'paused') {
+      // Resume: recalcular anchors a partir do beat pausado
+      beatAnchor = pausedBeat + LEAD_BEATS;
+      timeAnchor = performance.now();
+      state = stateBeforePause;
+      document.getElementById('btn-pause').textContent = '⏸';
+      if (!rafId) rafId = requestAnimationFrame(render);
+    } else if (state === 'demo' || state === 'playing') {
+      pausedBeat = getCurrentBeat();
+      stateBeforePause = state;
+      state = 'paused';
+      document.getElementById('btn-pause').textContent = '▶';
+      kb.releaseAll();
+    }
+  }
+
+  /* ══════════════════════════════════════════════
+     Seekbar
+  ══════════════════════════════════════════════ */
+  function beatToTime(beat) {
+    const secs = Math.max(0, beat * 60 / liveBPM);
+    const m = Math.floor(secs / 60), s = Math.floor(secs % 60);
+    return m + ':' + String(s).padStart(2, '0');
+  }
+  const totalSecs = TOTAL_BEATS * 60 / SONG.bpm;
+  document.getElementById('seek-total').textContent =
+    Math.floor(totalSecs / 60) + ':' + String(Math.floor(totalSecs % 60)).padStart(2, '0');
+
+  function updateSeekbar(currentBeat) {
+    if (seeking) return;
+    const pct = Math.max(0, Math.min(100, (currentBeat / TOTAL_BEATS) * 100));
+    document.getElementById('seek-fill').style.width = pct + '%';
+    document.getElementById('seek-cur').textContent = beatToTime(Math.max(0, currentBeat));
+  }
+
+  function seekToBeat(beat) {
+    beat = Math.max(-LEAD_BEATS, Math.min(TOTAL_BEATS, beat));
+    if (state === 'paused') {
+      pausedBeat = beat;
+    } else if (state === 'demo' || state === 'playing') {
+      beatAnchor = beat + LEAD_BEATS;
+      timeAnchor = performance.now();
+    }
+    // Reset demo index to match seek position
+    nextDemoIdx = 0;
+    while (nextDemoIdx < SONG.notes.length && SONG.notes[nextDemoIdx].t < beat) nextDemoIdx++;
+    kb.releaseAll();
+  }
+
+  // ── Seekbar drag (mouse + touch) ──
+  (function initSeek() {
+    const bar = document.getElementById('seek-bar');
+    function beatFromEvent(e) {
+      const rect = bar.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+      return pct * TOTAL_BEATS;
+    }
+    function onStart(e) {
+      if (state === 'idle' || state === 'result' || state === 'countdown') return;
+      seeking = true;
+      seekToBeat(beatFromEvent(e));
+      e.preventDefault();
+    }
+    function onMove(e) {
+      if (!seeking) return;
+      seekToBeat(beatFromEvent(e));
+      e.preventDefault();
+    }
+    function onEnd() { seeking = false; }
+    bar.addEventListener('mousedown', onStart);
+    bar.addEventListener('touchstart', onStart, { passive: false });
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('touchmove', onMove, { passive: false });
+    window.addEventListener('mouseup', onEnd);
+    window.addEventListener('touchend', onEnd);
+  })();
 
   /* ══════════════════════════════════════════════
      Piano
