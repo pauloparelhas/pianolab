@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>M6 · Chuva de Notas — PianoLab</title>
+  <title>M6 · Música Interativa — PianoLab</title>
   <link rel="stylesheet" href="base.css">
   <link rel="stylesheet" href="piano.css">
   <style>
@@ -24,73 +24,118 @@
       color: #4FC3F7; font-size: 1.2rem;
       cursor: pointer; padding: 4px; line-height: 1;
     }
-    .titulo { font-size: 1.1rem; font-weight: 900; color: #4FC3F7; }
-    .titulo-song { font-size: 0.85rem; color: #7a8fa8; margin-left: 4px; }
+    .titulo { font-size: 1.05rem; font-weight: 900; color: #4FC3F7; }
+    .titulo-song { font-size: 0.8rem; color: #7a8fa8; margin-left: 4px; }
 
     /* ── Controles ── */
     .controles {
-      display: flex; gap: 4px; padding: 2px 12px 4px;
+      display: flex; gap: 4px; padding: 2px 12px 2px;
       flex-shrink: 0; flex-wrap: wrap; align-items: center;
     }
     .ctrl-btn {
-      padding: 4px 12px; border-radius: 99px;
+      padding: 4px 10px; border-radius: 99px;
       border: 1.5px solid #1e2a3a; background: #111827;
-      color: #8aa4bc; font-size: 0.82rem; font-weight: 700;
+      color: #8aa4bc; font-size: 0.78rem; font-weight: 700;
       cursor: pointer; transition: all 0.15s; white-space: nowrap;
     }
     .ctrl-btn.ativo { border-color: #4FC3F7; background: rgba(79,195,247,.1); color: #4FC3F7; }
     .ctrl-btn.verde { border-color: #81C784; background: rgba(129,199,132,.1); color: #81C784; }
-    .ctrl-btn:disabled { opacity: 0.3; cursor: default; }
-    .ctrl-sep { width: 1px; height: 18px; background: #1e2a3a; margin: 0 2px; }
+    .ctrl-sep { width: 1px; height: 16px; background: #1e2a3a; margin: 0 1px; }
+
+    /* ── Mode tabs ── */
+    .mode-tabs {
+      display: flex; gap: 3px; padding: 0 12px 3px; flex-shrink: 0;
+    }
+    .mode-tab {
+      padding: 3px 10px; border-radius: 6px;
+      border: 1.5px solid #1e2a3a; background: #111827;
+      color: #5a7a9a; font-size: 0.72rem; font-weight: 700;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .mode-tab.ativo { border-color: #FFD700; background: rgba(255,215,0,.08); color: #FFD700; }
 
     /* ── Game area ── */
     .game-area {
       flex: 1; display: flex; flex-direction: column;
       min-height: 0; padding: 0 8px;
     }
-    .canvas-wrap {
+
+    /* ── Viz area (chuva / caderno / partitura) ── */
+    .viz-area {
       flex: 3; min-height: 0; position: relative;
       border-radius: 8px; overflow: hidden;
       background: linear-gradient(180deg, #0a0f18 0%, #111827 100%);
     }
-    .canvas-wrap canvas {
-      display: block; width: 100%; height: 100%;
+    .viz-area canvas { display: block; width: 100%; height: 100%; }
+
+    /* ── Caderno Pautado ── */
+    .caderno-wrap {
+      width: 100%; height: 100%; overflow-x: auto; overflow-y: hidden;
+      display: none; align-items: center; gap: 0;
+      padding: 0 40%;
+      scroll-behavior: smooth;
     }
+    .caderno-wrap.show { display: flex; }
+    .caderno-nota {
+      flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+      height: 70%; min-width: 28px;
+      border-radius: 6px; margin: 0 1px;
+      background: rgba(79,195,247,.12); border: 1.5px solid rgba(79,195,247,.2);
+      color: #7aa8c8; font-size: 0.82rem; font-weight: 800;
+      transition: all 0.2s;
+    }
+    .caderno-nota.atual {
+      background: rgba(79,195,247,.35); border-color: #4FC3F7;
+      color: #fff; transform: scale(1.12); z-index: 2;
+      box-shadow: 0 0 12px rgba(79,195,247,.4);
+    }
+    .caderno-nota.acerto { background: rgba(129,199,132,.25); border-color: #81C784; color: #81C784; }
+    .caderno-nota.erro   { background: rgba(244,67,54,.2); border-color: #F44336; color: #F44336; opacity: 0.6; }
+    .caderno-barra {
+      flex-shrink: 0; width: 1px; height: 50%;
+      background: rgba(255,255,255,.08); margin: 0 3px;
+    }
+
+    /* ── Partitura ── */
+    .partitura-wrap {
+      width: 100%; height: 100%; overflow: hidden;
+      display: none; align-items: center;
+    }
+    .partitura-wrap.show { display: flex; }
 
     /* ── Feedback popup ── */
     .feedback {
-      position: absolute; left: 50%; bottom: 30px;
+      position: absolute; left: 50%; bottom: 20px;
       transform: translateX(-50%);
-      font-size: 1.1rem; font-weight: 900;
-      padding: 4px 16px; border-radius: 99px;
+      font-size: 1rem; font-weight: 900;
+      padding: 3px 14px; border-radius: 99px;
       pointer-events: none; opacity: 0;
-      transition: opacity 0.2s, transform 0.3s;
-      z-index: 5;
+      transition: opacity 0.2s, transform 0.3s; z-index: 5;
     }
-    .feedback.show {
-      opacity: 1; transform: translateX(-50%) translateY(-8px);
-    }
+    .feedback.show { opacity: 1; transform: translateX(-50%) translateY(-6px); }
     .feedback.perfect { background: rgba(255,215,0,.9); color: #111; }
     .feedback.good    { background: rgba(129,199,132,.9); color: #111; }
     .feedback.ok      { background: rgba(79,195,247,.7); color: #111; }
     .feedback.wrong   { background: rgba(244,67,54,.8); color: #fff; }
 
-    /* ── Countdown overlay ── */
+    /* ── Countdown ── */
     .countdown {
-      position: absolute; top: 50%; left: 50%;
+      position: absolute; top: 45%; left: 50%;
       transform: translate(-50%, -50%);
-      font-size: 4rem; font-weight: 900; color: #4FC3F7;
+      font-size: 3.5rem; font-weight: 900; color: #4FC3F7;
       text-shadow: 0 0 30px rgba(79,195,247,.5);
       pointer-events: none; opacity: 0; z-index: 6;
       transition: opacity 0.15s;
     }
     .countdown.show { opacity: 1; }
 
-    /* ── Piano stage ── */
+    /* ── Piano stage — matching M3/M5 pattern ── */
     .piano-stage {
       flex: 2; min-height: 0;
       display: flex; align-items: center;
       padding: 4px 0 6px;
+      --key-h:    clamp(90px, 28dvh, 240px);
+      --key-bk-h: clamp(54px, 17dvh, 144px);
     }
     #piano-container { width: 100%; display: flex; align-items: center; }
     .piano-stage .piano-wrap.responsive { width: 100%; overflow: visible; padding-bottom: 0; }
@@ -99,8 +144,8 @@
     /* ── Score bar ── */
     .score-bar {
       display: flex; align-items: center; justify-content: center;
-      gap: 16px; padding: 2px 12px 6px;
-      flex-shrink: 0; font-size: 0.8rem; font-weight: 700; color: #5a7a9a;
+      gap: 14px; padding: 2px 12px 6px;
+      flex-shrink: 0; font-size: 0.78rem; font-weight: 700; color: #5a7a9a;
     }
     .score-val { color: #4FC3F7; }
     .combo-val { color: #FFD700; }
@@ -111,27 +156,35 @@
       background: rgba(10,15,24,.92);
       display: none; flex-direction: column;
       align-items: center; justify-content: center;
-      z-index: 20; gap: 12px;
+      z-index: 20; gap: 10px;
     }
     .result-overlay.show { display: flex; }
-    .result-stars { font-size: 3rem; }
-    .result-score { font-size: 1.4rem; font-weight: 900; color: #4FC3F7; }
-    .result-detail { font-size: 0.85rem; color: #7a8fa8; text-align: center; line-height: 1.6; }
+    .result-stars { font-size: 2.8rem; }
+    .result-score { font-size: 1.3rem; font-weight: 900; color: #4FC3F7; }
+    .result-detail { font-size: 0.82rem; color: #7a8fa8; text-align: center; line-height: 1.5; }
     .result-btn {
-      margin-top: 8px; padding: 10px 28px; border-radius: 99px;
+      margin-top: 6px; padding: 8px 24px; border-radius: 99px;
       border: 2px solid #4FC3F7; background: rgba(79,195,247,.1);
-      color: #4FC3F7; font-size: 1rem; font-weight: 800; cursor: pointer;
+      color: #4FC3F7; font-size: 0.95rem; font-weight: 800; cursor: pointer;
     }
 
-    /* ── Landscape ── */
-    @media (orientation: landscape) and (max-height: 500px) {
+    /* ── Landscape — piano proporcional (padrão M3/M5) ── */
+    @media (orientation: landscape) {
+      .piano-stage {
+        --key-h:    clamp(55px, 42dvh, 180px);
+        --key-bk-h: clamp(33px, 25dvh, 108px);
+      }
       .topo { padding: 2px 10px 0; }
-      .titulo { font-size: 0.9rem; }
-      .controles { padding: 1px 10px 2px; gap: 3px; }
-      .ctrl-btn { padding: 2px 8px; font-size: 0.72rem; }
-      .canvas-wrap { flex: 2; }
+      .titulo { font-size: 0.85rem; }
+      .titulo-song { font-size: 0.7rem; }
+      .controles { padding: 1px 10px 1px; gap: 3px; }
+      .ctrl-btn { padding: 2px 7px; font-size: 0.68rem; }
+      .mode-tabs { padding: 0 10px 2px; gap: 2px; }
+      .mode-tab { padding: 2px 7px; font-size: 0.65rem; }
+      .viz-area { flex: 2; }
       .piano-stage { flex: 3; padding: 2px 0 3px; }
-      .score-bar { padding: 1px 10px 3px; font-size: 0.7rem; gap: 10px; }
+      .score-bar { padding: 1px 10px 3px; font-size: 0.68rem; gap: 8px; }
+      .caderno-nota { font-size: 0.7rem; min-width: 22px; height: 60%; }
     }
   </style>
 </head>
@@ -139,8 +192,8 @@
 
   <div class="topo">
     <button class="btn-voltar" onclick="location.href='index.html'">←</button>
-    <span class="titulo">🎶 Chuva de Notas</span>
-    <span class="titulo-song" id="song-title">Ode to Joy</span>
+    <span class="titulo">🎶 Música Interativa</span>
+    <span class="titulo-song" id="song-title">Ode to Joy — Beethoven</span>
   </div>
 
   <div class="controles">
@@ -154,9 +207,17 @@
     <button class="ctrl-btn" data-speed="150" onclick="setSpeed(150,this)">🐇</button>
   </div>
 
+  <div class="mode-tabs">
+    <button class="mode-tab ativo" data-mode="chuva" onclick="setViewMode('chuva')">🌧 Chuva</button>
+    <button class="mode-tab" data-mode="caderno" onclick="setViewMode('caderno')">📓 Caderno</button>
+    <button class="mode-tab" data-mode="partitura" onclick="setViewMode('partitura')">🎼 Partitura</button>
+  </div>
+
   <div class="game-area">
-    <div class="canvas-wrap" id="canvas-wrap">
+    <div class="viz-area" id="viz-area">
       <canvas id="rain-canvas"></canvas>
+      <div class="caderno-wrap" id="caderno-wrap"></div>
+      <div class="partitura-wrap" id="partitura-wrap"></div>
       <div class="feedback" id="feedback"></div>
       <div class="countdown" id="countdown"></div>
     </div>
@@ -184,9 +245,7 @@
   'use strict';
 
   /* ══════════════════════════════════════════════
-     Dados da música — Ode to Joy (Beethoven)
-     Dó Maior, 4/4, 120 BPM
-     Validado pelo agente de teoria musical
+     Dados — Ode to Joy (Beethoven, Dó Maior, 4/4)
   ══════════════════════════════════════════════ */
   const SONG = {
     title: "Ode to Joy", composer: "Beethoven", bpm: 120,
@@ -202,62 +261,141 @@
       {n:"D4",t:28,d:1.5},{n:"C4",t:29.5,d:0.5},{n:"C4",t:30,d:2},
     ]
   };
+  const TOTAL_BEATS = SONG.notes[SONG.notes.length-1].t + SONG.notes[SONG.notes.length-1].d;
 
   const NOMES_PT = { C:'Dó', D:'Ré', E:'Mi', F:'Fá', G:'Sol', A:'Lá', B:'Si' };
 
   /* ══════════════════════════════════════════════
-     Estado & Configuração
+     Estado
   ══════════════════════════════════════════════ */
-  let state = 'idle'; // 'idle' | 'demo' | 'countdown' | 'playing' | 'practicing' | 'result'
+  let state = 'idle';
+  let viewMode = 'chuva'; // 'chuva' | 'caderno' | 'partitura'
   let speedPercent = 100;
-  let startTime = 0;
-  let rafId = null;
-  let nextDemoIdx = 0;
-
-  // Scoring
+  let startTime = 0, rafId = null, nextDemoIdx = 0;
   let score = 0, combo = 0, maxCombo = 0, notesHit = 0;
-  let hits = []; // array of { result, points }
-
-  // Practice
-  let practiceIdx = 0;
-  let practiceTargetBeat = 0;
-  let practiceCurrentBeat = 0;
-
-  // Timing windows (em beats, generosas para crianças)
+  let hits = [];
+  let practiceIdx = 0, practiceTargetBeat = 0, practiceCurrentBeat = 0;
   const TIMING = { perfect: 0.25, good: 0.50, ok: 0.75 };
+  let noteStates = [];
 
   // Canvas
   const canvas = document.getElementById('rain-canvas');
   const ctx = canvas.getContext('2d');
-  let W = 0, H = 0, HIT_LINE_Y = 0;
-  let PIXELS_PER_BEAT = 40; // recalculado em setupCanvas
+  let W = 0, H = 0, HIT_LINE_Y = 0, PIXELS_PER_BEAT = 40;
   const LEAD_BEATS = 2;
   const dpr = window.devicePixelRatio || 1;
-
-  // Key positions (mapeadas do piano DOM)
   let keyPositions = {};
 
-  // Per-note game state (reset cada jogo)
-  let noteStates = []; // { hit: bool, result: string }
+  // Partitura
+  let staffScore = null;
+
+  /* ══════════════════════════════════════════════
+     View mode switching
+  ══════════════════════════════════════════════ */
+  function setViewMode(mode) {
+    viewMode = mode;
+    document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('ativo', t.dataset.mode === mode));
+    canvas.style.display = mode === 'chuva' ? 'block' : 'none';
+    document.getElementById('caderno-wrap').classList.toggle('show', mode === 'caderno');
+    document.getElementById('partitura-wrap').classList.toggle('show', mode === 'partitura');
+    if (mode === 'caderno') buildCaderno();
+    if (mode === 'partitura') buildPartitura();
+    if (mode === 'chuva' && state === 'idle') renderStatic();
+  }
+
+  /* ══════════════════════════════════════════════
+     Caderno Pautado
+  ══════════════════════════════════════════════ */
+  let cadernoBuilt = false;
+  function buildCaderno() {
+    if (cadernoBuilt) return;
+    const c = document.getElementById('caderno-wrap');
+    c.innerHTML = '';
+    SONG.notes.forEach((note, i) => {
+      const el = document.createElement('div');
+      el.className = 'caderno-nota';
+      el.style.width = Math.max(28, note.d * 52) + 'px';
+      const letter = note.n.replace(/\d/, '');
+      let txt = NOMES_PT[letter] || letter;
+      if (note.d >= 2) txt += '——';
+      else if (note.d >= 1.5) txt += '·';
+      el.textContent = txt;
+      el.id = 'cn-' + i;
+      c.appendChild(el);
+      // Bar line
+      const endBeat = note.t + note.d;
+      if (endBeat % SONG.timeSignature[0] === 0 && i < SONG.notes.length - 1) {
+        const bar = document.createElement('div');
+        bar.className = 'caderno-barra';
+        c.appendChild(bar);
+      }
+    });
+    cadernoBuilt = true;
+  }
+
+  function updateCaderno(currentBeat) {
+    let activeIdx = -1;
+    for (let i = 0; i < SONG.notes.length; i++) {
+      if (currentBeat >= SONG.notes[i].t - 0.1 && currentBeat < SONG.notes[i].t + SONG.notes[i].d) {
+        activeIdx = i; break;
+      }
+    }
+    document.querySelectorAll('.caderno-nota').forEach((el, i) => {
+      el.classList.remove('atual', 'acerto', 'erro');
+      if (i === activeIdx) el.classList.add('atual');
+      else if (noteStates[i] && noteStates[i].hit) el.classList.add('acerto');
+      else if (noteStates[i] && noteStates[i].result === 'miss') el.classList.add('erro');
+    });
+    if (activeIdx >= 0) {
+      const el = document.getElementById('cn-' + activeIdx);
+      if (el) el.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
+  }
+
+  /* ══════════════════════════════════════════════
+     Partitura (via createStaffScore)
+  ══════════════════════════════════════════════ */
+  let partituraBuilt = false;
+  function buildPartitura() {
+    if (partituraBuilt) return;
+    const c = document.getElementById('partitura-wrap');
+    c.innerHTML = '';
+    staffScore = createStaffScore(c, { slotWidth: 54 });
+    const chords = SONG.notes.map(note => ({
+      midis: [noteToMidi(note.n)],
+      duration: note.d >= 2 ? 'h' : note.d >= 1 ? 'q' : '8',
+      label: NOMES_PT[note.n.replace(/\d/, '')] || ''
+    }));
+    staffScore.loadScore(chords);
+    partituraBuilt = true;
+  }
+
+  function updatePartitura(currentBeat) {
+    if (!staffScore) return;
+    let activeIdx = -1;
+    for (let i = 0; i < SONG.notes.length; i++) {
+      if (currentBeat >= SONG.notes[i].t - 0.1) activeIdx = i;
+    }
+    if (activeIdx >= 0) staffScore.highlight(activeIdx);
+  }
 
   /* ══════════════════════════════════════════════
      Canvas setup & key alignment
   ══════════════════════════════════════════════ */
   function setupCanvas() {
-    const wrap = document.getElementById('canvas-wrap');
+    const wrap = document.getElementById('viz-area');
     const rect = wrap.getBoundingClientRect();
     canvas.width = rect.width * dpr;
     canvas.height = rect.height * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    W = rect.width;
-    H = rect.height;
+    W = rect.width; H = rect.height;
     HIT_LINE_Y = H - 8;
-    // Scale pixels per beat to canvas height (show ~4-5 beats visible)
     PIXELS_PER_BEAT = Math.max(20, Math.min(65, (H - 20) / 4));
   }
 
   function updateKeyPositions() {
     const canvasRect = canvas.getBoundingClientRect();
+    if (canvasRect.width === 0) return;
     for (let midi = 60; midi <= 83; midi++) {
       const noteStr = midiToNote(midi);
       const keyEl = kb.getKeyElement(noteStr);
@@ -273,7 +411,7 @@
   }
 
   /* ══════════════════════════════════════════════
-     Canvas rendering — Chuva de Notas
+     Beat calculation
   ══════════════════════════════════════════════ */
   function getCurrentBeat() {
     if (state === 'practicing') return practiceCurrentBeat;
@@ -281,139 +419,122 @@
     return (performance.now() - startTime) / 1000 / (60 / SONG.bpm / (speedPercent / 100)) - LEAD_BEATS;
   }
 
+  /* ══════════════════════════════════════════════
+     Render loop (drives all 3 views)
+  ══════════════════════════════════════════════ */
   function render() {
     const currentBeat = getCurrentBeat();
-    ctx.clearRect(0, 0, W, H);
 
-    // Background grid (linhas de compasso)
-    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
-    ctx.lineWidth = 1;
-    const beatsPerBar = SONG.timeSignature[0];
-    const totalBeats = SONG.notes.length ? SONG.notes[SONG.notes.length - 1].t + SONG.notes[SONG.notes.length - 1].d : 32;
-    for (let b = 0; b <= totalBeats; b += beatsPerBar) {
-      const y = HIT_LINE_Y - (b - currentBeat) * PIXELS_PER_BEAT;
-      if (y > -10 && y < H + 10) {
-        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
-      }
-    }
+    // ── Canvas (Chuva) ──
+    if (viewMode === 'chuva') renderChuva(currentBeat);
 
-    // Note blocks
-    SONG.notes.forEach((note, i) => {
-      const kp = keyPositions[note.n];
-      if (!kp) return;
+    // ── Caderno ──
+    if (viewMode === 'caderno') updateCaderno(currentBeat);
 
-      const yBottom = HIT_LINE_Y - (note.t - currentBeat) * PIXELS_PER_BEAT;
-      const h = note.d * PIXELS_PER_BEAT;
-      const yTop = yBottom - h;
-      const margin = 2;
-      const x = kp.x + margin;
-      const w = kp.w - margin * 2;
+    // ── Partitura ──
+    if (viewMode === 'partitura') updatePartitura(currentBeat);
 
-      if (yBottom < -20 || yTop > H + 20) return; // off-screen
-
-      const ns = noteStates[i];
-      let fillColor, alpha = 1;
-
-      if (ns && ns.hit) {
-        if (ns.result === 'perfect') fillColor = '#FFD700';
-        else if (ns.result === 'good') fillColor = '#81C784';
-        else fillColor = '#4FC3F7';
-        alpha = 0.5;
-      } else if (ns && ns.result === 'miss') {
-        fillColor = '#F44336';
-        alpha = 0.3;
-      } else {
-        // Upcoming note — glow when near hit line
-        const dist = Math.abs(yBottom - HIT_LINE_Y);
-        if (dist < 40) {
-          fillColor = '#7DD6FF';
-          alpha = 1;
-        } else {
-          fillColor = '#4FC3F7';
-          alpha = 0.8;
-        }
-      }
-
-      ctx.globalAlpha = alpha;
-      ctx.fillStyle = fillColor;
-      roundRect(ctx, x, yTop, w, h, 4);
-      ctx.globalAlpha = 1;
-
-      // Note name inside block
-      if (h > 20 && w > 20) {
-        ctx.fillStyle = 'rgba(0,0,0,0.5)';
-        ctx.font = `bold ${Math.min(12, w * 0.35)}px sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        const noteLetter = note.n.replace(/\d/, '');
-        ctx.fillText(NOMES_PT[noteLetter] || noteLetter, x + w / 2, yTop + h / 2);
-      }
-    });
-
-    // Hit line
-    ctx.globalAlpha = 0.6;
-    ctx.fillStyle = '#fff';
-    ctx.fillRect(0, HIT_LINE_Y - 1, W, 2);
-    ctx.globalAlpha = 0.15;
-    ctx.fillStyle = '#4FC3F7';
-    ctx.fillRect(0, HIT_LINE_Y - TIMING.ok * PIXELS_PER_BEAT, W, TIMING.ok * 2 * PIXELS_PER_BEAT);
-    ctx.globalAlpha = 1;
-
-    // Demo mode: auto-play notes
+    // ── Demo: auto-play ──
     if (state === 'demo') {
       const beatDur = 60 / SONG.bpm * (100 / speedPercent);
       while (nextDemoIdx < SONG.notes.length && currentBeat >= SONG.notes[nextDemoIdx].t) {
         const note = SONG.notes[nextDemoIdx];
         AudioEngine.play(note.n, beatDur * note.d * 0.85);
         kb.highlight(note.n);
-        const ns = note.n;
-        const relMs = beatDur * note.d * 900;
+        const ns = note.n, relMs = beatDur * note.d * 900;
         setTimeout(() => kb.release(ns), relMs);
         nextDemoIdx++;
       }
-      // End of demo
-      if (currentBeat > totalBeats + 2) { stopAll(); return; }
+      if (currentBeat > TOTAL_BEATS + 2) { stopAll(); return; }
     }
 
-    // Game mode: check for missed notes
+    // ── Game: miss detection ──
     if (state === 'playing') {
       SONG.notes.forEach((note, i) => {
         if (!noteStates[i].hit && !noteStates[i].result && currentBeat > note.t + TIMING.ok) {
           noteStates[i].result = 'miss';
+          combo = 0;
           hits.push({ result: 'miss', points: 0 });
         }
       });
-      // End of song
-      if (currentBeat > totalBeats + 2) { showResult(); return; }
+      if (currentBeat > TOTAL_BEATS + 2) { showResult(); return; }
       updateScoreDisplay();
     }
 
-    // Practice mode: smooth scroll to target
+    // ── Practice: smooth scroll ──
     if (state === 'practicing') {
       practiceCurrentBeat += (practiceTargetBeat - practiceCurrentBeat) * 0.06;
-      // Highlight expected key
       if (practiceIdx < SONG.notes.length) {
-        const expected = SONG.notes[practiceIdx];
         kb.releaseAll();
-        kb.highlight(expected.n);
+        kb.highlight(SONG.notes[practiceIdx].n);
       }
     }
 
     rafId = requestAnimationFrame(render);
   }
 
-  function roundRect(ctx, x, y, w, h, r) {
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.lineTo(x + w - r, y);
-    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-    ctx.lineTo(x + w, y + h - r);
-    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-    ctx.lineTo(x + r, y + h);
-    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-    ctx.lineTo(x, y + r);
-    ctx.quadraticCurveTo(x, y, x + r, y);
-    ctx.fill();
+  /* ══════════════════════════════════════════════
+     Chuva de Notas — canvas rendering
+  ══════════════════════════════════════════════ */
+  function renderChuva(currentBeat) {
+    ctx.clearRect(0, 0, W, H);
+
+    // Grid
+    ctx.strokeStyle = 'rgba(255,255,255,0.04)'; ctx.lineWidth = 1;
+    for (let b = 0; b <= TOTAL_BEATS; b += SONG.timeSignature[0]) {
+      const y = HIT_LINE_Y - (b - currentBeat) * PIXELS_PER_BEAT;
+      if (y > -10 && y < H + 10) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+    }
+
+    // Notes
+    SONG.notes.forEach((note, i) => {
+      const kp = keyPositions[note.n];
+      if (!kp) return;
+      const yBot = HIT_LINE_Y - (note.t - currentBeat) * PIXELS_PER_BEAT;
+      const h = note.d * PIXELS_PER_BEAT;
+      const yTop = yBot - h;
+      const m = 2, x = kp.x + m, w = kp.w - m * 2;
+      if (yBot < -20 || yTop > H + 20) return;
+
+      const ns = noteStates[i];
+      let fill, alpha = 1;
+      if (ns && ns.hit) {
+        fill = ns.result === 'perfect' ? '#FFD700' : ns.result === 'good' ? '#81C784' : '#4FC3F7';
+        alpha = 0.5;
+      } else if (ns && ns.result === 'miss') { fill = '#F44336'; alpha = 0.3; }
+      else { fill = Math.abs(yBot - HIT_LINE_Y) < 40 ? '#7DD6FF' : '#4FC3F7'; alpha = 0.8; }
+
+      ctx.globalAlpha = alpha; ctx.fillStyle = fill;
+      roundRect(ctx, x, yTop, w, h, 4);
+      ctx.globalAlpha = 1;
+
+      if (h > 18 && w > 18) {
+        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+        ctx.font = `bold ${Math.min(11, w * 0.3)}px sans-serif`;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(NOMES_PT[note.n.replace(/\d/, '')] || '', x + w / 2, yTop + h / 2);
+      }
+    });
+
+    // Hit line + timing zone
+    ctx.globalAlpha = 0.5; ctx.fillStyle = '#fff';
+    ctx.fillRect(0, HIT_LINE_Y - 1, W, 2);
+    ctx.globalAlpha = 0.12; ctx.fillStyle = '#4FC3F7';
+    ctx.fillRect(0, HIT_LINE_Y - TIMING.ok * PIXELS_PER_BEAT, W, TIMING.ok * 2 * PIXELS_PER_BEAT);
+    ctx.globalAlpha = 1;
+  }
+
+  function roundRect(c, x, y, w, h, r) {
+    c.beginPath(); c.moveTo(x+r,y); c.lineTo(x+w-r,y);
+    c.quadraticCurveTo(x+w,y,x+w,y+r); c.lineTo(x+w,y+h-r);
+    c.quadraticCurveTo(x+w,y+h,x+w-r,y+h); c.lineTo(x+r,y+h);
+    c.quadraticCurveTo(x,y+h,x,y+h-r); c.lineTo(x,y+r);
+    c.quadraticCurveTo(x,y,x+r,y); c.fill();
+  }
+
+  function renderStatic() {
+    setupCanvas(); updateKeyPositions();
+    renderChuva(-LEAD_BEATS);
   }
 
   /* ══════════════════════════════════════════════
@@ -421,54 +542,35 @@
   ══════════════════════════════════════════════ */
   function checkHit(noteStr) {
     const current = getCurrentBeat();
-    let bestMatch = null, bestDiff = Infinity, bestIdx = -1;
-
+    let best = null, bestDiff = Infinity, bestIdx = -1;
     SONG.notes.forEach((note, i) => {
       if (noteStates[i].hit || noteStates[i].result) return;
       if (note.n !== noteStr) return;
       const diff = Math.abs(current - note.t);
-      if (diff < bestDiff && diff <= TIMING.ok) {
-        bestDiff = diff;
-        bestMatch = note;
-        bestIdx = i;
-      }
+      if (diff < bestDiff && diff <= TIMING.ok) { bestDiff = diff; best = note; bestIdx = i; }
     });
-
-    if (!bestMatch) return null;
-
+    if (!best) return null;
     let result, points;
     if (bestDiff <= TIMING.perfect) { result = 'perfect'; points = 100; }
     else if (bestDiff <= TIMING.good) { result = 'good'; points = 75; }
     else { result = 'ok'; points = 50; }
-
-    noteStates[bestIdx].hit = true;
-    noteStates[bestIdx].result = result;
+    noteStates[bestIdx].hit = true; noteStates[bestIdx].result = result;
     return { result, points, idx: bestIdx };
   }
 
-  function applyHit(hit) {
-    score += hit.points;
-    combo++;
-    if (combo > maxCombo) maxCombo = combo;
-    notesHit++;
-    hits.push(hit);
-    showFeedback(hit.result);
-    updateScoreDisplay();
+  function applyHit(h) {
+    score += h.points; combo++; if (combo > maxCombo) maxCombo = combo;
+    notesHit++; hits.push(h); showFeedback(h.result); updateScoreDisplay();
   }
-
-  function applyWrong() {
-    combo = 0;
-    showFeedback('wrong');
-    updateScoreDisplay();
-  }
+  function applyWrong() { combo = 0; showFeedback('wrong'); updateScoreDisplay(); }
 
   /* ══════════════════════════════════════════════
-     UI feedback
+     UI
   ══════════════════════════════════════════════ */
   let feedbackTimer = null;
   function showFeedback(type) {
     const el = document.getElementById('feedback');
-    const labels = { perfect: '⭐ Perfeito!', good: '✓ Bom!', ok: 'OK', wrong: '✗' };
+    const labels = { perfect:'⭐ Perfeito!', good:'✓ Bom!', ok:'OK', wrong:'✗' };
     el.textContent = labels[type] || type;
     el.className = 'feedback show ' + type;
     clearTimeout(feedbackTimer);
@@ -481,29 +583,13 @@
     document.getElementById('notes-display').textContent = notesHit + '/' + SONG.notes.length;
   }
 
-  /* ══════════════════════════════════════════════
-     Countdown
-  ══════════════════════════════════════════════ */
-  function doCountdown(callback) {
+  function doCountdown(cb) {
     const el = document.getElementById('countdown');
-    state = 'countdown';
-    let count = 3;
-
-    function tick() {
-      if (count > 0) {
-        el.textContent = count;
-        el.className = 'countdown show';
-        count--;
-        setTimeout(tick, 700);
-      } else {
-        el.textContent = '🎵';
-        setTimeout(() => {
-          el.className = 'countdown';
-          callback();
-        }, 400);
-      }
-    }
-    tick();
+    let n = 3;
+    (function tick() {
+      if (n > 0) { el.textContent = n; el.className = 'countdown show'; n--; setTimeout(tick, 700); }
+      else { el.textContent = '🎵'; setTimeout(() => { el.className = 'countdown'; cb(); }, 400); }
+    })();
   }
 
   /* ══════════════════════════════════════════════
@@ -513,6 +599,9 @@
     noteStates = SONG.notes.map(() => ({ hit: false, result: null }));
     score = 0; combo = 0; maxCombo = 0; notesHit = 0; hits = [];
     updateScoreDisplay();
+    // Reset caderno visuals
+    document.querySelectorAll('.caderno-nota').forEach(el => el.classList.remove('atual','acerto','erro'));
+    if (staffScore) staffScore.highlight(-1);
   }
 
   function showControls(playing) {
@@ -523,38 +612,25 @@
   }
 
   function startDemo() {
-    stopAll();
-    AudioEngine.init();
-    resetNoteStates();
-    showControls(true);
-    nextDemoIdx = 0;
-    state = 'demo';
-    startTime = performance.now() + LEAD_BEATS * (60 / SONG.bpm * (100 / speedPercent)) * 1000;
+    stopAll(); AudioEngine.init(); resetNoteStates(); showControls(true);
+    nextDemoIdx = 0; state = 'demo';
+    startTime = performance.now() + LEAD_BEATS * (60/SONG.bpm*(100/speedPercent)) * 1000;
     rafId = requestAnimationFrame(render);
   }
 
   function startGame() {
-    stopAll();
-    AudioEngine.init();
-    resetNoteStates();
-    showControls(true);
-
+    stopAll(); AudioEngine.init(); resetNoteStates(); showControls(true);
     doCountdown(() => {
       state = 'playing';
-      startTime = performance.now() + LEAD_BEATS * (60 / SONG.bpm * (100 / speedPercent)) * 1000;
+      startTime = performance.now() + LEAD_BEATS * (60/SONG.bpm*(100/speedPercent)) * 1000;
       rafId = requestAnimationFrame(render);
     });
-    // Start rendering during countdown (shows static notes)
-    startTime = performance.now() + 999999000; // frozen time
-    state = 'countdown';
+    startTime = performance.now() + 999999000; state = 'countdown';
     rafId = requestAnimationFrame(render);
   }
 
   function startPractice() {
-    stopAll();
-    AudioEngine.init();
-    resetNoteStates();
-    showControls(true);
+    stopAll(); AudioEngine.init(); resetNoteStates(); showControls(true);
     practiceIdx = 0;
     practiceTargetBeat = SONG.notes[0].t;
     practiceCurrentBeat = SONG.notes[0].t - 3;
@@ -564,188 +640,94 @@
 
   function stopAll() {
     if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
-    state = 'idle';
-    kb.releaseAll();
-    showControls(false);
+    state = 'idle'; kb.releaseAll(); showControls(false);
     document.getElementById('countdown').className = 'countdown';
     document.getElementById('feedback').className = 'feedback';
-    renderStatic();
-  }
-
-  function renderStatic() {
-    setupCanvas();
-    updateKeyPositions();
-    // One frame with idle beat position
-    const currentBeat = -LEAD_BEATS;
-    ctx.clearRect(0, 0, W, H);
-
-    // Background grid
-    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
-    ctx.lineWidth = 1;
-    const beatsPerBar = SONG.timeSignature[0];
-    const totalBeats = SONG.notes[SONG.notes.length - 1].t + SONG.notes[SONG.notes.length - 1].d;
-    for (let b = 0; b <= totalBeats; b += beatsPerBar) {
-      const y = HIT_LINE_Y - (b - currentBeat) * PIXELS_PER_BEAT;
-      if (y > -10 && y < H + 10) {
-        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
-      }
-    }
-
-    // Note blocks
-    SONG.notes.forEach((note, i) => {
-      const kp = keyPositions[note.n];
-      if (!kp) return;
-      const yBottom = HIT_LINE_Y - (note.t - currentBeat) * PIXELS_PER_BEAT;
-      const h = note.d * PIXELS_PER_BEAT;
-      const yTop = yBottom - h;
-      const margin = 2;
-      const x = kp.x + margin;
-      const w = kp.w - margin * 2;
-      if (yBottom < -20 || yTop > H + 20) return;
-      ctx.globalAlpha = 0.8;
-      ctx.fillStyle = '#4FC3F7';
-      roundRect(ctx, x, yTop, w, h, 4);
-      ctx.globalAlpha = 1;
-      if (h > 18 && w > 18) {
-        ctx.fillStyle = 'rgba(0,0,0,0.5)';
-        ctx.font = `bold ${Math.min(11, w * 0.3)}px sans-serif`;
-        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillText(NOMES_PT[note.n.replace(/\d/, '')] || '', x + w / 2, yTop + h / 2);
-      }
-    });
-
-    // Hit line
-    ctx.globalAlpha = 0.5;
-    ctx.fillStyle = '#fff';
-    ctx.fillRect(0, HIT_LINE_Y - 1, W, 2);
-    ctx.globalAlpha = 1;
+    if (viewMode === 'chuva') renderStatic();
   }
 
   function showResult() {
     if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
-    state = 'result';
-    showControls(false);
-
-    // Mark remaining as miss
-    SONG.notes.forEach((note, i) => {
+    state = 'result'; showControls(false);
+    SONG.notes.forEach((_, i) => {
       if (!noteStates[i].hit && !noteStates[i].result) {
-        noteStates[i].result = 'miss';
-        hits.push({ result: 'miss', points: 0 });
+        noteStates[i].result = 'miss'; hits.push({ result:'miss', points:0 });
       }
     });
-
-    const maxPoints = SONG.notes.length * 100;
-    const percent = maxPoints > 0 ? score / maxPoints : 0;
-    let stars, emoji;
-    if (percent >= 0.90) { stars = 3; emoji = '🌟🌟🌟'; }
-    else if (percent >= 0.70) { stars = 2; emoji = '⭐⭐'; }
-    else if (percent >= 0.40) { stars = 1; emoji = '⭐'; }
-    else { stars = 0; emoji = '💪'; }
-
-    const perfects = hits.filter(h => h.result === 'perfect').length;
-    const goods = hits.filter(h => h.result === 'good').length;
-    const oks = hits.filter(h => h.result === 'ok').length;
-    const misses = hits.filter(h => h.result === 'miss').length;
-
+    const mx = SONG.notes.length * 100, pct = mx > 0 ? score / mx : 0;
+    let emoji;
+    if (pct >= 0.90) emoji = '🌟🌟🌟';
+    else if (pct >= 0.70) emoji = '⭐⭐';
+    else if (pct >= 0.40) emoji = '⭐';
+    else emoji = '💪';
+    const p = r => hits.filter(h => h.result === r).length;
     document.getElementById('result-stars').textContent = emoji;
-    document.getElementById('result-score').textContent = score + ' / ' + maxPoints + ' pontos';
+    document.getElementById('result-score').textContent = score + ' / ' + mx + ' pontos';
     document.getElementById('result-detail').innerHTML =
-      `⭐ Perfeito: ${perfects} &nbsp; ✓ Bom: ${goods} &nbsp; OK: ${oks} &nbsp; ✗ Errou: ${misses}<br>` +
-      `Maior combo: ${maxCombo}`;
+      `⭐ Perfeito: ${p('perfect')} &nbsp; ✓ Bom: ${p('good')} &nbsp; OK: ${p('ok')} &nbsp; ✗ Errou: ${p('miss')}<br>Maior combo: ${maxCombo}`;
     document.getElementById('result-overlay').classList.add('show');
   }
 
   function closeResult() {
     document.getElementById('result-overlay').classList.remove('show');
-    state = 'idle';
-    resetNoteStates();
+    state = 'idle'; resetNoteStates();
   }
 
-  /* ══════════════════════════════════════════════
-     Speed control
-  ══════════════════════════════════════════════ */
-  function setSpeed(val, btn) {
-    speedPercent = val;
+  function setSpeed(v, btn) {
+    speedPercent = v;
     document.querySelectorAll('.ctrl-btn[data-speed]').forEach(b => b.classList.remove('ativo'));
     btn.classList.add('ativo');
   }
 
   /* ══════════════════════════════════════════════
-     Piano setup
+     Piano
   ══════════════════════════════════════════════ */
   AudioEngine.init();
-
   const kb = createPianoKeyboard(document.getElementById('piano-container'), {
-    startNote: 'C4', endNote: 'B5',
-    showLabels: true, responsive: true,
+    startNote: 'C4', endNote: 'B5', showLabels: true, responsive: true,
     onNoteOn(noteStr) {
-      // Game mode: check hit
       if (state === 'playing') {
-        const hit = checkHit(noteStr);
-        if (hit) applyHit(hit);
-        else applyWrong();
-      }
-      // Practice mode: check correct note
-      else if (state === 'practicing') {
-        if (practiceIdx < SONG.notes.length) {
-          const expected = SONG.notes[practiceIdx];
-          if (noteStr === expected.n) {
-            noteStates[practiceIdx].hit = true;
-            noteStates[practiceIdx].result = 'perfect';
-            score += 100; notesHit++; combo++; if (combo > maxCombo) maxCombo = combo;
-            hits.push({ result: 'perfect', points: 100 });
-            showFeedback('perfect');
-            updateScoreDisplay();
-            practiceIdx++;
-            if (practiceIdx >= SONG.notes.length) {
-              setTimeout(showResult, 600);
-            } else {
-              practiceTargetBeat = SONG.notes[practiceIdx].t;
-              kb.releaseAll();
-              kb.highlight(SONG.notes[practiceIdx].n);
-            }
-          } else {
-            combo = 0;
-            showFeedback('wrong');
-            updateScoreDisplay();
-          }
-        }
+        const h = checkHit(noteStr); if (h) applyHit(h); else applyWrong();
+      } else if (state === 'practicing' && practiceIdx < SONG.notes.length) {
+        const exp = SONG.notes[practiceIdx];
+        if (noteStr === exp.n) {
+          noteStates[practiceIdx].hit = true; noteStates[practiceIdx].result = 'perfect';
+          score += 100; notesHit++; combo++; if (combo > maxCombo) maxCombo = combo;
+          hits.push({ result:'perfect', points:100 }); showFeedback('perfect'); updateScoreDisplay();
+          practiceIdx++;
+          if (practiceIdx >= SONG.notes.length) setTimeout(showResult, 600);
+          else { practiceTargetBeat = SONG.notes[practiceIdx].t; kb.releaseAll(); kb.highlight(SONG.notes[practiceIdx].n); }
+        } else { combo = 0; showFeedback('wrong'); updateScoreDisplay(); }
       }
     }
   });
 
   /* ══════════════════════════════════════════════
-     Resize handling
+     Resize
   ══════════════════════════════════════════════ */
   function ajustarTeclado() {
     const stage = document.getElementById('piano-stage');
     if (!stage) return;
     const h = stage.clientHeight;
-    if (h < 60) return;
-    const keyH = Math.max(80, Math.min(h - 8, 220));
+    if (h < 40) return;
+    const keyH = Math.max(60, Math.min(h - 8, 280));
     stage.style.setProperty('--key-h', keyH + 'px');
     stage.style.setProperty('--key-bk-h', Math.round(keyH * 0.62) + 'px');
   }
 
   function onResize() {
     ajustarTeclado();
-    setupCanvas();
-    updateKeyPositions();
+    if (viewMode === 'chuva') { setupCanvas(); updateKeyPositions(); }
+    if (viewMode === 'partitura') { partituraBuilt = false; buildPartitura(); }
   }
-
   window.addEventListener('resize', onResize);
   window.addEventListener('orientationchange', () => setTimeout(onResize, 150));
 
   /* ══════════════════════════════════════════════
-     Initialization
+     Init
   ══════════════════════════════════════════════ */
   resetNoteStates();
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      ajustarTeclado();
-      renderStatic();
-    });
-  });
+  requestAnimationFrame(() => requestAnimationFrame(() => { ajustarTeclado(); renderStatic(); }));
   </script>
 </body>
 </html>

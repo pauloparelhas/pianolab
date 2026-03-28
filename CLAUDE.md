@@ -13,7 +13,7 @@ Deploy: push para `main` → GitHub Pages atualiza em ~1 min.
 ### Arquivos centrais
 | Arquivo | Papel |
 |---------|-------|
-| `base.js` | Motor central: AudioEngine, createPianoKeyboard, buildChord, noteToMidi, midiToNote, Settings, LockMode, TTS, goTo |
+| `base.js` | Motor central: AudioEngine, createPianoKeyboard, buildChord, noteToMidi, midiToNote, createStaff, cycleFontSize, showHelp, AudioRecognizer (stub), Settings, LockMode, TTS, goTo |
 | `base.css` | Design system: cores, tipografia, variáveis CSS |
 | `piano.css` | Estilos do teclado de piano — ÚNICO ponto de controle visual do piano |
 | `index.html` | Hub do curso — lista de módulos, progresso, navegação |
@@ -117,12 +117,33 @@ const kb = createPianoKeyboard(container, { startNote:'C4', endNote:'B5', ... })
 - Avanço via botão "Próximo →", nunca via detecção de acordes pressionados
 - `onNoteOn()` apenas para som individual ao explorar o teclado
 
+### Acessibilidade e ajuda contextual
+```javascript
+// Cicla tamanho de fonte: 85% → 100% → 120%, persiste em localStorage
+cycleFontSize(btnEl);
+
+// Cria/reutiliza #help-modal genérico com conteúdo HTML
+showHelp(text);
+
+// Padrão por módulo: objeto HELP_FASES com texto por fase
+const HELP_FASES = { intro: '...', demo: '...', play: '...', livre: '...', celebracao: '...' };
+// Chamada: showHelp(HELP_FASES[faseAtual])
+```
+
+### AudioRecognizer (stub — inativo)
+```javascript
+// Pitch detection via microfone (FFT/autocorrelação) — comentado em base.js
+// Ativar quando necessário: descomentar e chamar AudioRecognizer.start(callback)
+// Infra pronta; aguarda decisão de ativação
+```
+
 ### Piano responsivo
 ```css
 .piano-wrap.responsive { width: 100%; }
 .piano.responsive      { width: 100%; }
 /* O container pai precisa ter width definida para o responsive funcionar */
 .piano-stage #piano-container { width: 100%; display: flex; align-items: center; }
+/* Landscape mobile: --key-h clamp(55px,42dvh,180px); digital-panel max-height: 40dvh */
 ```
 
 ---
@@ -133,7 +154,7 @@ const kb = createPianoKeyboard(container, { startNote:'C4', endNote:'B5', ... })
 2. **Um arquivo por módulo** — HTML + CSS inline + JS inline, auto-contido
 3. **base.js não muda** sem necessidade — é a fundação estável
 4. **piano.css é o único ponto** de controle do teclado — não estilizar piano inline
-5. **Cores de destaque uniformes**: sempre `#4FC3F7` para teclas ativas — sem cores por nota no visual
+5. **Cores de destaque uniformes**: sempre `#9EEAFF` para teclas ativas (azul claro, pulso brightness) — sem cores por nota no visual, sem box-shadow externo
 6. **Commit + push ao final de toda implementação** — o usuário confere direto no site publicado
 
 ---
@@ -150,14 +171,20 @@ const kb = createPianoKeyboard(container, { startNote:'C4', endNote:'B5', ... })
 | 2026-03-26 | M5 display-only (sem chord detection) | Crianças 7-9a não conseguem pressionar 3 teclas |
 | 2026-03-26 | Piano fixo C4-B5 em todos os módulos | Violação detectada: range dinâmico = piano degradado |
 | 2026-03-26 | createStaff() adicionado ao base.js | Pentagrama compartilhado por todos os módulos |
+| 2026-03-26 | Topbar unificado; .fase-nav separada eliminada | Consistência visual entre módulos |
+| 2026-03-26 | Highlight de tecla: #9EEAFF + brightness | box-shadow externo tampava teclas pretas adjacentes |
+| 2026-03-26 | cycleFontSize() e showHelp() em base.js | Acessibilidade e ajuda contextual por fase em todos os módulos |
+| 2026-03-26 | AudioRecognizer stub em base.js | Infra de pitch detection pronta; ativação aguarda decisão |
+| 2026-03-26 | M5: PROGRESSAO_BASE com 3 inversões + clamping MIDI 60-83 | Voice leading matematicamente correto em todas as tonalidades |
 
 ---
 
 ## Próximos Passos (roadmap)
 
-1. **Validar M5 ao vivo** — conferir I–vi–IV–V em todas as 7 tonalidades
-2. **Adicionar staff a M3 e M4** — `createStaff()` já disponível em base.js
-3. **Expandir M5** — adicionar as outras 4 progressões após validação do I–vi–IV–V
-4. **Redesign retroativo M1** — Conhecendo as teclas (padrão M3+)
-5. **Redesign retroativo M2** — Escalas (padrão M3+)
-6. **Redesign Piano Livre** — exploração livre com qualidade
+1. **Validar M5 ao vivo** — conferir I–vi–IV–V (Raiz/1ª/2ª Inv) em todas as 7 tonalidades
+2. **Expandir M5** — adicionar as outras 4 progressões após validação do I–vi–IV–V
+3. **Staff com compassos** — 4 notas por compasso com barras automáticas (estrutura ready em base.js)
+4. **AudioRecognizer** — ativar pitch detection via microfone quando necessário (stub já em base.js)
+5. **Redesign retroativo M1** — Conhecendo as teclas (padrão M3+)
+6. **Redesign retroativo M2** — Escalas (padrão M3+, HELP_FASES já implementado)
+7. **Redesign Piano Livre** — exploração livre com qualidade
