@@ -64,6 +64,38 @@
       color: #FFD700;
     }
 
+    /* ── Linha de velocidade ── */
+    .speed-row {
+      display: flex;
+      gap: 4px;
+      padding: 0 14px 3px;
+      flex-shrink: 0;
+      align-items: center;
+    }
+    .speed-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #4a6274;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-right: 2px;
+    }
+    .speed-btn {
+      padding: 3px 10px;
+      border-radius: 99px;
+      border: 1.5px solid #1e2a3a;
+      background: #111827;
+      color: #7a8fa8;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .speed-btn.ativo {
+      border-color: #4FC3F7;
+      background: rgba(79,195,247,.1);
+      color: #4FC3F7;
+    }
+
     /* ── Grid de músicas compacto ── */
     .musicas-grid {
       display: grid;
@@ -161,7 +193,9 @@
       .titulo-bebe { font-size: 0.95rem; }
       .instrumento-row { padding: 1px 12px 1px; gap: 4px; }
       .instrumento-btn { padding: 3px 9px; font-size: 0.8rem; }
-      .musicas-grid { gap: 1px 4px; padding: 1px 12px; grid-template-columns: repeat(5, 1fr); }
+      .speed-row { padding: 0 12px 1px; gap: 3px; }
+      .speed-btn { padding: 2px 7px; font-size: 0.75rem; }
+      .musicas-grid { gap: 1px 4px; padding: 1px 12px; grid-template-columns: repeat(4, 1fr); }
       .musica-card { padding: 1px 2px; }
       .musica-simbolo { font-size: 0.7rem; min-width: 22px; }
       .btn-auto, .btn-guia, .btn-parar-card { width: 18px; height: 18px; font-size: 0.55rem; }
@@ -183,89 +217,14 @@
     <a href="m0_bateria.html" class="instrumento-btn" style="text-decoration:none">🥁 Bateria</a>
   </div>
 
-  <!-- Músicas: símbolo ♬ + número, ▶ auto, 👆 guia -->
-  <div class="musicas-grid">
-    <div class="musica-card" id="card-twinkle">
-      <span class="musica-simbolo">♬1</span>
-      <div class="musica-btns">
-        <button class="btn-auto"       data-song="twinkle" title="Tocar automático">▶</button>
-        <button class="btn-guia"       data-song="twinkle" title="Guiar nota a nota">👆</button>
-        <button class="btn-parar-card" data-song="twinkle">■</button>
-      </div>
-    </div>
-    <div class="musica-card" id="card-mary">
-      <span class="musica-simbolo">♬2</span>
-      <div class="musica-btns">
-        <button class="btn-auto"       data-song="mary" title="Tocar automático">▶</button>
-        <button class="btn-guia"       data-song="mary" title="Guiar nota a nota">👆</button>
-        <button class="btn-parar-card" data-song="mary">■</button>
-      </div>
-    </div>
-    <div class="musica-card" id="card-birthday">
-      <span class="musica-simbolo">♬3</span>
-      <div class="musica-btns">
-        <button class="btn-auto"       data-song="birthday" title="Tocar automático">▶</button>
-        <button class="btn-guia"       data-song="birthday" title="Guiar nota a nota">👆</button>
-        <button class="btn-parar-card" data-song="birthday">■</button>
-      </div>
-    </div>
-    <div class="musica-card" id="card-macdonald">
-      <span class="musica-simbolo">♬4</span>
-      <div class="musica-btns">
-        <button class="btn-auto"       data-song="macdonald">▶</button>
-        <button class="btn-guia"       data-song="macdonald">👆</button>
-        <button class="btn-parar-card" data-song="macdonald">■</button>
-      </div>
-    </div>
-    <div class="musica-card" id="card-hotcross">
-      <span class="musica-simbolo">♬5</span>
-      <div class="musica-btns">
-        <button class="btn-auto"       data-song="hotcross">▶</button>
-        <button class="btn-guia"       data-song="hotcross">👆</button>
-        <button class="btn-parar-card" data-song="hotcross">■</button>
-      </div>
-    </div>
-    <div class="musica-card" id="card-rowboat">
-      <span class="musica-simbolo">♬6</span>
-      <div class="musica-btns">
-        <button class="btn-auto"       data-song="rowboat">▶</button>
-        <button class="btn-guia"       data-song="rowboat">👆</button>
-        <button class="btn-parar-card" data-song="rowboat">■</button>
-      </div>
-    </div>
-    <div class="musica-card" id="card-london">
-      <span class="musica-simbolo">♬7</span>
-      <div class="musica-btns">
-        <button class="btn-auto"       data-song="london">▶</button>
-        <button class="btn-guia"       data-song="london">👆</button>
-        <button class="btn-parar-card" data-song="london">■</button>
-      </div>
-    </div>
-    <div class="musica-card" id="card-jingle">
-      <span class="musica-simbolo">♬8</span>
-      <div class="musica-btns">
-        <button class="btn-auto"       data-song="jingle">▶</button>
-        <button class="btn-guia"       data-song="jingle">👆</button>
-        <button class="btn-parar-card" data-song="jingle">■</button>
-      </div>
-    </div>
-    <div class="musica-card" id="card-sleeping">
-      <span class="musica-simbolo">♬9</span>
-      <div class="musica-btns">
-        <button class="btn-auto"       data-song="sleeping">▶</button>
-        <button class="btn-guia"       data-song="sleeping">👆</button>
-        <button class="btn-parar-card" data-song="sleeping">■</button>
-      </div>
-    </div>
-    <div class="musica-card" id="card-ode">
-      <span class="musica-simbolo">♬10</span>
-      <div class="musica-btns">
-        <button class="btn-auto"       data-song="ode">▶</button>
-        <button class="btn-guia"       data-song="ode">👆</button>
-        <button class="btn-parar-card" data-song="ode">■</button>
-      </div>
-    </div>
+  <div class="speed-row">
+    <span class="speed-label">Ritmo</span>
+    <button class="speed-btn" data-speed="60">🐌</button>
+    <button class="speed-btn ativo" data-speed="100">▶</button>
+    <button class="speed-btn" data-speed="150">🐇</button>
   </div>
+
+  <div class="musicas-grid" id="musicas-grid"></div>
 
   <div class="piano-stage" id="piano-stage">
     <div id="piano-container"></div>
@@ -296,25 +255,21 @@
 
       const osc = c.createOscillator();
       osc.type = 'sawtooth';
-      // Pitch: começa alto, cai ao alvo, sobe ligeiramente, cai de novo
       osc.frequency.setValueAtTime(hz * 1.55, now);
       osc.frequency.exponentialRampToValueAtTime(hz * 0.82, now + 0.14);
       osc.frequency.linearRampToValueAtTime(hz * 0.96, now + 0.28);
       osc.frequency.linearRampToValueAtTime(hz * 0.85, now + 0.65);
 
-      // Vibrato suave
       const lfo = c.createOscillator(), lfoG = c.createGain();
       lfo.frequency.value = 5.5;
       lfoG.gain.value = hz * 0.018;
       lfo.connect(lfoG); lfoG.connect(osc.frequency);
 
-      // Formante 1: vogal aberta (cavidade oral)
       const f1 = c.createBiquadFilter();
       f1.type = 'bandpass';
       f1.frequency.value = Math.min(hz * 2.2, 900);
       f1.Q.value = 8;
 
-      // Formante 2: vogal fechada (cavidade faríngea)
       const f2 = c.createBiquadFilter();
       f2.type = 'bandpass';
       f2.frequency.value = Math.min(hz * 4.5, 2000);
@@ -343,7 +298,6 @@
       const c = getActx(), now = c.currentTime;
       const hz = midiHz(midi);
 
-      // Oscilador principal: chirp característico do pato
       const osc1 = c.createOscillator();
       osc1.type = 'square';
       osc1.frequency.setValueAtTime(hz * 0.58, now);
@@ -351,14 +305,12 @@
       osc1.frequency.exponentialRampToValueAtTime(hz * 0.72, now + 0.14);
       osc1.frequency.linearRampToValueAtTime(hz * 0.62, now + 0.24);
 
-      // Segundo oscilador levemente desafinado (dá espessura)
       const osc2 = c.createOscillator();
       osc2.type = 'sawtooth';
       osc2.frequency.setValueAtTime(hz * 0.6, now);
       osc2.frequency.exponentialRampToValueAtTime(hz * 1.18, now + 0.05);
       osc2.frequency.exponentialRampToValueAtTime(hz * 0.75, now + 0.14);
 
-      // Filtro nasal (peak em ~1200 Hz = timbre de pato)
       const nasal = c.createBiquadFilter();
       nasal.type = 'peaking';
       nasal.frequency.value = 1100;
@@ -386,9 +338,73 @@
   };
 
   /* ══════════════════════════════════════════════
+     Mapeamento de letra → nota (oitava 4)
+  ══════════════════════════════════════════════ */
+  const NOTE_MAP = { C:'C4', D:'D4', E:'E4', F:'F4', G:'G4', A:'A4', B:'B4' };
+
+  /* ══════════════════════════════════════════════
+     Repertório — formato BPM + durações relativas
+     d: 0.5=colcheia  1=semínima  2=mínima  1.5=semínima pontuada
+  ══════════════════════════════════════════════ */
+  const SONGS = [
+    { nome:"Twinkle Twinkle", icone:"⭐", bpm:100, notas:[
+      {n:"C",d:1},{n:"C",d:1},{n:"G",d:1},{n:"G",d:1},{n:"A",d:1},{n:"A",d:1},{n:"G",d:2},
+      {n:"F",d:1},{n:"F",d:1},{n:"E",d:1},{n:"E",d:1},{n:"D",d:1},{n:"D",d:1},{n:"C",d:2},
+      {n:"G",d:1},{n:"G",d:1},{n:"F",d:1},{n:"F",d:1},{n:"E",d:1},{n:"E",d:1},{n:"D",d:2},
+      {n:"G",d:1},{n:"G",d:1},{n:"F",d:1},{n:"F",d:1},{n:"E",d:1},{n:"E",d:1},{n:"D",d:2},
+      {n:"C",d:1},{n:"C",d:1},{n:"G",d:1},{n:"G",d:1},{n:"A",d:1},{n:"A",d:1},{n:"G",d:2},
+      {n:"F",d:1},{n:"F",d:1},{n:"E",d:1},{n:"E",d:1},{n:"D",d:1},{n:"D",d:1},{n:"C",d:2},
+    ]},
+    { nome:"Old MacDonald", icone:"🐄", bpm:110, notas:[
+      {n:"G",d:1},{n:"G",d:1},{n:"G",d:1},{n:"D",d:1},{n:"E",d:1},{n:"E",d:1},{n:"D",d:2},
+      {n:"B",d:1},{n:"B",d:1},{n:"A",d:1},{n:"A",d:1},{n:"G",d:2},
+      {n:"D",d:1},{n:"E",d:1},{n:"E",d:1},{n:"D",d:2},
+      {n:"G",d:1},{n:"G",d:1},{n:"G",d:1},{n:"G",d:1},
+      {n:"D",d:1},{n:"E",d:1},{n:"E",d:1},{n:"D",d:2},
+      {n:"B",d:1},{n:"B",d:1},{n:"A",d:1},{n:"A",d:1},{n:"G",d:2},
+    ]},
+    { nome:"London Bridge", icone:"🌉", bpm:120, notas:[
+      {n:"G",d:1},{n:"A",d:0.5},{n:"G",d:0.5},{n:"F",d:1},{n:"E",d:1},{n:"F",d:0.5},{n:"G",d:2},
+      {n:"D",d:1},{n:"E",d:0.5},{n:"F",d:1},{n:"E",d:0.5},{n:"F",d:0.5},{n:"G",d:2},
+      {n:"G",d:1},{n:"A",d:0.5},{n:"G",d:0.5},{n:"F",d:1},{n:"E",d:1},{n:"F",d:0.5},{n:"G",d:2},
+      {n:"D",d:1},{n:"G",d:1},{n:"E",d:1},{n:"C",d:2},
+    ]},
+    { nome:"Mary Had a Little Lamb", icone:"🐑", bpm:110, notas:[
+      {n:"E",d:1},{n:"D",d:1},{n:"C",d:1},{n:"D",d:1},{n:"E",d:1},{n:"E",d:1},{n:"E",d:2},
+      {n:"D",d:1},{n:"D",d:1},{n:"D",d:2},{n:"E",d:1},{n:"G",d:1},{n:"G",d:2},
+      {n:"E",d:1},{n:"D",d:1},{n:"C",d:1},{n:"D",d:1},{n:"E",d:1},{n:"E",d:1},{n:"E",d:1},{n:"E",d:1},
+      {n:"D",d:1},{n:"D",d:1},{n:"E",d:1},{n:"D",d:1},{n:"C",d:2},
+    ]},
+    { nome:"Ode to Joy", icone:"🎵", bpm:100, notas:[
+      {n:"E",d:1},{n:"E",d:1},{n:"F",d:1},{n:"G",d:1},{n:"G",d:1},{n:"F",d:1},{n:"E",d:1},{n:"D",d:1},
+      {n:"C",d:1},{n:"C",d:1},{n:"D",d:1},{n:"E",d:1},{n:"E",d:1.5},{n:"D",d:0.5},{n:"D",d:2},
+      {n:"E",d:1},{n:"E",d:1},{n:"F",d:1},{n:"G",d:1},{n:"G",d:1},{n:"F",d:1},{n:"E",d:1},{n:"D",d:1},
+      {n:"C",d:1},{n:"C",d:1},{n:"D",d:1},{n:"E",d:1},{n:"D",d:1.5},{n:"C",d:0.5},{n:"C",d:2},
+    ]},
+    { nome:"Are You Sleeping", icone:"😴", bpm:100, notas:[
+      {n:"C",d:1},{n:"D",d:1},{n:"E",d:1},{n:"C",d:1},
+      {n:"C",d:1},{n:"D",d:1},{n:"E",d:1},{n:"C",d:1},
+      {n:"E",d:1},{n:"F",d:1},{n:"G",d:2},
+      {n:"E",d:1},{n:"F",d:1},{n:"G",d:2},
+      {n:"G",d:0.5},{n:"A",d:0.5},{n:"G",d:0.5},{n:"F",d:0.5},{n:"E",d:1},{n:"C",d:1},
+      {n:"G",d:0.5},{n:"A",d:0.5},{n:"G",d:0.5},{n:"F",d:0.5},{n:"E",d:1},{n:"C",d:1},
+      {n:"C",d:1},{n:"G",d:1},{n:"C",d:2},
+      {n:"C",d:1},{n:"G",d:1},{n:"C",d:2},
+    ]},
+    { nome:"Baby Shark", icone:"🦈", bpm:130, notas:[
+      {n:"B",d:0.5},{n:"B",d:0.5},{n:"B",d:0.5},{n:"B",d:0.5},{n:"B",d:1},{n:"C",d:2},
+      {n:"A",d:0.5},{n:"A",d:0.5},{n:"A",d:0.5},{n:"A",d:0.5},{n:"A",d:1},{n:"B",d:2},
+      {n:"G",d:0.5},{n:"G",d:0.5},{n:"G",d:0.5},{n:"G",d:0.5},{n:"G",d:1},{n:"A",d:2},
+      {n:"E",d:0.5},{n:"E",d:0.5},{n:"E",d:0.5},{n:"E",d:0.5},{n:"E",d:1},{n:"F",d:2},
+      {n:"D",d:0.5},{n:"D",d:0.5},{n:"D",d:0.5},{n:"D",d:0.5},{n:"D",d:1},{n:"E",d:2},
+    ]},
+  ];
+
+  /* ══════════════════════════════════════════════
      Estado
   ══════════════════════════════════════════════ */
-  let instrumento = 'piano';
+  let instrumento  = 'piano';
+  let speedPercent = 100;
 
   function tocarNota(noteStr, dur = 0.8) {
     if (instrumento === 'piano') {
@@ -400,82 +416,55 @@
   }
 
   /* ══════════════════════════════════════════════
-     Músicas
+     Renderização dinâmica do grid de músicas
   ══════════════════════════════════════════════ */
-  const MUSICAS = {
-    twinkle: {
-      notas: ['C4','C4','G4','G4','A4','A4','G4','F4','F4','E4','E4','D4','D4','C4','G4','G4','F4','F4','E4','E4','D4','G4','G4','F4','F4','E4','E4','D4','C4','C4','G4','G4','A4','A4','G4','F4','F4','E4','E4','D4','D4','C4'],
-      dur:   [.4,.4,.4,.4,.4,.4,.8,.4,.4,.4,.4,.4,.4,.8,.4,.4,.4,.4,.4,.4,.8,.4,.4,.4,.4,.4,.4,.8,.4,.4,.4,.4,.4,.4,.8,.4,.4,.4,.4,.4,.4,.8],
-    },
-    mary: {
-      notas: ['E4','D4','C4','D4','E4','E4','E4','D4','D4','D4','E4','G4','G4','E4','D4','C4','D4','E4','E4','E4','E4','D4','D4','E4','D4','C4'],
-      dur:   [.4,.4,.4,.4,.4,.4,.8,.4,.4,.8,.4,.4,.8,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4,.8],
-    },
-    birthday: {
-      notas: ['C4','C4','D4','C4','F4','E4','C4','C4','D4','C4','G4','F4','C4','C4','C5','A4','F4','E4','D4','A#4','A#4','A4','F4','G4','F4'],
-      dur:   [.3,.15,.45,.45,.45,.9,.3,.15,.45,.45,.45,.9,.3,.15,.45,.45,.45,.45,.9,.3,.15,.45,.45,.45,.9],
-    },
-    macdonald: {
-      notas: ['G4','G4','G4','D4','E4','E4','D4','B4','B4','A4','A4','G4','D4','E4','E4','D4','G4','G4','G4','G4','D4','E4','E4','D4','B4','B4','A4','A4','G4'],
-      dur:   [.4,.4,.4,.4,.4,.4,.8,.4,.4,.4,.4,.8,.4,.4,.4,.8,.4,.4,.4,.4,.4,.4,.4,.8,.4,.4,.4,.4,.8],
-    },
-    hotcross: {
-      notas: ['E4','D4','C4','E4','D4','C4','C4','C4','C4','C4','D4','D4','D4','D4','E4','D4','C4'],
-      dur:   [.4,.4,.9, .4,.4,.9, .2,.2,.2,.2,.2,.2,.2,.2,.4,.4,.9],
-    },
-    rowboat: {
-      notas: ['C4','C4','C4','D4','E4','E4','D4','E4','F4','G4','C5','C5','C5','G4','G4','G4','E4','E4','E4','C4','G4','F4','E4','D4','C4'],
-      dur:   [.45,.45,.6,.2,.5, .6,.2,.2,.2,.9, .3,.3,.3,.3,.3,.3,.3,.3,.3,.3, .2,.2,.2,.2,.9],
-    },
-    london: {
-      notas: ['G4','A4','G4','F4','E4','F4','G4','D4','E4','F4','E4','F4','G4','G4','A4','G4','F4','E4','F4','G4','D4','G4','E4','C4'],
-      dur:   [.4,.2,.2,.4,.4,.2,.8, .4,.2,.4,.2,.2,.8, .4,.2,.2,.4,.4,.2,.8, .4,.4,.4,.8],
-    },
-    jingle: {
-      notas: ['E4','E4','E4','E4','E4','E4','E4','G4','C4','D4','E4','F4','F4','F4','F4','F4','E4','E4','E4','E4','D4','D4','E4','D4','G4'],
-      dur:   [.4,.4,.8, .4,.4,.8, .4,.2,.2,.2,.9, .4,.4,.2,.2, .4,.2,.2,.2, .2,.2,.2,.4,.4,.8],
-    },
-    sleeping: {
-      notas: ['C4','D4','E4','C4','C4','D4','E4','C4','E4','F4','G4','E4','F4','G4','G4','A4','G4','F4','E4','C4','C4','G4','C5'],
-      dur:   [.4,.4,.4,.4, .4,.4,.4,.4, .4,.4,.8, .4,.4,.8, .2,.2,.2,.2,.4,.8, .4,.4,.8],
-    },
-    ode: {
-      notas: ['E4','E4','F4','G4','G4','F4','E4','D4','C4','C4','D4','E4','E4','D4','D4'],
-      dur:   [.4,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4,.4,.6,.2,.8],
-    },
-  };
+  const grid = document.getElementById('musicas-grid');
+  SONGS.forEach((song, i) => {
+    const card = document.createElement('div');
+    card.className = 'musica-card';
+    card.id = `card-${i}`;
+    card.innerHTML = `
+      <span class="musica-simbolo">${song.icone}${i + 1}</span>
+      <div class="musica-btns">
+        <button class="btn-auto"       data-idx="${i}" title="Tocar automático">▶</button>
+        <button class="btn-guia"       data-idx="${i}" title="Guiar nota a nota">👆</button>
+        <button class="btn-parar-card" data-idx="${i}" style="display:none">■</button>
+      </div>`;
+    grid.appendChild(card);
+  });
 
-  // Estado da música
+  /* ══════════════════════════════════════════════
+     Engine de músicas
+  ══════════════════════════════════════════════ */
   let songTimer = null, tocando = false, modoGuia = false;
-  let songKey = null, songIdx = 0;
+  let songIdx = -1, noteIdx = 0;          // songIdx = índice em SONGS; noteIdx = posição na nota
   let notaEsperada = null, guiaTimer = null;
 
   function pararTudo() {
-    if (songTimer)  { clearTimeout(songTimer);  songTimer  = null; }
-    if (guiaTimer)  { clearTimeout(guiaTimer);  guiaTimer  = null; }
+    if (songTimer) { clearTimeout(songTimer); songTimer = null; }
+    if (guiaTimer) { clearTimeout(guiaTimer); guiaTimer = null; }
     tocando = false; modoGuia = false;
     notaEsperada = null;
-    // Limpa estados visuais dos cards
     document.querySelectorAll('.musica-card').forEach(c => c.classList.remove('tocando','guiando'));
     document.querySelectorAll('.btn-parar-card').forEach(b => b.style.display = 'none');
     document.querySelectorAll('.btn-auto, .btn-guia').forEach(b => b.style.display = '');
     document.getElementById('guia-label').classList.remove('visivel');
     kb.releaseAll();
-    songKey = null; songIdx = 0;
+    songIdx = -1; noteIdx = 0;
   }
 
-  function iniciarMusica(chave, guia) {
+  function iniciarMusica(idx, guia) {
     pararTudo();
-    const m = MUSICAS[chave];
-    if (!m) return;
+    const song = SONGS[idx];
+    if (!song) return;
 
     if (instrumento === 'piano') AudioEngine.init();
     else getActx();
 
-    songKey = chave; songIdx = 0;
+    songIdx = idx; noteIdx = 0;
     tocando = true; modoGuia = guia;
 
-    const card = document.getElementById('card-' + chave);
+    const card = document.getElementById('card-' + idx);
     card.classList.add(guia ? 'guiando' : 'tocando');
     card.querySelector('.btn-parar-card').style.display = 'flex';
     card.querySelector('.btn-auto').style.display = 'none';
@@ -484,40 +473,41 @@
     guia ? tocarGuia() : tocarAuto();
   }
 
-  // ── Modo automático ──────────────────────────────────────────
+  // ── Modo automático (engine BPM-relativo, sequential chain) ──
   function tocarAuto() {
-    const m = MUSICAS[songKey];
-    if (!tocando || !m || songIdx >= m.notas.length) { pararTudo(); return; }
-    const nota = m.notas[songIdx];
-    const dur  = m.dur[songIdx];
+    const song = SONGS[songIdx];
+    if (!tocando || !song || noteIdx >= song.notas.length) { pararTudo(); return; }
+    const { n, d } = song.notas[noteIdx];
+    const noteStr = NOTE_MAP[n];
+    const beatDuration = (60 / song.bpm) * (100 / speedPercent);
+    const noteDuration = beatDuration * d;
     kb.releaseAll();
-    kb.highlight(nota);
-    tocarNota(nota, dur * 0.9);
-    songIdx++;
-    songTimer = setTimeout(tocarAuto, dur * 1000);
+    kb.highlight(noteStr);
+    tocarNota(noteStr, noteDuration * 0.85);
+    noteIdx++;
+    songTimer = setTimeout(tocarAuto, noteDuration * 1000);
   }
 
-  // ── Modo guia (criança toca) ──────────────────────────────────
+  // ── Modo guia (criança toca — sem som automático) ──
   function tocarGuia() {
-    const m = MUSICAS[songKey];
-    if (!modoGuia || !m || songIdx >= m.notas.length) { pararTudo(); return; }
-    const nota = m.notas[songIdx];
+    const song = SONGS[songIdx];
+    if (!modoGuia || !song || noteIdx >= song.notas.length) { pararTudo(); return; }
+    const { n } = song.notas[noteIdx];
+    const noteStr = NOTE_MAP[n];
     kb.releaseAll();
-    kb.highlight(nota);
-    notaEsperada = nota;
+    kb.highlight(noteStr);
+    notaEsperada = noteStr;
 
-    // Mostra label da nota — sem som, a criança é quem toca
     const label = document.getElementById('guia-label');
-    label.textContent = nota.replace(/\d/, '');
+    label.textContent = n;   // letra simples: C, D, E...
     label.classList.add('visivel');
 
-    // Auto-avança se criança não tocar em 3s
     guiaTimer = setTimeout(avancarGuia, 3000);
   }
 
   function avancarGuia() {
     if (!modoGuia) return;
-    songIdx++;
+    noteIdx++;
     tocarGuia();
   }
 
@@ -537,22 +527,18 @@
 
       // Modo guia: verifica nota certa
       if (modoGuia && notaEsperada) {
-        if (songTimer) { clearTimeout(songTimer); songTimer = null; }
         if (guiaTimer) { clearTimeout(guiaTimer); guiaTimer = null; }
         if (noteStr === notaEsperada) {
-          // Certa: pisca e avança
           notaEsperada = null;
           songTimer = setTimeout(avancarGuia, 350);
-        }
-        // Errada: mantém a nota acesa, aguarda nova tentativa (guiaTimer já foi limpo, reinicia)
-        else {
+        } else {
           guiaTimer = setTimeout(avancarGuia, 2500);
         }
       }
     },
   });
 
-  // Silencia AudioEngine nas teclas quando animal ativo
+  // ── Instrumentos ──
   document.querySelectorAll('.instrumento-btn[data-inst]').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.instrumento-btn').forEach(b => b.classList.remove('ativo'));
@@ -564,17 +550,28 @@
     });
   });
 
-  // Botões de música
-  document.querySelectorAll('.btn-auto').forEach(btn =>
-    btn.addEventListener('click', () => iniciarMusica(btn.dataset.song, false)));
-  document.querySelectorAll('.btn-guia').forEach(btn =>
-    btn.addEventListener('click', () => iniciarMusica(btn.dataset.song, true)));
-  document.querySelectorAll('.btn-parar-card').forEach(btn =>
-    btn.addEventListener('click', pararTudo));
+  // ── Velocidade ──
+  document.querySelectorAll('.speed-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('ativo'));
+      btn.classList.add('ativo');
+      speedPercent = parseInt(btn.dataset.speed, 10);
+    });
+  });
+
+  // ── Botões de música (delegação no grid) ──
+  grid.addEventListener('click', e => {
+    const auto = e.target.closest('.btn-auto');
+    const guia = e.target.closest('.btn-guia');
+    const parar = e.target.closest('.btn-parar-card');
+    if (auto)  iniciarMusica(parseInt(auto.dataset.idx, 10), false);
+    if (guia)  iniciarMusica(parseInt(guia.dataset.idx, 10), true);
+    if (parar) pararTudo();
+  });
 
   // Restaura som ao sair
-  window.addEventListener('pagehide',    () => Settings.setSoundOn(true));
-  window.addEventListener('beforeunload',() => Settings.setSoundOn(true));
+  window.addEventListener('pagehide',     () => Settings.setSoundOn(true));
+  window.addEventListener('beforeunload', () => Settings.setSoundOn(true));
 
   // Ajusta altura do piano igual ao padrão dos outros módulos
   function ajustarTeclado() {
