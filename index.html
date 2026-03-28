@@ -272,10 +272,19 @@ const MODULOS = [
     cor: 'var(--nota-sol)',
     keys: ['piano_m5_progresso'],
   },
+  {
+    n: 6,
+    href: 'm6_musica.html',
+    nome: 'Chuva de Notas',
+    desc: '🎶 Toque músicas · modo Guitar Hero',
+    cor: 'var(--nota-la)',
+    keys: [],
+    completavel: false,
+  },
 ];
 
 // Módulos com arquivo real publicado
-const PUBLICADOS = new Set([0, 1, 2, 3, 4, 5]);
+const PUBLICADOS = new Set([0, 1, 2, 3, 4, 5, 6]);
 
 function getProgresso(key) {
   try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch { return null; }
